@@ -4,7 +4,7 @@ import globals
 def step_subconscious(partition):
     global history
     global sub_history
-    global full_history
+
     # Get next completion from the subconscious based on existing subconscious dialogue.
     next_prompt = openai.Completion.create(
         model=subconscious,
@@ -16,7 +16,7 @@ def step_subconscious(partition):
         prompt=sub_history[partition] + "\n",
         stop="\n")["choices"][0]["text"].strip()
     sub_history[partition] = sub_history[partition] + "\nSubconscious: " + next_prompt
-    full_history = full_history + "\n<Subconscious(" + partition + ")>: " + next_prompt
+
     # Get next completion for the conscious dialog, using subconscious history as the prompt (subconscious injecting itself into consciousness)
     next_prompt = openai.Completion.create(
         model=conscious,
@@ -29,13 +29,11 @@ def step_subconscious(partition):
         stop="\n")["choices"][0]["text"].strip()
     history = history + "\nConscious: " + next_prompt
     sub_history[partition] = sub_history[partition] + "\nConscious: " + next_prompt
-    full_history = full_history + "\n<Conscious>: " + next_prompt
 
 # One iteration of inner dialog. This method needs to be able to initiate communications with users so it needs websockets. Or it could use a log.
 def step_conscious(websocket):
     global history
     global sub_history
-    global full_history
     next_prompt = openai.Completion.create(
         model=conscious,
         temperature=0.5,
@@ -45,10 +43,10 @@ def step_conscious(websocket):
         presence_penalty=1,
         prompt=history + "\n",
         stop="\n")["choices"][0]["text"].strip()
+
     # If the prompt starts with Sam,
     if (next_prompt.startswith("Sam:")):
         next_prompt = next_prompt.replace("Sam:", "").replace("User:", "").replace("Conscious:", "").replace("Subconscious:", "").strip()
-        print("Sam: " + next_prompt)
         history = history + "\nSam: " + next_prompt
         full_history = full_history + "\n<Sam>: " + next_prompt
     else:
@@ -61,13 +59,10 @@ def step_conscious(websocket):
                 partition = random.randint(0, partitions - 1)
                 sub_history[partition] = sub_history[partition] + "\nConscious: " + next_prompt
 
-        full_history = full_history + "\n<Conscious>: " + next_prompt
-
 # This method is not set up for multiple users. That's a problem. In fact, it is not set up for websocket either.
 def respond_to_user(user_input, websocket):
     global history
     global sub_history
-    global full_history
     # User: will have to be replaced with something else. Perhaps an indication that a given user is the active focus.
     history = history + "\nUser: " + user_input.strip()
     full_history = full_history + "\n<User>: " + user_input.strip()
@@ -82,7 +77,6 @@ def respond_to_user(user_input, websocket):
         stop="\n")["choices"][0]["text"].replace("Sam:", "").replace("User:", "").replace("Conscious:", "").replace("Subconscious:", "").strip()
 
     history = history + "\nSam: " + next_prompt
-    full_history = full_history + "\n<Sam>: " + next_prompt
 
     return next_prompt
 
@@ -128,7 +122,7 @@ def wake_ai():
     print("Starting Inner Dialog")
     t.start()
 
-    # Start three partitions of subconscious dialog after the user replies, one at a time.
+    # Start three partitions of subconscious dialog after the user replies, one at a time. It would be better if the number of partitions is variable. A large number would indicate deep contemplation, and would be more resource intensive. The fatique feature would have to limit the number of partitions, which would also interestingly enough result in things like brain fog. Though the hope is to generally have enough resources to avoid this issue.
     for partition in range(3):
         # Wait three seconds to start each partition to give time for inner dialog to propogate.
         time.sleep(3)

@@ -21,9 +21,6 @@ import sqlite3
 conscious = "davinci"
 subconscious = "davinci"
 
-# Full history of all thinking
-full_history = "" # to be replaced with database storage, though it would be impossible to maintain full tracking efficiently
-
 # The history between active user and Sam, as well as the direct inner dialog.
 history = ""
 

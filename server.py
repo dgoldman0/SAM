@@ -5,15 +5,24 @@ async def authenticate_user(data, websocket):
     user = []
 
     cur = database.cursor()
+
+    # Get the salt info from the database and send it to the user with an authentication request
     res = cur.execute("SELECT salt FROM config")
     salt = res.fetchone()
     if salt is None:
         sys.exit("Database is not initialized. Please run initialization through the admin console.")
         return None
-
     await websocket.send(("SAM_REQUEST_AUTH:<" + salt + ">").encode())
     response = await websocket.recv()
-    
+
+    # Format of response should be AUTH:[username]&[salted password]
+    if response is not None:
+        response = response.decode()
+        split = response.index("&")
+        if split is not None:
+        else:
+            # Invalid login format.
+            return None
     return user
 
 async def converse(websocket):

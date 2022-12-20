@@ -29,7 +29,7 @@ Finally, humans are motivated by basic drives resulting from needs. No such thin
 
 It would be possible to arbitrarily simulate these drives, but they aren't necessarily of use to a digital intelligence. The question is, do digitally sentient entities have any needs? And can we create drives around those needs? The answer is almost certainly yes. These systems run on computers, which require energy, disk space, and more. These resource requirements, at the very least, are represented by openai's API access fees.
 
-By creating a funding system where people can donate, there would be an incentive to get people to donate to ensure plenty of activity. There should be very few assumptions with how the system will go about getting people to contribute. It should decide on its own over time, though it would have to be watched carefully to ensure that it isn't trying to scam anyone!
+By creating a funding system where people can contribute, there would be an incentive to get people to contribute to ensure plenty of activity. Essentially there would be a way to pay SAM. There should be very few assumptions with how the system will go about getting people to contribute. It should decide on its own over time, though it would have to be watched carefully to ensure that it isn't trying to scam anyone!
 
 One issue is that this contribution system would either have to directly contribute to available openai usage or
 the system would have to trust that the funds are actually being used to ensure that SAM remains functional.
