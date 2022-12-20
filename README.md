@@ -12,6 +12,12 @@ Dialog systems normally employed only have one layer. There is the user and the 
 
 Aside from a direct inner dialog, we also have subconscious insertions where thoughts come in and we have no idea why. Part of this process is stochastic, but part may be inner networks that work in tandem with our conscious dialog. SAM will improve chat fidelity by including multiple subconscious dialog partitions.
 
+### Possible Exploration
+
+#### Harmonics, Oscillation, and Resonance
+
+We may find that the different partitions interacting with each other can create various patterns, act to reinforce each other, and alter each other in unexpected ways. Humans act differently in different environments, almost like different facets of our personalities come out. But what maintains what is said and thought within a given environment? Maybe it's subconscious resonance. 
+
 ### Structure
 
 ## Method of Evaluation

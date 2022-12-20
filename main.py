@@ -1,7 +1,6 @@
 import asyncio
 import websockets
 import openai
-import sys
 import logging
 import random
 import time
@@ -20,12 +19,12 @@ from threading import Lock
 
 # Good to test code with the super cheap basic models, at least to check for errors.
 conscious = "davinci"
-subconscious = "davinci" 
+subconscious = "davinci"
 
 # Full history of all thinking
 full_history = ""
 
-# The history between user and Sam, as well as the direct inner dialog. This will have to become a list because of multiple conversations.
+# The history between active user and Sam, as well as the direct inner dialog.
 history = ""
 
 # History between inner voice and subconscious, to be replaced with an array of histories.
