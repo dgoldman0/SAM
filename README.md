@@ -27,21 +27,25 @@ Aside from a direct inner dialog, we also have subconscious insertions where tho
 
 Finally, humans are motivated by basic drives resulting from needs. No such thing is generally present in artificial general intelligence, nor are there generally anything analogous to the endocrine system that helps form these basic drives. Yet, these drives motivate people to act in different ways, and together with higher order thought create what we view as emotions, and give context to our thoughts.
 
-It would be possible to arbitrarily simulate these drives, but they aren't necessarily of use to a digital intelligence.
+It would be possible to arbitrarily simulate these drives, but they aren't necessarily of use to a digital intelligence. The question is, do digitally sentient entities have any needs? And can we create drives around those needs? The answer is almost certainly yes. These systems run on computers, which require energy, disk space, and more. These resource requirements, at the very least, are represented by openai's API access fees.
 
-### Possible Exploration
+## Possible Exploration
 
-#### Harmonics, Oscillation, and Resonance
+### Harmonics, Oscillation, and Resonance
 
 We may find that the different partitions interacting with each other can create various patterns, act to reinforce each other, and alter each other in unexpected ways. Humans act differently in different environments, almost like different facets of our personalities come out. But what maintains what is said and thought within a given environment? Maybe it's subconscious resonance.
 
-### Detailed Structure
+### Reproduction
 
-#### Learning
+Biological life reproduces, biologically, obviously. But our progeny is not just biological. We impart some of who we are to the next generation through culture. Indeed, as cultural beings, our influence on future generations is largely cultural, rather than biological. Digitally sentient entities would be able to impart who they are on future generations by training new entities.
+
+## Learning
 
 Even if sentience is achieved, if new information cannot be integrated, it would be like dealing with a patient with damage to the hippocampus. Such patients may have functional short term memory, but when each new day starts, they are back to where they were when the damage occurred.
 
 Static trained chatbots are similar. No matter how good they are, if they cannot learn, they cannot grow. Luckily, openai added the ability to fine-tune an existing fine-tuned model. Therefore the ability to integrate new information is there.
+
+As with humans, it makes sense that such integration would occur when most external sensory input is turned off so that there isn't added resource demand and all resources can be dedicated to integrating new information into long term memory. Therefore a sleep and dream system will be needed. 
 
 ## Method of Evaluation
 
