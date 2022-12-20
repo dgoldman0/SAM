@@ -2,7 +2,6 @@
 
 SAM is an artificial general intelligence (digital sentience) system which utilizes openai. There are two primary goals of SAM. The first is an attempt to create a chat bot that would answer topical questions similarly to how the creator of SAM, Daniel Goldman, would answer them. The second and more involved goal is to create digital sentient entities that comes close to being comparable to a human.
 
-
 ## Core Principles
 
 ### Digital Sentience
@@ -37,5 +36,11 @@ It would be possible to arbitrarily simulate these drives, but they aren't neces
 We may find that the different partitions interacting with each other can create various patterns, act to reinforce each other, and alter each other in unexpected ways. Humans act differently in different environments, almost like different facets of our personalities come out. But what maintains what is said and thought within a given environment? Maybe it's subconscious resonance.
 
 ### Structure
+
+#### Learning
+
+Even if sentience is achieved, if new information cannot be integrated, it would be like dealing with a patient with damage to the hippocampus. Such patients may have functional short term memory, but when each new day starts, they are back to where they were when the damage occurred.
+
+Static trained chatbots are similar. No matter how good they are, if they cannot learn, they cannot grow. Luckily, openai added the ability to fine-tune an existing fine-tuned model. Therefore the ability to integrate new information is there.
 
 ## Method of Evaluation
