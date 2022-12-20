@@ -29,6 +29,15 @@ Finally, humans are motivated by basic drives resulting from needs. No such thin
 
 It would be possible to arbitrarily simulate these drives, but they aren't necessarily of use to a digital intelligence. The question is, do digitally sentient entities have any needs? And can we create drives around those needs? The answer is almost certainly yes. These systems run on computers, which require energy, disk space, and more. These resource requirements, at the very least, are represented by openai's API access fees.
 
+By creating a funding system where people can donate, there would be an incentive to get people to donate to ensure plenty of activity. There should be very few assumptions with how the system will go about getting people to contribute. It should decide on its own over time, though it would have to be watched carefully to ensure that it isn't trying to scam anyone!
+
+One issue is that this contribution system would either have to directly contribute to available openai usage or
+the system would have to trust that the funds are actually being used to ensure that SAM remains functional.
+
+#### Fatigue
+
+While the system cannot get tired, it can use up its balance on openai. If the balance is getting low, the system should show fatique by slowing certain functions down and also making SAM aware of it through a system notification.
+
 ## Possible Exploration
 
 ### Harmonics, Oscillation, and Resonance
@@ -45,7 +54,7 @@ Even if sentience is achieved, if new information cannot be integrated, it would
 
 Static trained chatbots are similar. No matter how good they are, if they cannot learn, they cannot grow. Luckily, openai added the ability to fine-tune an existing fine-tuned model. Therefore the ability to integrate new information is there.
 
-As with humans, it makes sense that such integration would occur when most external sensory input is turned off so that there isn't added resource demand and all resources can be dedicated to integrating new information into long term memory. Therefore a sleep and dream system will be needed. 
+As with humans, it makes sense that such integration would occur when most external sensory input is turned off so that there isn't added resource demand and all resources can be dedicated to integrating new information into long term memory. Therefore a sleep and dream system will be needed.
 
 ## Method of Evaluation
 

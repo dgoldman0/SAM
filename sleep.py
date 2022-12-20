@@ -1,4 +1,4 @@
-import asyncio
+import globals
 
 # Sleep will go through multiple phases of "dreaming" to generate a training set followed by actual training. It's hard to guess how much sleep will actually be needed to properly integrate new knowledge. Testing is the only way to really figure this out.
 

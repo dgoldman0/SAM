@@ -32,7 +32,7 @@ def step_subconscious(partition):
     full_history = full_history + "\n<Conscious>: " + next_prompt
 
 # One iteration of inner dialog. This method needs to be able to initiate communications with users so it needs websockets. Or it could use a log.
-def step_conscious():
+def step_conscious(websocket):
     global history
     global sub_history
     global full_history
@@ -64,7 +64,7 @@ def step_conscious():
         full_history = full_history + "\n<Conscious>: " + next_prompt
 
 # This method is not set up for multiple users. That's a problem. In fact, it is not set up for websocket either.
-def respond_to_user(user_input):
+def respond_to_user(user_input, websocket):
     global history
     global sub_history
     global full_history
@@ -87,7 +87,7 @@ def respond_to_user(user_input):
     return next_prompt
 
 # Inner dialog loop
-def think(lock):
+def think(lock, websocket):
     global history
     while True:
         lock.acquire()
@@ -113,3 +113,25 @@ def sub_think(partition, lock):
                 sub_history[partition] = sub_history[partition][loc + 1:]
         lock.release()
         time.sleep(6)
+
+# Bootup AI
+def wake_ai():
+    global history
+    global lock
+
+    # System notification to AI of wakeup. Should include various status information once I figure out what to include.
+    print("AI Starting Up")
+    startup_message = "System Notifications: Waking up."
+
+    # Begin inner dialog
+    t = Thread(target=think, args=[lock], daemon=True)
+    print("Starting Inner Dialog")
+    t.start()
+
+    # Start three partitions of subconscious dialog after the user replies, one at a time.
+    for partition in range(3):
+        # Wait three seconds to start each partition to give time for inner dialog to propogate.
+        time.sleep(3)
+        t = Thread(target=sub_think, args=[partition, lock], daemon=True)
+        print("Starting Subconscious Partition " + partition)
+        t.start()
