@@ -35,7 +35,7 @@ It would be possible to arbitrarily simulate these drives, but they aren't neces
 
 We may find that the different partitions interacting with each other can create various patterns, act to reinforce each other, and alter each other in unexpected ways. Humans act differently in different environments, almost like different facets of our personalities come out. But what maintains what is said and thought within a given environment? Maybe it's subconscious resonance.
 
-### Structure
+### Detailed Structure
 
 #### Learning
 
@@ -44,3 +44,9 @@ Even if sentience is achieved, if new information cannot be integrated, it would
 Static trained chatbots are similar. No matter how good they are, if they cannot learn, they cannot grow. Luckily, openai added the ability to fine-tune an existing fine-tuned model. Therefore the ability to integrate new information is there.
 
 ## Method of Evaluation
+
+There are few explicit methods for evaluating artificial intelligence systems, and determining whether one has reached sentience. The Turing Test is a well known example. However, this test suffers from numerous flaws. It works under the assumption that if people cannot tell the difference between an AI and a human, then we might as well consider the system in the same light as one.
+
+However, this test while not a bad way to argue that an AI has become a digitally sentient entity, is an all or nothing test. It does not give us information on how close we are to succeeding, or how to make adjustments to proceed. Moreover, if we are successful in producing digital sentience, we must concern ourselves with the possibility of issues arising. Just like sentience increases the risk of problems, such as mental health issues, digital sentient entities will at some points suffer from similar issues.
+
+The solution to such matters does not come from computer science or mathematics, which is the origin of much of our understanding and work on artificial intelligence. If we are to create and work with sentient entities, then we must draw primarily from our body of work in anthropology, psychology, and sociology, not just in terms of figuring out how to create sentience and what sentience is, but also on how to evaluate progress of development and issues.
