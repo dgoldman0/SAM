@@ -1,8 +1,15 @@
 import globals
+import physiology
+
+sub_history = globals.sub_history
+
+# Good to test code with the super cheap basic models, at least to check for errors. In the final version, the conscious and subconscious models might be different from each other to allow the inner workings of SAM's mind to be different from the conscious workings.
+
+conscious = "davinci"
+subconscious = "davinci"
 
 # Generate a subconscious thought and propogate to a conscious thought
 def step_subconscious(partition):
-    global history
     global sub_history
 
     # Get next completion from the subconscious based on existing subconscious dialogue.
@@ -11,7 +18,7 @@ def step_subconscious(partition):
         temperature=1,
         max_tokens=75,
         top_p=0.5,
-        frequency_penalty=0.5f,
+        frequency_penalty=0.5,
         presence_penalty=0.5,
         prompt=sub_history[partition] + "\n",
         stop="\n")["choices"][0]["text"].strip()
@@ -27,7 +34,7 @@ def step_subconscious(partition):
         presence_penalty=1,
         prompt=sub_history[partition] + "\n",
         stop="\n")["choices"][0]["text"].strip()
-    history = history + "\nConscious: " + next_prompt
+    globals.history = globals.history + "\nConscious: " + next_prompt
     sub_history[partition] = sub_history[partition] + "\nConscious: " + next_prompt
 
 # One iteration of inner dialog. This method needs to be able to initiate communications with users so it needs websockets. Or it could use a log.
@@ -36,21 +43,20 @@ def step_conscious(websocket):
     global sub_history
     next_prompt = openai.Completion.create(
         model=conscious,
-        temperature=0.5,
+        temperature=physiology.temp,
         max_tokens=125,
-        top_p=0.7,
-        frequency_penalty=1,
-        presence_penalty=1,
-        prompt=history + "\n",
+        top_p=physiology.top_p,
+        frequency_penalty=0.5,
+        presence_penalty=0.5,
+        prompt=globals.history + "\n",
         stop="\n")["choices"][0]["text"].strip()
 
     # If the prompt starts with Sam,
     if (next_prompt.startswith("Sam:")):
         next_prompt = next_prompt.replace("Sam:", "").replace("User:", "").replace("Conscious:", "").replace("Subconscious:", "").strip()
-        history = history + "\nSam: " + next_prompt
-        full_history = full_history + "\n<Sam>: " + next_prompt
+        globals.history = globals.history + "\nSam: " + next_prompt
     else:
-        history = history + "\nConscious: " + next_prompt
+        globals.history = globals.history + "\nConscious: " + next_prompt
         partitions = len(sub_history)
         if partitions > 1:
             # Flip to see if the conscious thought should be added to the subconscious log.
@@ -59,24 +65,23 @@ def step_conscious(websocket):
                 partition = random.randint(0, partitions - 1)
                 sub_history[partition] = sub_history[partition] + "\nConscious: " + next_prompt
 
-# This method is not set up for multiple users. That's a problem. In fact, it is not set up for websocket either.
-def respond_to_user(user_input, websocket):
-    global history
+# Generate response to user input. In the future, the system will be able to ignore user input if it "wants" to. Basically, it will be able to choose to pay attention or not.
+def respond_to_user(user_input):
     global sub_history
     # User: will have to be replaced with something else. Perhaps an indication that a given user is the active focus.
-    history = history + "\nUser: " + user_input.strip()
-    full_history = full_history + "\n<User>: " + user_input.strip()
+    globals.history = globals.history + "\nUser: " + user_input.strip()
     next_prompt = openai.Completion.create(
         model=conscious,
         temperature=0.4,
         max_tokens=250,
-        top_p=1,
+        top_p=0.5,
         frequency_penalty=1,
         presence_penalty=1,
-        prompt=history + "\n",
+        prompt=globals.history + "\n",
+        # The system tends to spit out a lot copies of the tags, but maybe that should be normal and maybe I shouldn't cut them out.
         stop="\n")["choices"][0]["text"].replace("Sam:", "").replace("User:", "").replace("Conscious:", "").replace("Subconscious:", "").strip()
 
-    history = history + "\nSam: " + next_prompt
+    globals.history = globals.history + "\nSam: " + next_prompt
 
     return next_prompt
 
@@ -87,12 +92,12 @@ def think(lock, websocket):
         lock.acquire()
         step_conscious(lock)
         # Prevent the prompt from getting too long by cutting off old chat history
-        if (len(history) > 5120):
-            loc = history.index("\n")
+        if (len(globals.history) > 5120):
+            loc = globals.history.index("\n")
             if (loc is not None):
-                history = history[loc + 1:]
+                globals.history = globals.history[loc + 1:]
         lock.release()
-        time.sleep(2)
+        time.sleep(physiology.think_period)
 
 # Subconscious to conscious interaction loops
 def sub_think(partition, lock):
@@ -108,14 +113,12 @@ def sub_think(partition, lock):
         lock.release()
         time.sleep(6)
 
-# Bootup AI
+# Awaken AI either upon bootup or after sleeping.
 def wake_ai():
-    global history
-    global lock
-
     # System notification to AI of wakeup. Should include various status information once I figure out what to include.
-    print("AI Starting Up")
+    print("AI Waking Up")
     startup_message = "System Notifications: Waking up."
+    globals.history += startup_message
 
     # Begin inner dialog
     t = Thread(target=think, args=[lock], daemon=True)
@@ -127,5 +130,5 @@ def wake_ai():
         # Wait three seconds to start each partition to give time for inner dialog to propogate.
         time.sleep(3)
         t = Thread(target=sub_think, args=[partition, lock], daemon=True)
-        print("Starting Subconscious Partition " + partition)
+        print("Starting Subconscious Partition #" + partition)
         t.start()

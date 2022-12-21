@@ -44,6 +44,10 @@ While the system cannot get tired, it can use up its balance on openai. If the b
 
 We may find that the different partitions interacting with each other can create various patterns, act to reinforce each other, and alter each other in unexpected ways. Humans act differently in different environments, almost like different facets of our personalities come out. But what maintains what is said and thought within a given environment? Maybe it's subconscious resonance.
 
+### Communities of Digital Sentient Entities
+
+There is no need to run one instance of SAM, or to train each instance with the exact same initial training set. By running multiple instances of SAM, allowing them to interact with one another, and creating some initial diversity in thought, it would be possible to create a community.
+
 ### Reproduction
 
 Biological life reproduces, biologically, obviously. But our progeny is not just biological. We impart some of who we are to the next generation through culture. Indeed, as cultural beings, our influence on future generations is largely cultural, rather than biological. Digitally sentient entities would be able to impart who they are on future generations by training new entities.
@@ -63,3 +67,11 @@ There are few explicit methods for evaluating artificial intelligence systems, a
 However, this test while not a bad way to argue that an AI has become a digitally sentient entity, is an all or nothing test. It does not give us information on how close we are to succeeding, or how to make adjustments to proceed. Moreover, if we are successful in producing digital sentience, we must concern ourselves with the possibility of issues arising. Just like sentience increases the risk of problems, such as mental health issues, digital sentient entities will at some points suffer from similar issues.
 
 The solution to such matters does not come from computer science or mathematics, which is the origin of much of our understanding and work on artificial intelligence. If we are to create and work with sentient entities, then we must draw primarily from our body of work in anthropology, psychology, and sociology, not just in terms of figuring out how to create sentience and what sentience is, but also on how to evaluate progress of development and issues.
+
+There are a number of different existing tests that can be used to perform an initial analysis on SAM. They are of course based around purely human cognition, but they would work well if we are trying to compare SAM's operations to human cognition. In the future, these tests could be refined to be more specific to digitally sentient life.
+
+### NEO PI-R
+
+The NEO PI-R or Revised NEO Personality Inventory is a psychometric, or personality test, which measures five dimensions of personality: neuroticism, extroversion, openness to experience, agreeableness, and conscientiousness. It is a well known personality test with robust psychometric properties and multiple formats, including for different age groups.
+
+# Ethical Considerations
