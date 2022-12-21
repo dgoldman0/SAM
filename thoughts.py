@@ -3,10 +3,16 @@ import physiology
 
 sub_history = globals.sub_history
 
-# Good to test code with the super cheap basic models, at least to check for errors. In the final version, the conscious and subconscious models might be different from each other to allow the inner workings of SAM's mind to be different from the conscious workings.
+# Good to test code with the super cheap basic models, at least to check for errors. In the final version, the conscious and subconscious models might be different from each other to allow the inner workings of SAM's mind to be different from the conscious workings. The most recent trained model names will also have to be obtained.
 
 conscious = "davinci"
 subconscious = "davinci"
+
+# The current user that SAM is listening to, if any.
+active_user = ""
+
+# The number of subconscious partitions. Currently fixed, but will be variable.
+total_partitions = 3
 
 # Generate a subconscious thought and propogate to a conscious thought
 def step_subconscious(partition):
@@ -51,10 +57,10 @@ def step_conscious(websocket):
         prompt=globals.history + "\n",
         stop="\n")["choices"][0]["text"].strip()
 
-    # If the prompt starts with Sam,
-    if (next_prompt.startswith("Sam:")):
-        next_prompt = next_prompt.replace("Sam:", "").replace("User:", "").replace("Conscious:", "").replace("Subconscious:", "").strip()
-        globals.history = globals.history + "\nSam: " + next_prompt
+    # Replace with the system command to speak to a given user.
+    #if (next_prompt.startswith("Sam:")):
+    #    next_prompt = next_prompt.replace("Sam:", "").replace("User:", "").replace("Conscious:", "").replace("Subconscious:", "").strip()
+    #    globals.history = globals.history + "\nSam: " + next_prompt
     else:
         globals.history = globals.history + "\nConscious: " + next_prompt
         partitions = len(sub_history)
@@ -65,24 +71,38 @@ def step_conscious(websocket):
                 partition = random.randint(0, partitions - 1)
                 sub_history[partition] = sub_history[partition] + "\nConscious: " + next_prompt
 
-# Generate response to user input. In the future, the system will be able to ignore user input if it "wants" to. Basically, it will be able to choose to pay attention or not.
-def respond_to_user(user_input):
+# Generate response to user input. In the future, the system will be able to ignore user input if it "wants" to. Basically, it will be able to choose to pay attention or not. "Sam" as the preface is basically indicating that it was spoke outloud.
+def respond_to_user(username, user_input):
     global sub_history
-    # User: will have to be replaced with something else. Perhaps an indication that a given user is the active focus.
-    globals.history = globals.history + "\nUser: " + user_input.strip()
-    next_prompt = openai.Completion.create(
-        model=conscious,
-        temperature=0.4,
-        max_tokens=250,
-        top_p=0.5,
-        frequency_penalty=1,
-        presence_penalty=1,
-        prompt=globals.history + "\n",
-        # The system tends to spit out a lot copies of the tags, but maybe that should be normal and maybe I shouldn't cut them out.
-        stop="\n")["choices"][0]["text"].replace("Sam:", "").replace("User:", "").replace("Conscious:", "").replace("Subconscious:", "").strip()
+    global active_user
 
-    globals.history = globals.history + "\nSam: " + next_prompt
+    if active_user == username:
+        globals.history = globals.history + "\n" + username + ": " + user_input.strip()
+        next_prompt = openai.Completion.create(
+            model=conscious,
+            temperature=0.4,
+            max_tokens=250,
+            top_p=0.5,
+            frequency_penalty=1,
+            presence_penalty=1,
+            prompt=globals.history + "\n",
+            # The system tends to spit out a lot copies of the tags, but maybe that should be normal and maybe I shouldn't cut them out.
+            stop="\n")["choices"][0]["text"].strip()
 
+        globals.history = globals.history + "\nSam: " + next_prompt
+    else:
+        # The user input is "background noise." Have it processed by random partition of the subconscious.
+        partition = random.randint(0, total_partitions)
+        next_prompt = openai.Completion.create(
+            model=subconscious,
+            temperature=1,
+            max_tokens=75,
+            top_p=0.5,
+            frequency_penalty=0.5,
+            presence_penalty=0.5,
+            prompt=sub_history[partition] + "\n",
+            stop="\n")["choices"][0]["text"].strip()
+        sub_history[partition] = sub_history[partition] + "\nSubconscious: " + next_prompt
     return next_prompt
 
 # Inner dialog loop
@@ -91,8 +111,9 @@ def think(lock, websocket):
     while True:
         lock.acquire()
         step_conscious(lock)
-        # Prevent the prompt from getting too long by cutting off old chat history
-        if (len(globals.history) > 5120):
+
+        # Cut off old information when past the capacity.
+        if (len(globals.history) > physiology.history_capacity):
             loc = globals.history.index("\n")
             if (loc is not None):
                 globals.history = globals.history[loc + 1:]
@@ -105,8 +126,9 @@ def sub_think(partition, lock):
     while True:
         lock.acquire()
         step_subconscious(partition, lock)
-        # Prevent the prompt from getting too long by cutting off old chat history. Subconscious history is much shorter to keep it dynamic and save on computation.
-        if (len(sub_history[partition]) > 500):
+
+        # Cut off old information when past the capacity.
+        if (len(sub_history[partition]) > physiology.subhistory_capacity):
             loc = sub_history[partition].index("\n")
             if (loc is not None):
                 sub_history[partition] = sub_history[partition][loc + 1:]

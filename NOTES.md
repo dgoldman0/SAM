@@ -13,6 +13,7 @@ The system will be able to inject information through system notifications. Many
 
 - Switch Active User
 - Get Active User (Useful to remind AI of who they're currently speaking to)
+- Send Message To User
 
 # Parameter Tweaking
 

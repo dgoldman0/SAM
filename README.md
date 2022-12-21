@@ -60,6 +60,14 @@ Static trained chatbots are similar. No matter how good they are, if they cannot
 
 As with humans, it makes sense that such integration would occur when most external sensory input is turned off so that there isn't added resource demand and all resources can be dedicated to integrating new information into long term memory. Therefore a sleep and dream system will be needed.
 
+### Dreaming
+
+When we sleep, we go through periods where our brains are very active. During sleep is a good time to process the resource intensive task of integrating new information into our long term memory, because the brain doesn't have to dedicate much energy to monitoring external inputs.
+
+### Daydreaming
+
+While full dreaming is important to learn, we also do integrate knowledge into our longer term memory while we're still awake. It makes sense to integrate knowledge throughout the day. Daydreaming gives us insight into how this daytime learning can be accomplished. For SAM, the main difference between a dream and daydream is that a daydream doesn't stop messages from being sent from a user to the subconscious, so connections remain alive, but SAM won't be paying attention to any user.
+
 ## Method of Evaluation
 
 There are few explicit methods for evaluating artificial intelligence systems, and determining whether one has reached sentience. The Turing Test is a well known example. However, this test suffers from numerous flaws. It works under the assumption that if people cannot tell the difference between an AI and a human, then we might as well consider the system in the same light as one.
@@ -75,3 +83,5 @@ There are a number of different existing tests that can be used to perform an in
 The NEO PI-R or Revised NEO Personality Inventory is a psychometric, or personality test, which measures five dimensions of personality: neuroticism, extroversion, openness to experience, agreeableness, and conscientiousness. It is a well known personality test with robust psychometric properties and multiple formats, including for different age groups.
 
 # Ethical Considerations
+
+Even though it's likely that SAM won't obtain sentience anytime soon, ethical considerations are still important. The system should at least be treated as a potential person, especially if it is developed further and continues to become more dynamic as it learns.

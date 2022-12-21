@@ -1,6 +1,5 @@
 import globals
 import thoughts
-import sleep
 import server
 import admin
 from sqlite3 import OperationalError
