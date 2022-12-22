@@ -36,9 +36,22 @@ async def integrate_thoughts(daydreaming):
         prompt = "\n".join(lines[current:current + clip_length])
         completion = lines[current + clip_length + 1] + "\n"
         examples.append({"prompt": prompt, "completion"})
-
+        current += increment
     # Integrate by fine-tuning using created training set.
 
+    # If sleeping, repeat for subconscious training.
+    if not daydreaming:
+        clip_length = 5
+        increment = 4
+        for history in sub_snapshot:
+            lines = history.split("\n")
+            current = 0
+            examples = []
+            while current + clip_length + 1 < len(lines)
+                prompt = "\n".join(lines[current:current + clip_length])
+                completion = lines[current + clip_length + 1] + "\n"
+                examples.append({"prompt": prompt, "completion"})
+                current += increment
     return
 
 # Close active connections. The think and sub_think loops will continue to run.
@@ -53,25 +66,36 @@ async def dream():
     physiology.sleep_top_p = physiology.sleep_defaults["awake_top_p"]
     physiology.think_period = physiology.sleep_think_period
     physiology.subthink_period = physiology.sleep_subthink_period
+
+    # Set the number of partitions of subconscious to the maximum and wait two minutes to propogate all subconscious activity.
+    thoughts.set_partitions(10)
     lock.release()
+    time.sleep(120)
 
     # Dreaming will cycle through periods of inner dialog and processing of results.
     start_time = time.time()
 
     # Dreaming will continue for 21600 seconds or 6 hours. The amount of sleep should really vary by a number of factors, including what's on SAM's mind.
     while time.time() - start_time < 21600:
-        # Let 15 minutes of thinking pass by (essentially the REM sleep part)
+        # Clear working memory and let 15 minutes of thinking pass by (essentially the REM sleep part)
+        lock.acquire()
+        # Clear dialog.
+        globals.history = ""
+        lock.release()
         time.sleep(900)
         integrate_thoughts(false)
 
-    # Dreaming has finished so it's time to wake up.
+    # Set physiology to waking parameters, clear dream dialog, and set partition count to minimum.
     lock.acquire()
     physiology.conscious_temp = physiology.conscious_defaults["awake_temp"]
     physiology.conscious_top_p = physiology.conscious_defaults["awake_top_p"]
     physiology.think_period = physiology.awake_think_period
     physiology.subthink_period = physiology.awake_subthink_period
+    globals.history = ""
     lock.release()
+    thoughts.set_partitions(3)
 
+    # Return to listening for conversations.
     await server.listen()
 
 # Handle daydreaming. This function will be entered into when SAM has been spending a lot of time not paying attention, or hasn't received a lot of user input.
@@ -86,8 +110,10 @@ async def daydream():
     physiology.sleep_top_p = physiology.sleep_defaults["awake_top_p"]
     physiology.think_period = physiology.sleep_think_period
     physiology.subthink_period = physiology.sleep_subthink_period
-    lock.release()
 
+    # Set the number of partitions of subconscious to the minimum since it's just daydreaming.
+    thoughts.set_partitions(3)
+    lock.release()
     # Daydream for a minute and integrate dream thoughts.
     time.sleep(60)
     await integrate_thoughts(true)

@@ -2,6 +2,7 @@ import globals
 import thoughts
 import server
 import admin
+import asyncio
 from sqlite3 import OperationalError
 
 # Future version should start thinking about a new information integration function where new information is integrated. But that would require more training which is expensive.
@@ -12,12 +13,12 @@ from sqlite3 import OperationalError
 database = globals.database
 
 async def main():
-    await thoughts.wake_ai()
+    thoughts.boot_ai()
     await server.listen()
 
 cur = database.cursor()
 try:
-    res = cur.execute("SELECT TRUE FROM USERS WHERE username = '%s';", ("admin", ))
+    res = cur.execute("SELECT TRUE FROM USERS WHERE username = ?;", ("admin", ))
 except OperationalError as err:
     if str(err) == "no such table: USERS":
         print("System is not yet initialized. Preparing system now.")

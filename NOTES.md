@@ -1,3 +1,10 @@
+# Reserved Keywords
+
+Certain usernames will not be allowed because they are reserved keywords that have specific meaning for SAM.
+- <VOICE> indicates that the statement was spoken out-loud.
+- <CON> indicates that the statement was made as part of conscious dialog.
+- <SUB> indicates that the statement was made as part of subconscious dialog.
+
 # System Notifications (Received by SAM in response to different events)
 
 The system will be able to inject information through system notifications. Many of these notifications will be registered at the conscious level, but some may be registered at the subconscious level, if they are "background information" much the same way that people may subconsciously process background information but they might not register it consciously if they're not paying active attention.

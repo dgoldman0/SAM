@@ -2,16 +2,9 @@
 
 # Import modules that will be needed elsewhere
 
-import asyncio
-import websockets
-import openai
-import logging
-import random
-import time
-import bcrypt
-from threading import Thread
-from threading import Lock
 import sqlite3
+from threading import Lock
+import nest_asyncio
 
 # The history between active user and Sam, as well as the direct inner dialog.
 history = ""
@@ -24,3 +17,5 @@ print("Connecting to database.")
 database = sqlite3.connect("sam.db")
 
 lock = Lock()
+
+nest_asyncio.apply()
