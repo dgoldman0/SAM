@@ -95,8 +95,7 @@ async def dream():
     lock.release()
     thoughts.set_partitions(3)
 
-    # Return to listening for conversations.
-    await server.listen()
+    # Return to listening for conversations. Not sure how to do this yet. 
 
 # Handle daydreaming. This function will be entered into when SAM has been spending a lot of time not paying attention, or hasn't received a lot of user input.
 async def daydream():

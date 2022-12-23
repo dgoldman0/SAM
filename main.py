@@ -2,8 +2,10 @@ import globals
 import thoughts
 import server
 import admin
+import monitoring
 import asyncio
 from sqlite3 import OperationalError
+from threading import Thread
 
 # Future version should start thinking about a new information integration function where new information is integrated. But that would require more training which is expensive.
 # I have System Notifications. Now I need System Commands to get the AI to control things.
@@ -12,11 +14,8 @@ from sqlite3 import OperationalError
 
 database = globals.database
 
-async def main():
-    thoughts.boot_ai()
-    await server.listen()
-
 cur = database.cursor()
+
 try:
     res = cur.execute("SELECT TRUE FROM USERS WHERE username = ?;", ("admin", ))
 except OperationalError as err:
@@ -35,5 +34,10 @@ except OperationalError as err:
     else:
         raise Exception("Unknown Error")
 
-# Run main
+async def main():
+    thoughts.boot_ai()
+    server1 = await server.listen()
+    server2 = await monitoring.listen()
+    await asyncio.gather(server1.wait_closed(), server2.wait_closed())
+
 asyncio.run(main())
