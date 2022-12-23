@@ -64,7 +64,7 @@ def step_subconscious(partition):
         sub_history[partition] = sub_history[partition] + "\n<CON>: " + next_prompt
     except Exception as err:
         if str(err) == "You exceeded your current quota, please check your plan and billing details.":
-            print("Starved")
+            time.sleep(0.25) # For now just pause for a second, but in the future notify monitor and also adjust phsyiology.
 
 # One iteration of inner dialog. This method needs to be able to initiate communications with users so it needs websockets. Or it could use a log.
 def step_conscious():
@@ -95,12 +95,11 @@ def step_conscious():
             flip = random.randint(0, 1)
             if flip:
                 partition = random.randint(0, total_partitions - 1)
-                print(partition)
                 sub_history[partition] = sub_history[partition] + "\n<CON>: " + next_prompt
         # If there has been no active_user for some time, consider entering daydream state, if not in dream state.
     except Exception as err:
         if str(err) == "You exceeded your current quota, please check your plan and billing details.":
-            print("Starved")
+            time.sleep(0.25)
 
 # Generate response to user input. In the future, the system will be able to ignore user input if it "wants" to. Basically, it will be able to choose to pay attention or not. "Sam" as the preface is basically indicating that it was spoke outloud.
 def respond_to_user(username, user_input):
@@ -142,7 +141,7 @@ def respond_to_user(username, user_input):
             return "I'm starved and am unabe to respond right now. More credits are needed..."
         else:
             raise Exception("Unknown Error")
-            
+
     return response
 
 # Inner dialog loop
@@ -213,7 +212,7 @@ def set_partitions(count):
     lock.release()
 
 # Initial startup of the AI upon turning on.
-def boot_ai():
+async def boot_ai():
     # System notification to AI of wakeup. Should include various status information once I figure out what to include.
     print("AI Waking Up")
     startup_message = "<SYSTEM>: Waking up."

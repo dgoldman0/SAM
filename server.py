@@ -2,6 +2,7 @@ import globals
 import asyncio
 import websockets
 import thoughts
+import monitoring
 from threading import Thread
 
 async def authenticate_user(websocket):
@@ -44,7 +45,7 @@ async def converse(websocket):
         await websocket.send("AUTHFAIL".encode())
         websocket.close()
         return
-
+    monitoring.notify_new_chat(user['username'])
     print("Authentication Success. Waiting for messages...")
     # Handle incoming messages
     async for user_input in websocket:
@@ -66,8 +67,7 @@ async def serve(stop):
 async def listen():
     global stop
     print("Listening for chat incoming connections.")
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
+    loop = asyncio.get_event_loop()
     stop = loop.create_future()
     loop.run_until_complete(serve(stop))
 

@@ -4,41 +4,55 @@ import websockets
 import asyncio
 import thoughts
 from server import authenticate_user
-from threading import Thread
-from threading import Event
 
-# Dictionary of websocket connections and their associated events.
+# Dictionary of websocket connections and their associated events. Need to catch websocket close so that old connections can be removed.
 event_monitors = {}
-# Current value of an event.
-event_values = {}
+
+class Monitor:
+    def __aiter__(self):
+        loop = asyncio.get_event_loop()
+        self.future = loop.create_future()
+        return self
+
+    def push_event(self, event):
+        self.future.set_result(event)
+
+    async def __anext__(self):
+        await self.future
+        event = self.future.result()
+        loop = asyncio.get_event_loop()
+        self.future = loop.create_future()
+        return event
 
 # Notify all monitors that a thought has been pushed. Shouldn't need to lock because this will only be called inside a locked operation.
 def notify_thought(thought):
     for monitor in event_monitors.values():
         event_string = "THOUGHT//" + thought
-        event_values.update({monitor:event_strings})
-        monitor.set()
+        monitor.push_event(event_string)
 
 # Notify all monitors of a subconscious thought.
 def notify_subthought(partition, thought):
     for monitor in event_monitors.values():
         event_string = "SUB[" + partition + "]//" + thought
-        event_values.update({monitor:event_strings})
-        monitor.set()
+        monitor.push_event(event_string)
 
 # Notify all monitors of a change in the number of subconscious partitions.
 def notify_partition_change(old_count, new_count):
     for monitor in event_monitors.values():
         event_string = "SUB_CHANGE//" + old_count + "//" + new_count
-        event_values.update({monitor:event_strings})
-        monitor.set()
+        monitor.push_event(event_string)
+
+def notify_new_chat(username):
+    for monitor in event_monitors.values():
+        event_string = "CHAT//" + username
+        monitor.push_event(event_string)
+
 
 # Notification that resources are depleted and the system is essentially in a comatose state.
 def notify_starvation():
     for monitor in event_monitors.values():
         event_string = "HEALTH//COMATOSE"
-        event_values.update({monitor:event_strings})
-        monitor.set()
+        monitor.push_event(event_string)
 
 async def handler(websocket):
     # Use same authentication scheme as with regular server.
@@ -57,18 +71,13 @@ async def handler(websocket):
     status = "CONDITIONS:" # Will include information about total partitions, etc.
     await websocket.send(status.encode())
     # Add new event monitor, which should be removed when the websocket is closed.
-    monitor = Event()
+    monitor = Monitor()
     event_monitors.update({websocket: monitor})
-    while True:
-        await monitor
+    async for event in monitor:
         lock = globals.lock
         lock.acquire()
-        # Push event to client and reset event.
-        event = event_values.get(monitor)
         if event is not None:
             await websocket.send(("EVENT:" + event).encode())
-            del event_values[monitor]
-            monitor.clear()
         else:
             raise Exception("Monitoring value is not set.")
         lock.release()
@@ -80,7 +89,6 @@ async def serve(stop):
 async def listen():
     global stop
     print("Listening for incoming monitor connections.")
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
+    loop = asyncio.get_event_loop()
     stop = loop.create_future()
     loop.run_until_complete(serve(stop))

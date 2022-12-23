@@ -20,12 +20,17 @@ async def main():
                     response = await websocket.recv()
                     if response is not None:
                         response = response.decode()
-                        if response.startswith("CONDITIONS:"):
+                        if response.startswith("WELCOME"):
                             print("Connection established!")
-                            while True:
-                                response = await websocket.recv()
-                                if response is not None:
-                                    print("<STATUS>: " + response.decode())
+                            # Get initial status information.
+                            status = await websocket.recv()
+                            if status is not None:
+                                status = status.decode()
+                                print(status)
+                                while True:
+                                    response = await websocket.recv()
+                                    if response is not None:
+                                        print("<STATUS>: " + response.decode())
                         else:
                             print("Authentication Failed. Try again...")
         return
