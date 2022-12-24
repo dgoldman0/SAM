@@ -65,6 +65,11 @@ def notify_new_chat(username):
         event_string = "CHAT//" + username
         monitor.push_event(event_string)
 
+def notify_chat_closed(username):
+    for monitor in event_monitors.values():
+        event_string = "CHATT//" + username
+        monitor.push_event(event_string)
+
 # Notification that resources are depleted and the system is essentially in a comatose state.
 def notify_starvation():
     for monitor in event_monitors.values():

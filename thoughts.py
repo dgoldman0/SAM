@@ -112,11 +112,7 @@ def step_conscious():
             monitoring.notify_starvation()
             time.sleep(0.25)
 
-# Push system notification to SAM
-def push_system_message(message):
-    push_system_message(message, False)
-
-def push_system_message(message, subconscious):
+def push_system_message(message, subconscious = False):
     globals.lock.acquire()
     if subconscious:
         # Subconscious system notifications always go to partition 0.
