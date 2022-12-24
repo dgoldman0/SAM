@@ -19,11 +19,12 @@ conscious_top_p = conscious_defaults["awake_top_p"]
 subconscious_temp = subconscious_defaults["awake_temp"]
 subconscious_top_p = subconscious_defaults["awake_top_p"]
 
+# These rates might need to eb and flow within their parameter ranges. There can be long pauses beteeen thoughts. Another possibiltiy is that conscious thought rate will already depend on how many subconscious partitions there are. That might be enough modulation.
 think_period = awake_think_period
 subthink_period = awake_subthink_period
 
-max_history_capacity = 5120
-max_subhistory_capacity = 640
+max_history_capacity = 2560
+max_subhistory_capacity = 320
 
 history_capacity = max_history_capacity
 subhistory_capacity = max_subhistory_capacity

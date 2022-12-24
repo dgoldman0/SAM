@@ -11,6 +11,8 @@ The system will be able to inject information through system notifications. Many
 
 ## Notification Types
 
+System notifications will be in language form, as SAM should be able to understand them.
+
 - Waking Up
 - User Connected
 - User Disconnected
@@ -18,6 +20,9 @@ The system will be able to inject information through system notifications. Many
 
 # System Commands (Ways for SAM to interact with the system and also beyond)
 
+Unlike with system notifications, commands issued by SAM will have to be in a specific format.
+
+- Help command, which will inform SAM of the different commands available if it forgets. 
 - Switch Active User
 - Get Active User (Useful to remind AI of who they're currently speaking to)
 - Send Message To User

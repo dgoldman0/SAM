@@ -1,3 +1,6 @@
+import random
+import math
+
 import globals
 import server
 import time
@@ -5,8 +8,19 @@ import thoughts
 
 # Sleep will go through multiple phases of "dreaming" to generate a training set followed by actual training. It's hard to guess how much sleep will actually be needed to properly integrate new knowledge. Testing is the only way to really figure this out.
 
-# Interrupt the sleep cycle: used when there's some important external stimulus, etc.
+# Working on modifying from https://stackoverflow.com/questions/14427531/how-to-split-a-list-into-n-random-but-min-sized-chunks
+# Divides a list, so just change to dividing a string.
+def divide_history(history, num, minSize):
+    chunks = []
+    for i in xrange(num-1):
+        maxSize = math.ceil(val/(num-len(chunks)))
+        newSize = random.randint(minSize, maxSize)
+        val = val - newSize
+        chunks.append(newSize)
+    chunks.append(val)
+    return chunks
 
+# Interrupt the sleep cycle: used when there's some important external stimulus, etc.
 async def interrupt_sleep():
     return
 
@@ -24,34 +38,39 @@ async def integrate_thoughts(daydreaming):
 
     # Might be necessary to clean each line, but hopefully not.
 
-    # Right now these are fixed parameters but depending on physiology they should be allowed to change a bit.
-    clip_length = 10
-    increment = 5
+    # Right now these are fixed parameters but depending on physiology they should be allowed to change a bit. Very long clips make for smaller training sets. Smaller clips give more training data, but too small and it won't be able to capture detail.
+    # Makes more sense maybe instead of breaking things up by line, breaking them up by blocks of random length. Split in 101 blocks for 100 completion:prompt pairs. Repeat 10 times for 1,000 prompts.
+    clip_length = 5
+    increment = 4
     if daydreaming:
-        clip_length = 5
-        increment = 4
+        clip_length = 10
+        increment = 5
     current = 0
     examples = []
-    while current + clip_length + 1 < len(lines)
+
+    # Change this to use divide_history
+    while current + 2 * clip_length + 1 < len(lines)
         prompt = "\n".join(lines[current:current + clip_length])
-        completion = lines[current + clip_length + 1] + "\n"
+        completion = lines[current + clip_length + 1:current + 2 * clip_length + 1] + "\n"
         examples.append({"prompt": prompt, "completion"})
         current += increment
-    # Integrate by fine-tuning using created training set.
 
     # If sleeping, repeat for subconscious training.
     if not daydreaming:
-        clip_length = 5
-        increment = 4
+        clip_length = 10
+        increment = 5
         for history in sub_snapshot:
             lines = history.split("\n")
             current = 0
             examples = []
-            while current + clip_length + 1 < len(lines)
+            while current + 2 * clip_length + 1 < len(lines)
                 prompt = "\n".join(lines[current:current + clip_length])
-                completion = lines[current + clip_length + 1] + "\n"
+                completion = lines[current + clip_length + 1:current + 2 * clip_length + 1] + "\n"
                 examples.append({"prompt": prompt, "completion"})
                 current += increment
+
+    # Integrate by fine-tuning using created training set.
+
     return
 
 # Close active connections. The think and sub_think loops will continue to run.
@@ -95,7 +114,7 @@ async def dream():
     lock.release()
     thoughts.set_partitions(3)
 
-    # Return to listening for conversations. Not sure how to do this yet. 
+    # Return to listening for conversations. Not sure how to do this yet.
 
 # Handle daydreaming. This function will be entered into when SAM has been spending a lot of time not paying attention, or hasn't received a lot of user input.
 async def daydream():

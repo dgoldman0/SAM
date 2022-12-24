@@ -4,24 +4,36 @@ import websockets
 import asyncio
 import thoughts
 from server import authenticate_user
+from collections import deque
 
 # Dictionary of websocket connections and their associated events. Need to catch websocket close so that old connections can be removed.
 event_monitors = {}
 
 class Monitor:
     def __aiter__(self):
+        self.queue = deque()
         loop = asyncio.get_event_loop()
         self.future = loop.create_future()
         return self
 
     def push_event(self, event):
-        self.future.set_result(event)
+        self.queue.append(event)
+        if not self.future.done():
+            self.future.set_result(event)
 
     async def __anext__(self):
-        await self.future
-        event = self.future.result()
-        loop = asyncio.get_event_loop()
-        self.future = loop.create_future()
+        event = None
+        try:
+            # Check  if there's something already in the queue.
+            event = self.queue.popleft()
+        except Exception as err:
+            # If not, wait for something to be added.
+            await self.future
+            event = self.queue.popleft()
+        # Might be able to just put this inside the exception clause.
+        if self.future.done():
+            loop = asyncio.get_event_loop()
+            self.future = loop.create_future()
         return event
 
 # Notify all monitors that a thought has been pushed. Shouldn't need to lock because this will only be called inside a locked operation.
@@ -36,6 +48,12 @@ def notify_subthought(partition, thought):
         event_string = "SUB[" + partition + "]//" + thought
         monitor.push_event(event_string)
 
+# Notify all monitors about a system message
+def notify_system_message(message):
+    for monitor in event_monitors.values():
+        event_string = "SYSTEM//" + message
+        monitor.push_event(event_string)
+
 # Notify all monitors of a change in the number of subconscious partitions.
 def notify_partition_change(old_count, new_count):
     for monitor in event_monitors.values():
@@ -46,7 +64,6 @@ def notify_new_chat(username):
     for monitor in event_monitors.values():
         event_string = "CHAT//" + username
         monitor.push_event(event_string)
-
 
 # Notification that resources are depleted and the system is essentially in a comatose state.
 def notify_starvation():
@@ -74,13 +91,13 @@ async def handler(websocket):
     monitor = Monitor()
     event_monitors.update({websocket: monitor})
     async for event in monitor:
-        lock = globals.lock
-        lock.acquire()
         if event is not None:
-            await websocket.send(("EVENT:" + event).encode())
+            try:
+                await websocket.send(("EVENT:" + event).encode())
+            except websockets.ConnectionClosed as exc:
+                del event_monitors[websocket]
         else:
             raise Exception("Monitoring value is not set.")
-        lock.release()
 
 async def serve(stop):
     async with websockets.serve(handler, "localhost", 9382):
