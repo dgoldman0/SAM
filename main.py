@@ -35,6 +35,6 @@ except OperationalError as err:
         raise Exception("Unknown Error")
 
 async def main():
-    await asyncio.gather(thoughts.boot_ai(), server.listen(), monitoring.listen())
+    await asyncio.gather(thoughts.boot_ai(), server.listen())
 
 asyncio.run(main())

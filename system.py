@@ -6,6 +6,7 @@ import server
 
 # Should only occur within lock
 def handle_system_command(command):
+    print("COMMAND: " + command)
     if command == "HELP":
         thoughts.push_system_message("Use COMMAND:HELP GENERAL to list general information. Use COMMAND:HELP USERS to get help with user information. Use COMMAND:HELP INFO to get a list of commands accessing external information sources.")
     elif command == "HELP GENERAL":

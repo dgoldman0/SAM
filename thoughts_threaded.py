@@ -27,14 +27,14 @@ total_partitions = 0
 
 partition_controls = []
 
-def set_active_user(username):
+async def set_active_user(username):
     active_user = username
     active_last_changed = time.time()
 
-def step_subconscious():
+# Generate a subconscious thought.
+def step_subconscious(partition):
     global sub_history
 
-    partition = random.randint(0, total_partitions - 1)
     # Get next completion from the subconscious based on existing subconscious dialogue. Maybe add randomness by seeding with random thoughts.
     try:
         next_prompt = openai.Completion.create(
@@ -48,14 +48,6 @@ def step_subconscious():
             stop="\n")["choices"][0]["text"].strip()
 
         sub_history[partition] = sub_history[partition] + "\n" + next_prompt
-        if (len(sub_history[partition]) > physiology.subhistory_capacity):
-            # If capacity of a partition is reached, spawn a new one.
-            if total_partitions < physiology.max_partitions: add_new_partition()
-            try:
-                loc = sub_history[partition].index("\n")
-                sub_history[partition] = sub_history[partition][loc + 1:]
-            except Exception:
-                pass
         monitoring.notify_subthought(partition, next_prompt)
 
         if next_prompt.startswith("COMMAND:"):
@@ -84,7 +76,6 @@ def step_subconscious():
             time.sleep(0.25) # For now just pause for a second, but in the future notify monitor and also adjust phsyiology.
         else:
             print(err)
-
 # One iteration of inner dialog. This method needs to be able to initiate communications with users so it needs websockets. Or it could use a log.
 def step_conscious():
     global sub_history
@@ -135,6 +126,7 @@ def step_conscious():
         if str(err) == "You exceeded your current quota, please check your plan and billing details.":
             print("Starved")
             monitoring.notify_starvation()
+            time.sleep(0.25)
         else:
             print(str(err))
 
@@ -149,7 +141,6 @@ def push_system_message(message, subconscious = False):
 
 # Generate response to user input. In the future, the system will be able to ignore user input if it "wants" to. Basically, it will be able to choose to pay attention or not. "Sam" as the preface is basically indicating that it was spoke outloud.
 # Maybe make use of confidence estimates to see if this completion should actually be said outloud or pushed to monologue.
-# Maybe on chat close, or even just periodically, push a summary to the conscious layer.
 def respond_to_user(user, user_input):
     global active_user # Rather than one active user the system can decide on having multiple active users.
     username = user['username']
@@ -190,18 +181,13 @@ def respond_to_user(user, user_input):
     user['history'] = user['history'] + "\n" + user_input
     return response
 
-# Totally have to rewrite these next two methods to get it to work without threads.
-def process_layers():
-    print("Thought process starting...")
+# Inner dialog loop
+def think(lock):
+    global history
     while True:
-        globals.lock.acquire()
-        step_subconscious()
-        time.sleep(physiology.subthink_period)
-        globals.lock.release()
+        lock.acquire()
 
-        globals.lock.acquire()
         step_conscious()
-        globals.lock.release()
 
         # Cut off old information when past the capacity.
         if (len(globals.history) > physiology.history_capacity):
@@ -210,13 +196,14 @@ def process_layers():
                 globals.history = globals.history[loc + 1:]
             except Exception:
                 pass
+
+        lock.release()
         time.sleep(physiology.think_period)
 
 # Subconscious to conscious interaction loops
-def add_new_partition():
+def run_new_partition(control, lock):
     global sub_history
     global total_partitions
-    print("Adding new partition #" + str(total_partitions))
     initial_prompt = ""
     if total_partitions == 0:
         prompt_options = ["Tell me a story.", "Pick a topic and talk about it."]
@@ -226,7 +213,8 @@ def add_new_partition():
     else:
         # Partition zero is the system interface partition so that's where this should go.
         initial_prompt = "<SYSTEM>: Waking up. System notifications will arrive in the form <SYSTEM>:Notification message. You can issue system commands by starting the line with COMMAND:, for instance, use COMMAND:HELP to get a list of system commands. There are a few other special symbols. <USERNAME>: at the start of a line indicates a chat message notification where USERNAME is replaced with their actual username. Use //USERNAME: at the beginning of a line to indicate that you want to reply to that user. The system will inform you if that user is not online."
-
+    lock.acquire()
+    print("Starting new partition #" + str(total_partitions))
     partition = total_partitions
     # Generate initial material for subconscious thought by utilizing openai to generate some text.
     try:
@@ -248,9 +236,31 @@ def add_new_partition():
         else:
             raise err
 
+#    sub_history.append(globals.history)
     total_partitions += 1
+    lock.release()
+    while True:
+        lock.acquire()
+        step_subconscious(partition)
 
-# Kills the most recent partition: Not fixed
+        # Cut off old information when past the capacity.
+        if (len(sub_history[partition]) > physiology.subhistory_capacity):
+            # If capacity of a partition is reached, spawn a new one.
+            if total_partitions < physiology.max_partitions:
+                t = Thread(target=run_new_partition, args=[control, lock], daemon=True)
+                t.start()
+            try:
+                loc = sub_history[partition].index("\n")
+                sub_history[partition] = sub_history[partition][loc + 1:]
+            except Exception:
+                pass
+
+        lock.release()
+        time.sleep(physiology.subthink_period)
+        if control.is_set():
+            break
+
+# Kills the most recent partition
 def kill_partition(lock):
     lock.acquire()
     sub_history.pop().set("kill")
@@ -269,7 +279,8 @@ def set_partitions(count):
     if total_partitions < count:
         needed = count - total_partitions
         for i in range(needed):
-            add_new_partition()
+            t = Thread(target=run_new_partition, args=[control, lock], daemon=True)
+            t.start()
     elif total_partitions > count:
         while total_partitions > count:
             kill_partition(lock)
@@ -281,7 +292,17 @@ async def boot_ai():
     print("AI Waking Up")
     # Need to give the system some basic information, but not sure how this will work after each dream cycle. This area will need significant work.
 
-    add_new_partition()
-    add_new_partition()
-    t = Thread(target=process_layers, args=[], daemon=True)
+    # Begin inner dialog
+    t = Thread(target=think, args=[globals.lock], daemon=True)
+    print("Starting Inner Dialog")
+    t.start()
+
+    # Start first partition for subconscious.
+    control = Event() # Used to stop the partition when reducing number of partitions.
+    partition_controls.append(control)
+    t = Thread(target=run_new_partition, args=[control, globals.lock], daemon=True)
+    t.start()
+    control = Event()
+    partition_controls.append(control)
+    t = Thread(target=run_new_partition, args=[control, globals.lock], daemon=True)
     t.start()

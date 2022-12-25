@@ -40,3 +40,5 @@ There are a lot of issues that I still haven't figured out.
 # Notes
 
 There's still a lot that I'm not sure about when it comes to learning/dreaming. One thing that might make sense is to have a separate model for chat vs internal dialog, and maybe even subconscious. That's maintaining and updating three different models though.
+
+I also can't get async and threading to work well together. I might have to really scrap the threaded layering and partition system and replace it with a single method that goes through them. One option is rather than trying to get all subconscious partitions to fight each other, randomly select one to trigger. 
