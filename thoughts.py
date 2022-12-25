@@ -180,8 +180,8 @@ def respond_to_user(user, user_input):
     global active_user # Rather than one active user the system can decide on having multiple active users.
     username = user['username']
     response = ""
+    # Maybe only do the last segment of the global history so it doesn't overpower.
     history = globals.history + "\n" + user['history'] +  "\n" + "<" + username + ">" + ":" + user_input
-    globals.history += "\n" + "<" + username + ">" + ":" + user_input
     try:
         # For now, just keep all messages pushed to conscious.
         if True:
@@ -190,10 +190,11 @@ def respond_to_user(user, user_input):
                 temperature=physiology.conscious_temp,
                 max_tokens=physiology.userreply_tokens,
                 top_p=physiology.conscious_temp,
-                frequency_penalty=0.2,
-                presence_penalty=0.2,
-                prompt=history, stop = ".")["choices"][0]["text"].strip()
+                frequency_penalty=0.1,
+                presence_penalty=0.1,
+                prompt=history)["choices"][0]["text"].strip()
 
+            globals.history += "\n" + "<" + username + ">" + ":" + user_input
             globals.history += ("\n" + response)
         else:
             # The user input is "background noise." Have it processed by random partition of the subconscious.
@@ -202,19 +203,21 @@ def respond_to_user(user, user_input):
                 model=subconscious,
                 temperature=1,
                 max_tokens=physiology.conscious_tokens,
-                top_p=0.5,
-                frequency_penalty=0.5,
-                presence_penalty=0.5,
+                top_p=1,
+                frequency_penalty=0.1,
+                presence_penalty=0.1,
                 prompt=history)["choices"][0]["text"].strip()
 
+            sub_history[partition] += ("\n" + "<" + username + ">" + ":" + user_input)
             sub_history[partition] += ("\n" + response)
+        user['history'] = user['history'] + "\n" + user_input
+        # Need to slice off old history as with other histories.
     except Exception as err:
         if str(err) == "You exceeded your current quota, please check your plan and billing details.":
             return "I'm starved and am unabe to respond right now. More credits are needed..."
         else:
             print(err)
 
-    user['history'] = user['history'] + "\n" + user_input
     return response
 
 # Totally have to rewrite these next two methods to get it to work without threads.
