@@ -10,12 +10,14 @@ import physiology
 import monitoring
 import system
 
+# Maybe replace threading with aioschedule if possible.
+
 sub_history = globals.sub_history
 
 # Good to test code with the super cheap basic models, at least to check for errors. In the final version, the conscious and subconscious models might be different from each other to allow the inner workings of SAM's mind to be different from the conscious workings. The most recent trained model names will also have to be obtained.
 
-conscious = "ada"
-subconscious = "ada"
+conscious = "text-davinci-003"
+subconscious = "text-davinci-003"
 
 # The current user that SAM is listening to, if any, and set the time at which it was changed.
 active_user = ""
@@ -42,11 +44,11 @@ def step_subconscious(partition):
             top_p=physiology.subconscious_top_p,
             frequency_penalty=0.5,
             presence_penalty=0.5,
-            prompt=globals.history + "\n" + sub_history[partition] + "\n",
+            prompt=sub_history[partition],
             stop="\n")["choices"][0]["text"].strip()
 
-        sub_history[partition] = sub_history[partition] + "\n<SUB>:" + next_prompt
-        notify_subthought(partition, next_prompt)
+        sub_history[partition] = sub_history[partition] + "\n" + next_prompt
+        monitoring.notify_subthought(partition, next_prompt)
         # Get next completion for the conscious dialog, using subconscious history as the prompt (subconscious injecting itself into consciousness)
         next_prompt = openai.Completion.create(
             model=conscious,
@@ -55,38 +57,43 @@ def step_subconscious(partition):
             top_p=physiology.conscious_top_p,
             frequency_penalty=1,
             presence_penalty=1,
-            prompt=globals.history + "\n" + sub_history[partition] + "\n",
+            prompt=globals.history + "\n" + sub_history[partition],
             stop="\n")["choices"][0]["text"].strip()
 
-        globals.history = globals.history + "\n<CON>:" + next_prompt
-        monitoring.notify_thought(next_prompt)
-        sub_history[partition] = sub_history[partition] + "\n<CON>:" + next_prompt
+        # Only register every other time.
+        flip = random.randint(0, 1)
+        if flip:
+            globals.history = globals.history + "\n" + next_prompt
+            monitoring.notify_thought(next_prompt)
+        sub_history[partition] = sub_history[partition] + "\n" + next_prompt
     except Exception as err:
         if str(err) == "You exceeded your current quota, please check your plan and billing details.":
             monitoring.notify_starvation()
             time.sleep(0.25) # For now just pause for a second, but in the future notify monitor and also adjust phsyiology.
-
+        else:
+            print(err)
 # One iteration of inner dialog. This method needs to be able to initiate communications with users so it needs websockets. Or it could use a log.
 def step_conscious():
-    global history
     global sub_history
+    global count
+    global total_partitions
     try:
         next_prompt = openai.Completion.create(
             model=conscious,
             temperature=physiology.conscious_temp,
-            max_tokens=125,
+            max_tokens=256,
             top_p=physiology.conscious_top_p,
-            frequency_penalty=1,
-            presence_penalty=1,
-            prompt=globals.history + "\n",
-            stop="\n")["choices"][0]["text"].strip()
+            frequency_penalty=0,
+            presence_penalty=0,
+            prompt=globals.history)["choices"][0]["text"].strip()
 
-        globals.history = globals.history + "\n<CON>:" + next_prompt
+        globals.history += ("\n:" + next_prompt)
+        print("<CON>:" + next_prompt)
         monitoring.notify_thought(next_prompt)
 
         # Check if this message should be spoken out loud.
-        if next_prompt.startswith("VOICE//"):
-            remainder = next_prompt[7:]
+        if next_prompt.startswith("//"):
+            remainder = next_prompt[2:]
             try:
                 loc = remainder.index(":")
                 username = remainder[:loc]
@@ -96,53 +103,61 @@ def step_conscious():
                 # Invalid
                 pass
         elif next_prompt.startswith("COMMAND:"):
-            command = next_prompt[6:]
+            command = next_prompt[8:]
             system.handle_system_command(command)
+        elif next_prompt.startswith("<SYSTEM>"):
+            push_system_message("<SYSTEM> at the start of a line indicates a system notice to you. Did you mean to start the line with that?", True)
+        try:
+            # Check if there's a COMMAND: anywhere in the reply and let SAM know subconsciously that to work, COMMAND: has to be at the beginning of the reply.
+            next_prompt.index("COMMAND:")
+            push_system_message("COMMAND: must be at the start of a reply to be registered by the system.", True)
+        except Exception:
+            pass
 
         if total_partitions > 1:
             # Flip to see if the conscious thought should be added to the subconscious log.
             flip = random.randint(0, 1)
             if flip:
                 partition = random.randint(0, total_partitions - 1)
-                sub_history[partition] = sub_history[partition] + "\n<CON>:" + next_prompt
+                sub_history[partition] = sub_history[partition] + "\n:" + next_prompt
         # If there has been no active_user for some time, consider entering daydream state, if not in dream state.
     except Exception as err:
         if str(err) == "You exceeded your current quota, please check your plan and billing details.":
-            print("Starving")
+            print("Starved")
             monitoring.notify_starvation()
             time.sleep(0.25)
+        else:
+            print(str(err))
 
 def push_system_message(message, subconscious = False):
-    globals.lock.acquire()
+    global sub_history
     if subconscious:
         # Subconscious system notifications always go to partition 0.
         sub_history[0] += "\n<SYSTEM>:" + message
     else:
-        history += "\n<SYSTEM>: " + message
+        globals.history += "\n<SYSTEM>: " + message
     monitoring.notify_system_message(message)
-    globals.lock.release()
 
 # Generate response to user input. In the future, the system will be able to ignore user input if it "wants" to. Basically, it will be able to choose to pay attention or not. "Sam" as the preface is basically indicating that it was spoke outloud.
-def respond_to_user(username, user_input):
-    global sub_history
+# Maybe there should be a separate user history.
+def respond_to_user(user, user_input):
     global active_user
-
+    username = user['username']
     response = ""
+    user['history'] = user['history'] + "\n" + "<" + username + ">" + ":" + user_input
+    history = globals.history + "\n" + user['history']
     try:
         if active_user == username:
-            globals.history = globals.history + "\n" + "<" + username + ">" + ": " + user_input.strip()
-            next_prompt = openai.Completion.create(
+            response = openai.Completion.create(
                 model=conscious,
                 temperature=physiology.conscious_temp,
                 max_tokens=250,
                 top_p=physiology.conscious_temp,
                 frequency_penalty=1,
                 presence_penalty=1,
-                prompt=globals.history + "\n",
-                # The system tends to spit out a lot copies of the tags, but maybe that should be normal and maybe I shouldn't cut them out.
-                stop="\n")["choices"][0]["text"].strip()
+                prompt=history)["choices"][0]["text"].strip()
 
-            globals.history = globals.history + "\n<VOICE//" + username + ">: " + next_prompt
+            globals.history += ("\n" + response)
         else:
             # The user input is "background noise." Have it processed by random partition of the subconscious.
             partition = random.randint(0, total_partitions - 1)
@@ -153,16 +168,16 @@ def respond_to_user(username, user_input):
                 top_p=0.5,
                 frequency_penalty=0.5,
                 presence_penalty=0.5,
-                prompt=sub_history[partition] + "\n",
-                stop="\n")["choices"][0]["text"].strip()
+                prompt=history)["choices"][0]["text"].strip()
 
-            sub_history[partition] = sub_history[partition] + "\<SUB>:" + respose
+            sub_history[partition] += ("\n" + response)
     except Exception as err:
         if str(err) == "You exceeded your current quota, please check your plan and billing details.":
             return "I'm starved and am unabe to respond right now. More credits are needed..."
         else:
-            raise Exception("Unknown Error")
+            print(err)
 
+    user['history'] = user['history'] + "\n" + user_input
     return response
 
 # Inner dialog loop
@@ -190,12 +205,31 @@ def run_new_partition(control, lock):
     global total_partitions
     lock.acquire()
     partition = total_partitions
-    sub_history.append("")
+    # Generate initial material for subconscious thought by utilizing openai to generate some text.
+    try:
+        story = openai.Completion.create(
+            model=conscious,
+            temperature=physiology.conscious_temp,
+            max_tokens=256,
+            top_p=physiology.conscious_top_p,
+            frequency_penalty=0,
+            presence_penalty=0,
+            prompt="Tell me a story.")["choices"][0]["text"].strip()
+        sub_history.append(story)
+    except Exception as err:
+        if str(err) == "You exceeded your current quota, please check your plan and billing details.":
+            print("Starved")
+            monitoring.notify_starvation()
+            time.sleep(0.25)
+            sub_history.append("")
+        else:
+            raise err
+
+#    sub_history.append(globals.history)
     total_partitions += 1
     lock.release()
     while True:
         lock.acquire()
-
         step_subconscious(partition)
 
         # Cut off old information when past the capacity.
@@ -222,7 +256,6 @@ def kill_partition(lock):
 # Set the number of partitions in the subconscious. Minimum is 3 and maximum is 10. If new ones are needed, they start blank. If the number needs to be decreased, the last one is stopped.
 def set_partitions(count):
     lock = globals.lock
-
     if count > 10 and count < 3:
         raise Exception("Invalid number of partitions (must be between 3 and 10).")
 
@@ -243,17 +276,15 @@ async def boot_ai():
     # System notification to AI of wakeup. Should include various status information once I figure out what to include.
     print("AI Waking Up")
     # Need to give the system some basic information, but not sure how this will work after each dream cycle. This area will need significant work.
-    startup_message = "<SYSTEM>: Waking up. System notifications will arrive in the form <SYSTEM>:Notification message. You can issue system commands by starting the line with COMMAND:, for instance, use COMMAND:HELP to get a list of system commands. There are a few other special symbols. <CON>: indicates an internal thought and <USERNAME>: is chat messages notification where USERNAME is replaced with their actual username. <VOICE//USERNAME> is a notice that you spoke to a given user. You can also include VOICE//USERNAME: at the start of your thought to choose to speak to that user. The system will inform you if that user was not online."
+    startup_message = "<SYSTEM>: Waking up. System notifications will arrive in the form <SYSTEM>:Notification message. You can issue system commands by starting the line with COMMAND:, for instance, use COMMAND:HELP to get a list of system commands. There are a few other special symbols. <USERNAME>: at the start of a line indicates a chat message notification where USERNAME is replaced with their actual username. Use //USERNAME: at the beginning of a line to indicate that you want to reply to that user. The system will inform you if that user is not online."
     globals.history = startup_message
-
     # Begin inner dialog
-    globals.lock.acquire()
     t = Thread(target=think, args=[globals.lock], daemon=True)
     print("Starting Inner Dialog")
     t.start()
 
     # Start three partitions of subconscious dialog after the user replies, one at a time. It would be better if the number of partitions is variable. A large number would indicate deep contemplation, and would be more resource intensive. The fatique feature would have to limit the number of partitions, which would also interestingly enough result in things like brain fog. Though the hope is to generally have enough resources to avoid this issue.
-    for partition in range(3):
+    for partition in range(1):
         # Wait three seconds to start each partition to give time for inner dialog to propogate.
         time.sleep(3)
         control = Event()
@@ -261,4 +292,3 @@ async def boot_ai():
         partition_controls.append(control)
         print("Starting Subconscious Partition #" + str(partition))
         t.start()
-    globals.lock.release()

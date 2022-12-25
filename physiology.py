@@ -3,7 +3,7 @@
 # Control over physiology will occur on the subconscious level.
 
 # Default values for openai
-conscious_defaults = {"awake_temp": 0.5, "awake_top_p": 0.7, "sleep_temp": 1, "sleep_top_p": 1}
+conscious_defaults = {"awake_temp": 0.7, "awake_top_p": 1, "sleep_temp": 1, "sleep_top_p": 1}
 # Need to revise
 subconscious_defaults = {"awake_temp": 0.5, "awake_top_p": 0.7, "sleep_temp": 1, "sleep_top_p": 1}
 
