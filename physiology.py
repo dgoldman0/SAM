@@ -8,7 +8,7 @@ conscious_defaults = {"awake_temp": 0.7, "awake_top_p": 1, "sleep_temp": 1, "sle
 subconscious_defaults = {"awake_temp": 0.5, "awake_top_p": 0.7, "sleep_temp": 1, "sleep_top_p": 1}
 
 awake_think_period = 2
-awake_subthink_period = 6
+awake_subthink_period = 2
 
 sleep_think_period = 0.5
 sleep_subthink_period = 1.5

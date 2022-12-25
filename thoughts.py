@@ -33,6 +33,7 @@ async def set_active_user(username):
 
 # Generate a subconscious thought.
 def step_subconscious(partition):
+    print(partition)
     global sub_history
 
     # Get next completion from the subconscious based on existing subconscious dialogue. Maybe add randomness by seeding with random thoughts.
@@ -48,12 +49,11 @@ def step_subconscious(partition):
             stop="\n")["choices"][0]["text"].strip()
 
         sub_history[partition] = sub_history[partition] + "\n" + next_prompt
-        print("<SUB[" + str(partition) + "]>:" + next_prompt)
         monitoring.notify_subthought(partition, next_prompt)
 
-        # 50% chance of propogating to surface thought. This will vary depending on physiology in the future.
-        flip = random.randint(0, 1)
-        if flip:
+        # 33% chance of propogating to surface thought. This will vary depending on physiology in the future.
+        flip = random.randint(0, 3)
+        if flip == 0:
             globals.history = globals.history + "\n" + next_prompt
             monitoring.notify_thought(next_prompt)
     except Exception as err:
@@ -83,10 +83,7 @@ def step_conscious():
             prompt=globals.history)["choices"][0]["text"].strip()
 
         globals.history += ("\n:" + next_prompt)
-        if len(next_prompt) < 20:
-            print("<CON>:" + next_prompt)
-        else:
-            print("<CON>:" + next_prompt[0:20])
+        print("<CON>:" + next_prompt)
         monitoring.notify_thought(next_prompt)
 
         # Check for special information in response. This might best go in its own method.
@@ -120,7 +117,6 @@ def step_conscious():
             flip = random.randint(0, 1)
             if flip:
                 partition = random.randint(0, total_partitions - 1)
-                print("Pushing to partition " + str(partition))
                 sub_history[partition] = sub_history[partition] + "\n:" + next_prompt
         # If there has been no active_user for some time, consider entering daydream state, if not in dream state.
     except Exception as err:
@@ -147,7 +143,7 @@ def respond_to_user(user, user_input):
     username = user['username']
     response = ""
     user['history'] = user['history'] + "\n" + "<" + username + ">" + ":" + user_input
-    history = globals.history + "\n" + user['history']
+    history = user['history'] + globals.history + "\n" + "<" + username + ">" + ":" + user_input
     try:
         if active_user == username:
             response = openai.Completion.create(
@@ -210,10 +206,10 @@ def run_new_partition(control, lock):
     # Generate initial material for subconscious thought by utilizing openai to generate some text.
     try:
         story = openai.Completion.create(
-            model=conscious,
-            temperature=physiology.conscious_temp,
+            model=subconscious,
+            temperature=physiology.subconscious_temp,
             max_tokens=256,
-            top_p=physiology.conscious_top_p,
+            top_p=physiology.subconscious_top_p,
             frequency_penalty=0,
             presence_penalty=0,
             prompt="Tell me a story.")["choices"][0]["text"].strip()
@@ -243,7 +239,7 @@ def run_new_partition(control, lock):
                 pass
 
         lock.release()
-        time.sleep(6)
+        time.sleep(physiology.subthink_period)
         if control.is_set():
             break
 
@@ -286,10 +282,10 @@ async def boot_ai():
     t.start()
 
     # Start three partitions of subconscious dialog after the user replies, one at a time. It would be better if the number of partitions is variable. A large number would indicate deep contemplation, and would be more resource intensive. The fatique feature would have to limit the number of partitions, which would also interestingly enough result in things like brain fog. Though the hope is to generally have enough resources to avoid this issue.
-    for partition in range(2):
+    for partition in range(3):
         # Wait three seconds to start each partition to give time for inner dialog to propogate.
-        time.sleep(3)
-        control = Event()
+        time.sleep(2)
+        control = Event() # Might not do anything anymore.
         t = Thread(target=run_new_partition, args=[control, globals.lock], daemon=True)
         partition_controls.append(control)
         print("Starting Subconscious Partition #" + str(partition))
