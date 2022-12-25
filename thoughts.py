@@ -33,7 +33,6 @@ async def set_active_user(username):
 
 # Generate a subconscious thought.
 def step_subconscious(partition):
-    print(partition)
     global sub_history
 
     # Get next completion from the subconscious based on existing subconscious dialogue. Maybe add randomness by seeding with random thoughts.
@@ -52,8 +51,8 @@ def step_subconscious(partition):
         monitoring.notify_subthought(partition, next_prompt)
 
         # 33% chance of propogating to surface thought. This will vary depending on physiology in the future.
-        flip = random.randint(0, 3)
-        if flip == 0:
+        roll = random.randint(0, 3)
+        if roll == 0:
             globals.history = globals.history + "\n" + next_prompt
             monitoring.notify_thought(next_prompt)
     except Exception as err:
@@ -83,7 +82,7 @@ def step_conscious():
             prompt=globals.history)["choices"][0]["text"].strip()
 
         globals.history += ("\n:" + next_prompt)
-        print("<CON>:" + next_prompt)
+        print("THOUGHT")
         monitoring.notify_thought(next_prompt)
 
         # Check for special information in response. This might best go in its own method.
@@ -151,8 +150,8 @@ def respond_to_user(user, user_input):
                 temperature=physiology.conscious_temp,
                 max_tokens=250,
                 top_p=physiology.conscious_temp,
-                frequency_penalty=1,
-                presence_penalty=1,
+                frequency_penalty=0.5,
+                presence_penalty=0.5,
                 prompt=history)["choices"][0]["text"].strip()
 
             globals.history += ("\n" + response)
@@ -201,7 +200,12 @@ def think(lock):
 def run_new_partition(control, lock):
     global sub_history
     global total_partitions
+    prompt_options = ["Tell me a story.", "Pick a topic and talk about it."]
+    roll = random.randint(0, len(prompt_options) - 1)
+    initial_prompt = prompt_options[roll]
+    print(initial_prompt)
     lock.acquire()
+    print("Starting new partition #" + str(total_partitions))
     partition = total_partitions
     # Generate initial material for subconscious thought by utilizing openai to generate some text.
     try:
@@ -212,7 +216,7 @@ def run_new_partition(control, lock):
             top_p=physiology.subconscious_top_p,
             frequency_penalty=0,
             presence_penalty=0,
-            prompt="Tell me a story.")["choices"][0]["text"].strip()
+            prompt=initial_prompt)["choices"][0]["text"].strip()
         sub_history.append(story)
     except Exception as err:
         if str(err) == "You exceeded your current quota, please check your plan and billing details.":
@@ -232,6 +236,10 @@ def run_new_partition(control, lock):
 
         # Cut off old information when past the capacity.
         if (len(sub_history[partition]) > physiology.subhistory_capacity):
+            # If capacity of a partition is reached, spawn a new one.
+            if total_partitions < physiology.max_partitions:
+                t = Thread(target=run_new_partition, args=[control, lock], daemon=True)
+                t.start()
             try:
                 loc = sub_history[partition].index("\n")
                 sub_history[partition] = sub_history[partition][loc + 1:]
@@ -254,15 +262,15 @@ def kill_partition(lock):
 # Set the number of partitions in the subconscious. Minimum is 3 and maximum is 10. If new ones are needed, they start blank. If the number needs to be decreased, the last one is stopped.
 def set_partitions(count):
     lock = globals.lock
-    if count > 10 and count < 3:
-        raise Exception("Invalid number of partitions (must be between 3 and 10).")
+    if count > physiology.max_partitions and count < physiology.min_partitions:
+        raise Exception("Invalid number of partitions.")
 
     lock.acquire()
     monitoring.notify_partition_change(total_partitions, count)
     if total_partitions < count:
         needed = count - total_partitions
         for i in range(needed):
-            t = Thread(target=add_partition, args=[control, lock], daemon=True)
+            t = Thread(target=run_new_partition, args=[control, lock], daemon=True)
             t.start()
     elif total_partitions > count:
         while total_partitions > count:
@@ -281,12 +289,8 @@ async def boot_ai():
     print("Starting Inner Dialog")
     t.start()
 
-    # Start three partitions of subconscious dialog after the user replies, one at a time. It would be better if the number of partitions is variable. A large number would indicate deep contemplation, and would be more resource intensive. The fatique feature would have to limit the number of partitions, which would also interestingly enough result in things like brain fog. Though the hope is to generally have enough resources to avoid this issue.
-    for partition in range(3):
-        # Wait three seconds to start each partition to give time for inner dialog to propogate.
-        time.sleep(2)
-        control = Event() # Might not do anything anymore.
-        t = Thread(target=run_new_partition, args=[control, globals.lock], daemon=True)
-        partition_controls.append(control)
-        print("Starting Subconscious Partition #" + str(partition))
-        t.start()
+    # Start first partition for subconscious.
+    control = Event() # Might not do anything anymore.
+    t = Thread(target=run_new_partition, args=[control, globals.lock], daemon=True)
+    partition_controls.append(control)
+    t.start()

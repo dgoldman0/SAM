@@ -22,7 +22,7 @@ System notifications will be in language form, as SAM should be able to understa
 
 Unlike with system notifications, commands issued by SAM will have to be in a specific format.
 
-- Help command, which will inform SAM of the different commands available if it forgets. 
+- Help command, which will inform SAM of the different commands available if it forgets.
 - Switch Active User
 - Get Active User (Useful to remind AI of who they're currently speaking to)
 - Send Message To User
@@ -36,3 +36,7 @@ There's still a lot of testing to do to figure out which parameters seem to work
 There are a lot of issues that I still haven't figured out.
 
 - openai doesn't seem to include the ability to check how much of a balance is left and how much is used, through the API, only the dashboard. What is available is the ability to track how many tokens are used for a given completion, and the total usage while running can be tracked. But that doesn't let the system know how much available balance there is to work with.
+
+# Notes
+
+There's still a lot that I'm not sure about when it comes to learning/dreaming. One thing that might make sense is to have a separate model for chat vs internal dialog, and maybe even subconscious. That's maintaining and updating three different models though.

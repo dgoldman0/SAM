@@ -24,7 +24,10 @@ think_period = awake_think_period
 subthink_period = awake_subthink_period
 
 max_history_capacity = 2560
-max_subhistory_capacity = 320
+max_subhistory_capacity = 640
+
+min_partitions = 3
+max_partitions = 4
 
 history_capacity = max_history_capacity
 subhistory_capacity = max_subhistory_capacity
