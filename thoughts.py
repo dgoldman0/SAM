@@ -53,8 +53,8 @@ def step_subconscious():
             presence_penalty=0,
             prompt=sub_history[partition])["choices"][0]["text"].strip()
         if len(next_prompt) == 0:
-            # Ignore null thoughts.
             sub_null_thoughts[partition] += 1
+        else:
             return
         print("SUB[" + str(partition) + "]: " + str(len(next_prompt)))
 
@@ -129,8 +129,12 @@ def step_conscious():
 
         print(len(next_prompt))
         if len(next_prompt) == 0:
-            # Don't include zero length thoughts. But this might be used to slow down thinking, or enter daydream state.
+            # Don't include zero length (null) thoughts. But this might be used to slow down thinking, or enter daydream state.
+            # The more nulls, the slower the system should go (bigger pause, while the more non-nulls, the faster it should go.) Every null, set pause to (current + max)/2 and every non-null set it to (current - min)/2
+            physiology.think_period = (think_period + physiology.max_think_period)/2
             return
+        else:
+            physiology.think_period = (think_period - physiology.min_think_period)/2
         globals.history += ("\n:" + next_prompt)
         print("THOUGHT: " + next_prompt + "\n")
         monitoring.notify_thought(next_prompt)
@@ -185,6 +189,18 @@ def respond_to_user(user, user_input):
     try:
         # For now, just keep all messages pushed to conscious.
         if True:
+            # Summarize the concscious history to make it easier to process with user input.
+            response = openai.Completion.create(
+                model=conscious,
+                temperature=physiology.conscious_temp,
+                max_tokens=physiology.conscious_tokens,
+                top_p=physiology.conscious_temp,
+                frequency_penalty=0.1,
+                presence_penalty=0.1,
+                prompt="Summarize: " + globals.history)["choices"][0]["text"].strip()
+            print(globals.history)
+            print("Summarize: " + response)
+            history = response + "\n" + user['history'] +  "\n" + "<" + username + ">" + ":" + user_input
             response = openai.Completion.create(
                 model=conscious,
                 temperature=physiology.conscious_temp,
