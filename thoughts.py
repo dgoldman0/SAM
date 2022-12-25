@@ -31,11 +31,11 @@ async def set_active_user(username):
     active_user = username
     active_last_changed = time.time()
 
-# Generate a subconscious thought using the combined conscious history and the partition history, and propogate to a conscious thought.
+# Generate a subconscious thought.
 def step_subconscious(partition):
     global sub_history
 
-    # Get next completion from the subconscious based on existing subconscious dialogue.
+    # Get next completion from the subconscious based on existing subconscious dialogue. Maybe add randomness by seeding with random thoughts.
     try:
         next_prompt = openai.Completion.create(
             model=subconscious,
@@ -48,24 +48,14 @@ def step_subconscious(partition):
             stop="\n")["choices"][0]["text"].strip()
 
         sub_history[partition] = sub_history[partition] + "\n" + next_prompt
+        print("<SUB[" + str(partition) + "]>:" + next_prompt)
         monitoring.notify_subthought(partition, next_prompt)
-        # Get next completion for the conscious dialog, using subconscious history as the prompt (subconscious injecting itself into consciousness)
-        next_prompt = openai.Completion.create(
-            model=conscious,
-            temperature=physiology.conscious_temp,
-            max_tokens=125,
-            top_p=physiology.conscious_top_p,
-            frequency_penalty=1,
-            presence_penalty=1,
-            prompt=globals.history + "\n" + sub_history[partition],
-            stop="\n")["choices"][0]["text"].strip()
 
-        # Only register every other time.
+        # 50% chance of propogating to surface thought. This will vary depending on physiology in the future.
         flip = random.randint(0, 1)
         if flip:
             globals.history = globals.history + "\n" + next_prompt
             monitoring.notify_thought(next_prompt)
-        sub_history[partition] = sub_history[partition] + "\n" + next_prompt
     except Exception as err:
         if str(err) == "You exceeded your current quota, please check your plan and billing details.":
             monitoring.notify_starvation()
@@ -77,6 +67,11 @@ def step_conscious():
     global sub_history
     global count
     global total_partitions
+
+    # Don't do anything if there isn't already something in the thought process. Wait until subconscious trickles up.
+    if globals.history == "":
+        return
+
     try:
         next_prompt = openai.Completion.create(
             model=conscious,
@@ -88,11 +83,17 @@ def step_conscious():
             prompt=globals.history)["choices"][0]["text"].strip()
 
         globals.history += ("\n:" + next_prompt)
-        print("<CON>:" + next_prompt)
+        if len(next_prompt) < 20:
+            print("<CON>:" + next_prompt)
+        else:
+            print("<CON>:" + next_prompt[0:20])
         monitoring.notify_thought(next_prompt)
 
-        # Check if this message should be spoken out loud.
-        if next_prompt.startswith("//"):
+        # Check for special information in response. This might best go in its own method.
+        if next_prompt.strip() == "":
+            pass
+            # Pause in thought should lead to slowing of thoughts, while other factors should increase rate of thinking.
+        elif next_prompt.startswith("//"):
             remainder = next_prompt[2:]
             try:
                 loc = remainder.index(":")
@@ -119,6 +120,7 @@ def step_conscious():
             flip = random.randint(0, 1)
             if flip:
                 partition = random.randint(0, total_partitions - 1)
+                print("Pushing to partition " + str(partition))
                 sub_history[partition] = sub_history[partition] + "\n:" + next_prompt
         # If there has been no active_user for some time, consider entering daydream state, if not in dream state.
     except Exception as err:
@@ -276,15 +278,15 @@ async def boot_ai():
     # System notification to AI of wakeup. Should include various status information once I figure out what to include.
     print("AI Waking Up")
     # Need to give the system some basic information, but not sure how this will work after each dream cycle. This area will need significant work.
-    startup_message = "<SYSTEM>: Waking up. System notifications will arrive in the form <SYSTEM>:Notification message. You can issue system commands by starting the line with COMMAND:, for instance, use COMMAND:HELP to get a list of system commands. There are a few other special symbols. <USERNAME>: at the start of a line indicates a chat message notification where USERNAME is replaced with their actual username. Use //USERNAME: at the beginning of a line to indicate that you want to reply to that user. The system will inform you if that user is not online."
-    globals.history = startup_message
+    # startup_message = "<SYSTEM>: Waking up. System notifications will arrive in the form <SYSTEM>:Notification message. You can issue system commands by starting the line with COMMAND:, for instance, use COMMAND:HELP to get a list of system commands. There are a few other special symbols. <USERNAME>: at the start of a line indicates a chat message notification where USERNAME is replaced with their actual username. Use //USERNAME: at the beginning of a line to indicate that you want to reply to that user. The system will inform you if that user is not online."
+
     # Begin inner dialog
     t = Thread(target=think, args=[globals.lock], daemon=True)
     print("Starting Inner Dialog")
     t.start()
 
     # Start three partitions of subconscious dialog after the user replies, one at a time. It would be better if the number of partitions is variable. A large number would indicate deep contemplation, and would be more resource intensive. The fatique feature would have to limit the number of partitions, which would also interestingly enough result in things like brain fog. Though the hope is to generally have enough resources to avoid this issue.
-    for partition in range(1):
+    for partition in range(2):
         # Wait three seconds to start each partition to give time for inner dialog to propogate.
         time.sleep(3)
         control = Event()
