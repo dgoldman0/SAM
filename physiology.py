@@ -39,8 +39,9 @@ subhistory_cut = 320
 min_subthought = 16
 max_subthought = 1024
 
-min_partitions = 3
-max_partitions = 3
+# Because they're only executed one at a time, at least right now, adding more partitions just increases concurrent thoughts without adding lagg.
+min_partitions = 8
+max_partitions = 8
 
 max_subnulls = 2
 

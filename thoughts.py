@@ -54,8 +54,8 @@ def step_subconscious():
             prompt=sub_history[partition])["choices"][0]["text"].strip()
         if len(next_prompt) == 0:
             sub_null_thoughts[partition] += 1
-        else:
             return
+
         print("SUB[" + str(partition) + "]: " + str(len(next_prompt)))
 
         sub_history[partition] = sub_history[partition] + "\n" + next_prompt
@@ -81,17 +81,19 @@ def step_subconscious():
         except Exception:
             pass
 
-        # Determine if the thought propogates to the conscious.
+        # Determine if the thought propogates to the conscious. These values will be changed by physiology at some point.
         propogate = False
+        roll = random.randint(0, 9)
         if len(server.user_connections) != 0:
             # If there are active connecitons, propogation should be slower.
             length = len(next_prompt)
-            roll = random.randint(0, 1)
-            propogate = (roll == 0) and (length > physiology.min_subthought and length < physiology.max_subthought)
+            propogate = (roll < 2)
         else:
-            # If nobody is connected, then there's a 90% chance that the thought will propogate.
-            roll = random.randint(0, 9)
-            propogate = (roll != 9)
+            # If nobody is connected, subconscious thoughts can propogate faster, especially when the history is not close to full.
+            if len(globals.history) < (physiology.history_capacity * 3/4):
+                propogate = (roll != 9)
+            else:
+                propogate = (roll < 5)
         if propogate:
             globals.history = globals.history + "\n" + next_prompt
             monitoring.notify_thought(next_prompt)
@@ -111,11 +113,13 @@ def step_conscious():
     global waking_up
 
     # Don't do anything if there isn't already something in the thought process. Wait until subconscious trickles up and fills the conscious with thoughts.
-    if len(globals.history) < (physiology.history_capacity / 2):
+    if len(globals.history) < (physiology.history_capacity):
         print("Conscious Length: " + str(len(globals.history)))
         return
 
-    waking_up = False # Useful signal for other parts of the program.
+    if waking_up:
+        print("Awake!")
+        waking_up = False # Useful signal for other parts of the program.
 
     try:
         next_prompt = openai.Completion.create(
@@ -127,23 +131,20 @@ def step_conscious():
             presence_penalty=0,
             prompt=globals.history)["choices"][0]["text"].strip()
 
-        print(len(next_prompt))
         if len(next_prompt) == 0:
             # Don't include zero length (null) thoughts. But this might be used to slow down thinking, or enter daydream state.
             # The more nulls, the slower the system should go (bigger pause, while the more non-nulls, the faster it should go.) Every null, set pause to (current + max)/2 and every non-null set it to (current - min)/2
-            physiology.think_period = (think_period + physiology.max_think_period)/2
+#            physiology.think_period = (think_period + physiology.max_think_period)/2
             return
         else:
-            physiology.think_period = (think_period - physiology.min_think_period)/2
-        globals.history += ("\n:" + next_prompt)
-        print("THOUGHT: " + next_prompt + "\n")
+            pass
+#            physiology.think_period = (think_period - physiology.min_think_period)/2
+        globals.history += ("\n" + next_prompt)
+#        print("THOUGHT: " + next_prompt + "\n")
         monitoring.notify_thought(next_prompt)
 
         # Check for special information in response. This might best go in its own method.
-        if next_prompt.strip() == "":
-            pass
-            # Pause in thought should lead to slowing of thoughts, while other factors should increase rate of thinking.
-        elif next_prompt.startswith("//"):
+        if next_prompt.startswith("//"):
             remainder = next_prompt[2:]
             try:
                 loc = remainder.index(":")
@@ -185,22 +186,11 @@ def respond_to_user(user, user_input):
     username = user['username']
     response = ""
     # Maybe only do the last segment of the global history so it doesn't overpower.
-    history = globals.history + "\n" + user['history'] +  "\n" + "<" + username + ">" + ":" + user_input
     try:
         # For now, just keep all messages pushed to conscious.
         if True:
             # Summarize the concscious history to make it easier to process with user input.
-            response = openai.Completion.create(
-                model=conscious,
-                temperature=physiology.conscious_temp,
-                max_tokens=physiology.conscious_tokens,
-                top_p=physiology.conscious_temp,
-                frequency_penalty=0.1,
-                presence_penalty=0.1,
-                prompt="Summarize: " + globals.history)["choices"][0]["text"].strip()
-            print(globals.history)
-            print("Summarize: " + response)
-            history = response + "\n" + user['history'] +  "\n" + "<" + username + ">" + ":" + user_input
+            history = globals.history + "\n" + user['history'] + "\n" + "<" + username + ">" + ":" + user_input
             response = openai.Completion.create(
                 model=conscious,
                 temperature=physiology.conscious_temp,
@@ -208,10 +198,17 @@ def respond_to_user(user, user_input):
                 top_p=physiology.conscious_temp,
                 frequency_penalty=0.1,
                 presence_penalty=0.1,
-                prompt=history)["choices"][0]["text"].strip()
+                prompt=history)["choices"][0]["text"].strip() # + "\n", stop = "\n"
 
-            globals.history += "\n" + "<" + username + ">" + ":" + user_input
-            globals.history += ("\n" + response)
+            print("Response: " + response)
+            # The internal representatoin should be different from <USERNAME> since it seems to confuse SAM.
+            globals.history += ("\nMessage from " + username + ":" + user_input)
+            if len(response) > 0:
+                globals.history += ("\nResponded to " + username + ":" + response)
+                user['history'] = user['history'] + "\n" + user_input
+            else:
+                # Ignore null responses.
+                pass
         else:
             # The user input is "background noise." Have it processed by random partition of the subconscious.
             partition = random.randint(0, total_partitions - 1)
@@ -226,7 +223,6 @@ def respond_to_user(user, user_input):
 
             sub_history[partition] += ("\n" + "<" + username + ">" + ":" + user_input)
             sub_history[partition] += ("\n" + response)
-        user['history'] = user['history'] + "\n" + user_input
         # Need to slice off old history as with other histories.
     except Exception as err:
         if str(err) == "You exceeded your current quota, please check your plan and billing details.":

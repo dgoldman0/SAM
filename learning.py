@@ -24,7 +24,7 @@ def divide_history(history, num, minSize):
 async def interrupt_sleep():
     return
 
-# Take a snapshot of current thoughts and use it as training for the model.
+# Take a snapshot of current thoughts and use it as training for the model. Maybe go  through one subconscious history at a time?
 async def integrate_thoughts(daydreaming):
     lock = globals.lock
     lock.acquire()

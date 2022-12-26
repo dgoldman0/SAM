@@ -16,6 +16,9 @@ async def authenticate_user(websocket):
         response = response.decode()
         if response.startswith("AUTH:"):
             username = response[5:]
+            user = user_connections.get(username)
+            if user is not None and user['websocket'] is not None:
+                return None
             cur = database.cursor()
             res = cur.execute("SELECT salt FROM USERS WHERE username = ?;", (username, ))
             resp = res.fetchone()
@@ -32,7 +35,11 @@ async def authenticate_user(websocket):
                 resp = res.fetchone()
                 if resp is not None:
                     await websocket.send("WELCOME".encode())
-                    return {"user_id": resp[0], "username": username, "display_name": resp[1], "admin": resp[2], "websocket": websocket, "history": ""}
+                    if user is None:
+                        return {"user_id": resp[0], "username": username, "display_name": resp[1], "admin": resp[2], "websocket": websocket, "history": ""}
+                    else:
+                        user['websocket'] = websocket
+                        return user
 
 # Push a messaage to an active user.
 async def message_user(username, message):
@@ -84,7 +91,7 @@ async def converse(websocket):
                 globals.lock.acquire()
                 thoughts.push_system_message(username + " disconnected.")
                 globals.lock.release()
-                del user_connections[user['username']]
+                user_connections[user['username']].websocket = None
     except Exception as err:
         print(err)
 # Listen for incoming connections
