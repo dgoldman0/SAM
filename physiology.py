@@ -1,5 +1,7 @@
 # SAM doesn't really have a physiology other than how many credits it has for tokens, etc. But that will do. This module will allow tracking of usage stats, once openai adds the API features to do so, or another workaround is found, such as authenticating and pulling from the web indirectly.
 
+import thoughts
+
 # Control over physiology will occur on the subconscious level.
 
 # Default values for openai
@@ -49,6 +51,30 @@ max_subnulls = 2
 history_capacity = max_history_capacity
 subhistory_capacity = max_subhistory_capacity
 
-# Check how much money is avaialable to continue using openai
-def check_usage():
-    return 0
+# The number of resource credits currently available.
+resource_credits_full = 100000
+resource_credits = resource_credits_full
+
+# Review physiology and push any notifications necessary.
+def review():
+    global full_status
+    if resource_credits < resource_credits_full / 4:
+        if resource_credits < resource_credits_full / 8:
+            thoughts.push_system_message("Starving", True)
+            full_status = "Starving"
+            return
+        thoughts.push_system_message("Hungry", True)
+        full_status = "Hungry"
+        return
+
+    # Having too few credits is less important than having too many, so notifications here should be more limited.
+    if resource_credits > resource_credits_full * 3 / 4:
+        if resource_credits > resource_credits_full * 7 / 8:
+            thoughts.push_system_message("Gorged", True)
+            full_status = "Gorged"
+            return
+        if full_status != "Full":
+            thoughts.push_system_message("Full", True)
+            full_status = "Full"
+        return
+    full_status = ""
