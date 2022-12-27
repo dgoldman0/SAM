@@ -26,6 +26,8 @@ Unlike with system notifications, commands issued by SAM will have to be in a sp
 - Switch Active User
 - Get Active User (Useful to remind AI of who they're currently speaking to)
 - Send Message To User
+- Block User (allows the system to block non-admin users for privacy)
+- Unblock User
 
 # Parameter Tweaking
 
@@ -47,4 +49,6 @@ One thing that may be useful is replacing the current blocking openai access cal
 
 Currently, information is passed between layers simply by pushing the same string to both layers. However, a translation model may eventually be needed to get the layers to cooperate with each other better.
 
-The starved, hungry,full, gorged parameters should be flexible. 
+The starved, hungry,full, gorged parameters should be flexible.
+
+Cut off conscious thought and direct user input to the subconscious without rely and leave the subconscious running as a "daydream." while the system trains on the conscious and chat layer data.

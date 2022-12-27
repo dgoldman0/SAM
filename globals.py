@@ -16,6 +16,8 @@ sub_history = []
 
 # Connect to local file database which will be used to store user information, etc. Maybe one day replace with full MySQL
 print("Connecting to database.")
+
+# Load database and check for previous system history.
 database = sqlite3.connect("sam.db")
 
 nest_asyncio.apply()

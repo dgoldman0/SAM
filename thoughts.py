@@ -219,9 +219,9 @@ def respond_to_user(user, user_input):
             partition = random.randint(0, total_partitions - 1)
             openai_response = openai.Completion.create(
                 model=subconscious,
-                temperature=1,
+                temperature=subconscious_temp,
                 max_tokens=physiology.conscious_tokens,
-                top_p=1,
+                top_p=subconscious_top_p,
                 frequency_penalty=0.1,
                 presence_penalty=0.1,
                 prompt=history)
