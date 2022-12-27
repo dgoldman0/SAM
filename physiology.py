@@ -44,7 +44,7 @@ userhistory_cut = 640
 min_subthought = 16
 max_subthought = 1024
 
-# Because they're only executed one at a time, at least right now, adding more partitions just increases concurrent thoughts without adding lagg.
+# Because they're only executed one at a time, at least right now, adding more partitions just increases concurrent thoughts without adding lag.
 min_partitions = 10
 seeded_partitions = 4 # seed the first n partitions after partition 0 (since partition 0 is for system and must always be seeded)
 max_partitions = 10
@@ -54,8 +54,9 @@ max_subnulls = 2
 history_capacity = max_history_capacity
 subhistory_capacity = max_subhistory_capacity
 
-# The number of resource credits currently available.
-resource_credits_full = 100000
+# The number of resource credits that is full (will be changed to the approximate amount that would get the system through a 24 hour period.)
+resource_credits_full = 1000000
+# The number of resource credits currently available. Start at hungry at the first load, but when this is stored in the DB keep it at whatever it is.
 resource_credits = resource_credits_full
 
 # Until the dream system is implemented, this is always true.

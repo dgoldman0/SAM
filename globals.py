@@ -17,7 +17,7 @@ sub_history = []
 # Connect to local file database which will be used to store user information, etc. Maybe one day replace with full MySQL
 print("Connecting to database.")
 
-# Load database and check for previous system history.
+# Load database and check for previous system history. That way we don't have to go through the whole bootup process each time, and if the system goes out at one pont it can be rebooted where it was left off.
 database = sqlite3.connect("sam.db")
 
 nest_asyncio.apply()

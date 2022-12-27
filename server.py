@@ -17,7 +17,7 @@ async def authenticate_user(websocket):
             username = response[5:]
             user = user_connections.get(username)
             if user is not None and user['websocket'] is not None:
-                return None
+                return user # User was already connected so let them keep their history.
             cur = database.cursor()
             res = cur.execute("SELECT salt FROM USERS WHERE username = ?;", (username, ))
             resp = res.fetchone()
@@ -77,6 +77,7 @@ async def converse(websocket):
             user_input = user_input.decode()
             response = "I'm still waking up..."
             if not thoughts.waking_up:
+                # Change to check to see if the response starts with MSG: or COMMAND: and act accordingly. Command can include close and tip.
                 response = thoughts.respond_to_user(user, user_input)
             try:
                 await websocket.send(response.encode())
