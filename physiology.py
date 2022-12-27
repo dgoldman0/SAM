@@ -41,6 +41,7 @@ max_subthought = 1024
 
 # Because they're only executed one at a time, at least right now, adding more partitions just increases concurrent thoughts without adding lagg.
 min_partitions = 8
+seeded_partitions = 3 # seed the first n partitions after partition 0 (since partition 0 is for system and must always be seeded)
 max_partitions = 8
 
 max_subnulls = 2

@@ -11,7 +11,6 @@ async def authenticate_user(websocket):
     database = globals.database
     await websocket.send("SAM Chat Interface".encode())
     response = await websocket.recv()
-
     if response is not None:
         response = response.decode()
         if response.startswith("AUTH:"):
@@ -33,6 +32,7 @@ async def authenticate_user(websocket):
                 password = response
                 res = cur.execute("SELECT user_id, display_name, admin FROM users WHERE username = ? AND passwd = ?;", (username, password))
                 resp = res.fetchone()
+                print(resp)
                 if resp is not None:
                     await websocket.send("WELCOME".encode())
                     if user is None:
@@ -45,7 +45,7 @@ async def authenticate_user(websocket):
 async def message_user(username, message):
     user = user_connections.get(username)
     if user is not None:
-        user['history'] += ("<SELF>:" + message)
+        user['history'] += "\n" + message
         await user['websocket'].send(message)
     else:
         # Notify SAM that no user is present.

@@ -11,8 +11,7 @@ import monitoring
 import server
 import system
 
-# Maybe replace threading with aioschedule if possible.
-
+# Eventually it might possibly make sense to replace a single string with a list of strings, to make it easier to cut up by prompt and completion.
 sub_history = globals.sub_history
 
 # Good to test code with the super cheap basic models, at least to check for errors. In the final version, the conscious and subconscious models might be different from each other to allow the inner workings of SAM's mind to be different from the conscious workings. The most recent trained model names will also have to be obtained.
@@ -204,7 +203,7 @@ def respond_to_user(user, user_input):
             # The internal representatoin should be different from <USERNAME> since it seems to confuse SAM.
             globals.history += ("\nMessage from " + username + ":" + user_input)
             if len(response) > 0:
-                globals.history += ("\nResponded to " + username + ":" + response)
+                globals.history += ("\n//" + username + ":" + response)
                 user['history'] = user['history'] + "\n" + user_input
             else:
                 # Ignore null responses.
@@ -221,8 +220,9 @@ def respond_to_user(user, user_input):
                 presence_penalty=0.1,
                 prompt=history)["choices"][0]["text"].strip()
 
-            sub_history[partition] += ("\n" + "<" + username + ">" + ":" + user_input)
-            sub_history[partition] += ("\n" + response)
+            sub_history[partition] += ("\nMessage from " + username + ":" + user_input)
+            if len(response) > 0:
+                sub_history[partition] += ("\n//" + username + ":" + response)
         # Need to slice off old history as with other histories.
     except Exception as err:
         if str(err) == "You exceeded your current quota, please check your plan and billing details.":
@@ -245,8 +245,8 @@ def process_layers():
         step_conscious()
         globals.lock.release()
 
-        globals.lock.acquire()
         # Cut off old information when past the capacity.
+        globals.lock.acquire()
         if (len(globals.history) > physiology.history_capacity):
             globals.history = globals.history[physiology.history_cut:]
         globals.lock.release()
@@ -255,7 +255,7 @@ def process_layers():
 def generate_sub_prompt(partition):
     initial_prompt = ""
     if False: # For now skip system stuff until the basics work.
-#    if partition == physiology.max_partitions:
+#    if partition == 0:
         # Partition zero is the system interface partition so that's where this should go.
         initial_prompt = "<SYSTEM>: Waking up. System notifications will arrive in the form <SYSTEM>:Notification message. You can issue system commands by starting the line with COMMAND:, for instance, use COMMAND:HELP to get a list of system commands. There are a few other special symbols. <USERNAME>: at the start of a line indicates a chat message notification where USERNAME is replaced with their actual username. Use //USERNAME: at the beginning of a line to indicate that you want to reply to that user. The system will inform you if that user is not online."
     else:
@@ -266,35 +266,38 @@ def generate_sub_prompt(partition):
     return initial_prompt
 
 # Subconscious to conscious interaction loops
-def add_new_partition():
+def add_new_partition(generate = True):
     global sub_history
     global sub_null_thoughts
     global total_partitions
     partition = total_partitions
 
-    initial_prompt = generate_sub_prompt(partition)
+    if generate:
+        initial_prompt = generate_sub_prompt(partition)
 
-    # Generate initial material for subconscious thought by utilizing openai to generate some text.
-    try:
-        initial = openai.Completion.create(
-            model=subconscious,
-            temperature=physiology.subconscious_temp,
-            max_tokens=physiology.initialize_tokens,
-            top_p=physiology.subconscious_top_p,
-            frequency_penalty=0,
-            presence_penalty=0,
-            prompt=initial_prompt)["choices"][0]["text"].strip()
-        sub_history.append(initial)
-#        print("Initial: " + initial)
-    except Exception as err:
-        if str(err) == "You exceeded your current quota, please check your plan and billing details.":
-            print("Starved")
-            monitoring.notify_starvation()
-            time.sleep(0.25)
-            sub_history.append("")
-        else:
-            raise err
-
+        # Generate initial material for subconscious thought by utilizing openai to generate some text.
+        try:
+            initial = openai.Completion.create(
+                model=subconscious,
+                temperature=physiology.subconscious_temp,
+                max_tokens=physiology.initialize_tokens,
+                top_p=physiology.subconscious_top_p,
+                frequency_penalty=0,
+                presence_penalty=0,
+                prompt=initial_prompt)["choices"][0]["text"].strip()
+            sub_history.append(initial)
+    #        print("Initial: " + initial)
+        except Exception as err:
+            if str(err) == "You exceeded your current quota, please check your plan and billing details.":
+                print("Starved")
+                monitoring.notify_starvation()
+                time.sleep(0.25)
+                sub_history.append("")
+            else:
+                raise err
+    else:
+        sub_history.append("")
+        
     print("Adding new partition #" + str(total_partitions))
     sub_null_thoughts.append(0)
     total_partitions += 1

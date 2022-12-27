@@ -41,4 +41,8 @@ There are a lot of issues that I still haven't figured out.
 
 There's still a lot that I'm not sure about when it comes to learning/dreaming. One thing that might make sense is to have a separate model for chat vs internal dialog, and maybe even subconscious. That's maintaining and updating three different models though.
 
-I also can't get async and threading to work well together. I might have to really scrap the threaded layering and partition system and replace it with a single method that goes through them. One option is rather than trying to get all subconscious partitions to fight each other, randomly select one to trigger. 
+I also can't get async and threading to work well together. I might have to really scrap the threaded layering and partition system and replace it with a single method that goes through them. One option is rather than trying to get all subconscious partitions to fight each other, randomly select one to trigger.
+
+One thing that may be useful is replacing the current blocking openai access calls with streaming calls, and letting user and subconscious insertions break into current thoughts. A thought is not always complete before something else happens.
+
+Currently, information is passed between layers simply by pushing the same string to both layers. However, a translation model may eventually be needed to get the layers to cooperate with each other better.

@@ -6,6 +6,8 @@ import time
 username = None
 hashed_pw = None
 
+# Very simple websocket client that was used for initial testing, but does not wait for incoming messages.
+
 async def connect():
     global username
     global hashed_pw
@@ -30,6 +32,7 @@ async def connect():
                         if response.decode() == "WELCOME":
                             print("Connection established! Please enjoy chatting with SAM.")
                             message = input("<" + username + ">: ")
+                            # This system needs to be replaced with one where it waits for incoming messages regardless of whether the user has sent anything.
                             while message != "/quit":
                                 await websocket.send(message.encode())
                                 response = await websocket.recv()
