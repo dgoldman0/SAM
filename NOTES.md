@@ -46,3 +46,5 @@ I also can't get async and threading to work well together. I might have to real
 One thing that may be useful is replacing the current blocking openai access calls with streaming calls, and letting user and subconscious insertions break into current thoughts. A thought is not always complete before something else happens.
 
 Currently, information is passed between layers simply by pushing the same string to both layers. However, a translation model may eventually be needed to get the layers to cooperate with each other better.
+
+The starved, hungry,full, gorged parameters should be flexible. 

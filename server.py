@@ -53,7 +53,6 @@ async def message_user(username, message):
 
 # Engage in active conversation with user.
 async def converse(websocket):
-    lock = globals.lock
     # Get user information.
     user = await authenticate_user(websocket)
     if user is None:
@@ -63,15 +62,13 @@ async def converse(websocket):
         return
 
     username = user['username']
+    print(username + " has connected.")
     user_connections.update({username: user})
-    user['history'] = "User <" + username + "> is online. As a reminder, their replies will start with <" + username + ">."
     # Might not be a good idea. I dunno.
     thoughts.active_user = username
     # Monitoring won't push notifications until after a chat connects.
     monitoring.notify_new_chat(username)
-    globals.lock.acquire()
     thoughts.push_system_message(username + " connected.")
-    globals.lock.release()
 
     # Handle incoming messages: need to figure out how to handle disconnects.
     try:
@@ -80,23 +77,20 @@ async def converse(websocket):
             user_input = user_input.decode()
             response = "I'm still waking up..."
             if not thoughts.waking_up:
-                lock.acquire()
                 response = thoughts.respond_to_user(user, user_input)
-                lock.release()
             try:
                 await websocket.send(response.encode())
             except Exception:
                 # Connection closed. Notify system and delete.
                 monitoring.notify_chat_closed(username)
-                globals.lock.acquire()
                 thoughts.push_system_message(username + " disconnected.")
-                globals.lock.release()
                 user_connections[user['username']].websocket = None
     except Exception as err:
         print(err)
 # Listen for incoming connections
 async def serve(stop):
     async with websockets.serve(converse, "localhost", 9381):
+        await asyncio.sleep(0) # For some reason, this is needed to yield control to the thought process.
         await stop  # run until dreaming
 
 async def listen():
@@ -105,6 +99,7 @@ async def listen():
     loop = asyncio.get_event_loop()
     stop = loop.create_future()
     loop.run_until_complete(serve(stop))
+
 
 async def stop_listening(reason):
     stop.set_result(reason)

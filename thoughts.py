@@ -4,6 +4,7 @@ import random
 from threading import Thread
 from threading import Event
 import time
+import asyncio
 
 import globals
 import physiology
@@ -32,7 +33,7 @@ def set_active_user(username):
 
 # Count null thoughts to perform physiology changes, etc.
 sub_null_thoughts = []
-def step_subconscious():
+async def step_subconscious():
     global sub_history
     global sub_null_thoughts
     partition = random.randint(0, total_partitions - 1)
@@ -110,7 +111,7 @@ def step_subconscious():
             print(err)
 
 # One iteration of inner dialog. This method needs to be able to initiate communications with users so it needs websockets. Or it could use a log.
-def step_conscious():
+async def step_conscious():
     global sub_history
     global count
     global total_partitions
@@ -138,13 +139,9 @@ def step_conscious():
         physiology.resource_credits -= openai_response["usage"]["total_tokens"]
 
         if len(next_prompt) == 0:
-            # Don't include zero length (null) thoughts. But this might be used to slow down thinking, or enter daydream state.
-            # The more nulls, the slower the system should go (bigger pause, while the more non-nulls, the faster it should go.) Every null, set pause to (current + max)/2 and every non-null set it to (current - min)/2
-#            physiology.think_period = (think_period + physiology.max_think_period)/2
+            # Don't include null thoughts.
             return
-        else:
-            pass
-#            physiology.think_period = (think_period - physiology.min_think_period)/2
+
         globals.history += ("\n" + next_prompt)
 #        print("THOUGHT: " + next_prompt + "\n")
         monitoring.notify_thought(next_prompt)
@@ -156,7 +153,7 @@ def step_conscious():
                 loc = remainder.index(":")
                 username = remainder[:loc]
                 message = remainder[loc + 1:]
-                server.message_user(username, message)
+                await server.message_user(username, message)
             except Exception:
                 # Invalid
                 pass
@@ -196,7 +193,8 @@ def respond_to_user(user, user_input):
         # For now, just keep all messages pushed to conscious.
         if True:
             # Summarize the concscious history to make it easier to process with user input.
-            history = globals.history + "\n" + user['history'] + "\n" + "<" + username + ">" + ":" + user_input
+            user['history'] += ("\n" + "<" + username + ">" + ":" + user_input)
+            history = "Current thoughts:\n" + globals.history + "\n\nCurrent discussion with " + username + ":\n" + user['history']
             openai_response = openai.Completion.create(
                 model=conscious,
                 temperature=physiology.conscious_temp,
@@ -209,14 +207,13 @@ def respond_to_user(user, user_input):
             physiology.resource_credits -= openai_response["usage"]["total_tokens"]
 
             print("Response: " + response)
-            # The internal representatoin should be different from <USERNAME> since it seems to confuse SAM.
-            globals.history += ("\nMessage from " + username + ":" + user_input)
+            globals.history += ("\<" + username + "> :" + user_input)
             if len(response) > 0:
                 globals.history += ("\n//" + username + ":" + response)
-                user['history'] = user['history'] + "\n" + user_input
+                user['history'] += ("\n//" + username + ":" + response)
             else:
                 # Ignore null responses.
-                pass
+                print("Null response caused by: " + history + "\n")
         else:
             # The user input is "background noise." Have it processed by random partition of the subconscious.
             partition = random.randint(0, total_partitions - 1)
@@ -244,26 +241,22 @@ def respond_to_user(user, user_input):
     return response
 
 # Totally have to rewrite these next two methods to get it to work without threads.
-def process_layers():
+async def process_layers():
     print("Thought process starting...")
     while True:
         # Probably should loop through more than one subconscious partition, but that would make the monologue very slow.
-        globals.lock.acquire()
         # Check for physiology and other system reports, before going through subconscious.
         physiology.review()
-        step_subconscious()
-        globals.lock.release()
 
-        globals.lock.acquire()
-        step_conscious()
-        globals.lock.release()
+        # Should be easy to set these on different loops and at different timeouts now with proper asyncio.sleep()
+        await step_subconscious()
+        await step_conscious()
 
         # Cut off old information when past the capacity.
-        globals.lock.acquire()
         if (len(globals.history) > physiology.history_capacity):
             globals.history = globals.history[physiology.history_cut:]
-        globals.lock.release()
-        time.sleep(physiology.think_period)
+
+        await asyncio.sleep(physiology.think_period)
 
 def generate_sub_prompt(partition):
     initial_prompt = ""
@@ -317,20 +310,16 @@ def add_new_partition(generate = True):
     total_partitions += 1
 
 # Kills the most recent partition: Not fixed
-def kill_partition(lock):
-    lock.acquire()
+def kill_partition():
     sub_history.pop().set("kill")
     total_partitions -= total_partitions
-    lock.release()
     return
 
 # Set the number of partitions in the subconscious. Minimum is 3 and maximum is 10. If new ones are needed, they start blank. If the number needs to be decreased, the last one is stopped.
 def set_partitions(count):
-    lock = globals.lock
     if count > physiology.max_partitions and count < physiology.min_partitions:
         raise Exception("Invalid number of partitions.")
 
-    lock.acquire()
     monitoring.notify_partition_change(total_partitions, count)
     if total_partitions < count:
         needed = count - total_partitions
@@ -338,8 +327,7 @@ def set_partitions(count):
             add_new_partition()
     elif total_partitions > count:
         while total_partitions > count:
-            kill_partition(lock)
-    lock.release()
+            kill_partition()
 
 # Initial startup of the AI upon turning on.
 async def boot_ai():
@@ -348,5 +336,4 @@ async def boot_ai():
     # Need to give the system some basic information, but not sure how this will work after each dream cycle. This area will need significant work.
 
     add_new_partition()
-    t = Thread(target=process_layers, args=[], daemon=True)
-    t.start()
+    await process_layers()

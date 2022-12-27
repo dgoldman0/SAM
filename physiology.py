@@ -1,6 +1,7 @@
 # SAM doesn't really have a physiology other than how many credits it has for tokens, etc. But that will do. This module will allow tracking of usage stats, once openai adds the API features to do so, or another workaround is found, such as authenticating and pulling from the web indirectly.
 
 import thoughts
+from datetime import datetime, timezone
 
 # Control over physiology will occur on the subconscious level.
 
@@ -34,17 +35,19 @@ subthink_period = awake_subthink_period
 
 max_history_capacity = 2560
 max_subhistory_capacity = 1280
+max_user_history = 2560
 
 history_cut = 640
 subhistory_cut = 320
+userhistory_cut = 640
 
 min_subthought = 16
 max_subthought = 1024
 
 # Because they're only executed one at a time, at least right now, adding more partitions just increases concurrent thoughts without adding lagg.
-min_partitions = 8
-seeded_partitions = 3 # seed the first n partitions after partition 0 (since partition 0 is for system and must always be seeded)
-max_partitions = 8
+min_partitions = 10
+seeded_partitions = 4 # seed the first n partitions after partition 0 (since partition 0 is for system and must always be seeded)
+max_partitions = 10
 
 max_subnulls = 2
 
@@ -55,10 +58,16 @@ subhistory_capacity = max_subhistory_capacity
 resource_credits_full = 100000
 resource_credits = resource_credits_full
 
+# Until the dream system is implemented, this is always true.
+awake = True
+
 # Review physiology and push any notifications necessary.
 def review():
-    global full_status
+    global resource_credits, resource_credits_full, think_period, max_think_period, min_think_period, awake_think_period, sleep_think_period, full_status, awake
+    print(datetime.now(timezone.utc).strftime("%H:%M:%S") + ": " + str(resource_credits) + " w/ think period of " + str(think_period))
     if resource_credits < resource_credits_full / 4:
+        # Slow down thinking to the average of the current rate and the slowest rate to conserve resources.
+        think_period = (think_period + max_think_period) / 2
         if resource_credits < resource_credits_full / 8:
             thoughts.push_system_message("Starving", True)
             full_status = "Starving"
@@ -69,6 +78,8 @@ def review():
 
     # Having too few credits is less important than having too many, so notifications here should be more limited.
     if resource_credits > resource_credits_full * 3 / 4:
+        # Speed up thinking to the average of the current rate and the fastest rate to take advantage of extra resources.
+        think_period = (think_period + min_think_period) / 2
         if resource_credits > resource_credits_full * 7 / 8:
             thoughts.push_system_message("Gorged", True)
             full_status = "Gorged"
@@ -78,3 +89,7 @@ def review():
             full_status = "Full"
         return
     full_status = ""
+    if awake:
+        think_period = (think_period + awake_think_period) / 2
+    else:
+        think_period = (think_period + sleep_think_period) / 2

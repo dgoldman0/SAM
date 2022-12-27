@@ -12,7 +12,7 @@ history = ""
 # History between inner voice and subconscious, to be replaced with an array of histories.
 sub_history = []
 
-lock = Lock()
+#lock = Lock()
 
 # Connect to local file database which will be used to store user information, etc. Maybe one day replace with full MySQL
 print("Connecting to database.")
