@@ -1,7 +1,7 @@
 # Global variables
 
 # Import modules that will be needed elsewhere
-
+import sys
 import sqlite3
 from threading import Lock
 import nest_asyncio
@@ -21,3 +21,12 @@ print("Connecting to database.")
 database = sqlite3.connect("sam.db")
 
 nest_asyncio.apply()
+
+# Will save the current state.
+async def save():
+    pass
+
+# Will save and close gracefully.
+async def quit):
+    await save()
+    sys.exit(0)

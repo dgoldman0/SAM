@@ -46,7 +46,19 @@ $(document).ready(function() {
               input = $("#msg");
               msg = input.val();
               input.val("")
-              await ws.send(new Blob([msg]));
+              if (msg.startsWith("/")) {
+                command = message.slice(1).toUpperCase();
+                switch (command) {
+                  case 'QUIT':
+                  ws.close();
+                  break;
+                  default:
+                  await ws.send(new Blob(["COMMAND:" + command]));
+                  break;
+                }
+              } else {
+                await ws.send(new Blob(["MSG:" + msg]));
+              }
               f.innerHTML += `<br/>&lt;${username}&gt;: ${msg}`;
               input.focus();
               return false;
@@ -54,7 +66,11 @@ $(document).ready(function() {
           }
         break;
         default:
-          f.innerHTML += `<br/>&lt;SAM&gt;: ${msg}`;
+          if (msg.startsWith("MSG:")) {
+            f.innerHTML += `<br/>&lt;SAM&gt;: ${msg.slice(4)}`;
+          } else {
+            f.innerHTML += `<br/>System Notice: ${msg.slice(4)}`;
+          }
       }
     };
 

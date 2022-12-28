@@ -46,7 +46,7 @@ async def message_user(username, message):
     user = user_connections.get(username)
     if user is not None:
         user['history'] += "\n" + message
-        await user['websocket'].send(message)
+        await user['websocket'].send(("MSG:" + message).encode())
     else:
         # Notify SAM that no user is present.
         thoughts.push_system_message(username + " is not logged in.")
@@ -78,7 +78,19 @@ async def converse(websocket):
             response = "I'm still waking up..."
             if not thoughts.waking_up:
                 # Change to check to see if the response starts with MSG: or COMMAND: and act accordingly. Command can include close and tip.
-                response = thoughts.respond_to_user(user, user_input)
+                if response.startswith("MSG:")
+                    response = thoughts.respond_to_user(user, user_input[4:])
+                elif response.startswith("COMMAND:"):
+                    # Process command such as save state
+                    command = response[8:]
+                    if (command == "SAVE"):
+                        # Save current state.
+                        globals.save()
+                        await websocket.send("STATUS:" + " System saving...")
+                    elif (command = "CLOSE"):
+                        # Save and close down the system.
+                        await websocket.send("STATUS:" + " System shutting down...")
+                        globals.quit()
             try:
                 await websocket.send(response.encode())
             except Exception:

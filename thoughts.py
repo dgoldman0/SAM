@@ -280,6 +280,7 @@ def add_new_partition(generate = True):
     if generate:
         initial_prompt = generate_sub_prompt(partition)
 
+        if subhistory[partition] is not None:
         # Generate initial material for subconscious thought by utilizing openai to generate some text.
         try:
             openai_response = openai.Completion.create(
@@ -335,5 +336,8 @@ async def boot_ai():
     print("AI Waking Up")
     # Need to give the system some basic information, but not sure how this will work after each dream cycle. This area will need significant work.
 
-    add_new_partition()
+    # Check if there are already a full number of partitions. If not, add.
+    if total_partitions < physiology.max_partitions:
+        add_new_partition()
+
     await process_layers()
