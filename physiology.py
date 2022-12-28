@@ -14,7 +14,7 @@ awake_think_period = 1
 awake_subthink_period = 2
 
 max_think_period = 3
-min_think_period = 0.25
+min_think_period = 2 # For testing to see if this is bugging out the server connection.
 
 sleep_think_period = 0.5
 sleep_subthink_period = 1.5
@@ -66,10 +66,10 @@ awake = True
 def review():
     global resource_credits, resource_credits_full, think_period, max_think_period, min_think_period, awake_think_period, sleep_think_period, full_status, awake
     print(datetime.now(timezone.utc).strftime("%H:%M:%S") + ": " + str(resource_credits) + " w/ think period of " + str(think_period))
-    if resource_credits < resource_credits_full / 4:
+    if resource_credits < 0.25 * resource_credits_full:
         # Slow down thinking to the average of the current rate and the slowest rate to conserve resources.
-        think_period = (think_period + max_think_period) / 2
-        if resource_credits < resource_credits_full / 8:
+        think_period = 0.5 * (think_period + max_think_period)
+        if resource_credits < 0.125 * resource_credits_full:
             thoughts.push_system_message("Starving", True)
             full_status = "Starving"
             return
@@ -78,10 +78,10 @@ def review():
         return
 
     # Having too few credits is less important than having too many, so notifications here should be more limited.
-    if resource_credits > resource_credits_full * 3 / 4:
+    if resource_credits > 0.75 * resource_credits_full:
         # Speed up thinking to the average of the current rate and the fastest rate to take advantage of extra resources.
-        think_period = (think_period + min_think_period) / 2
-        if resource_credits > resource_credits_full * 7 / 8:
+        think_period = 0.5 * (think_period + min_think_period)
+        if resource_credits > 0.875 * resource_credits_full:
             thoughts.push_system_message("Gorged", True)
             full_status = "Gorged"
             return

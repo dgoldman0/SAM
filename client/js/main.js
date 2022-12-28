@@ -17,7 +17,6 @@ $(document).ready(function() {
 
     ws.onmessage = async function(event) {
       msg = await event.data.text();
-      console.log(msg)
       switch (status) {
         case 'connecting':
         if (msg == "SAM Chat Interface") {
@@ -68,8 +67,8 @@ $(document).ready(function() {
         default:
           if (msg.startsWith("MSG:")) {
             f.innerHTML += `<br/>&lt;SAM&gt;: ${msg.slice(4)}`;
-          } else {
-            f.innerHTML += `<br/>System Notice: ${msg.slice(4)}`;
+          } else if (msg.startsWith("STATUS:")){
+            f.innerHTML += `<br/>System Notice: ${msg.slice(7)}`;
           }
       }
     };

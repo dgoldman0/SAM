@@ -78,31 +78,31 @@ async def converse(websocket):
             user_input = user_input.decode()
             response = "I'm still waking up..."
             # Change to check to see if the response starts with MSG: or COMMAND: and act accordingly. Command can include close and tip.
-            if response.startswith("MSG:"):
+            if user_input.startswith("MSG:"):
                 # If not waking up still, process message.
                 if not thoughts.waking_up:
                     response = thoughts.respond_to_user(user, user_input[4:])
                 try:
-                    await websocket.send(response.encode())
+                    await websocket.send(("MSG:" + response).encode())
                 except Exception:
                     # Connection closed. Notify system and delete.
                     monitoring.notify_chat_closed(username)
                     thoughts.push_system_message(username + " disconnected.")
                     user_connections[user['username']].websocket = None
-            elif response.startswith("COMMAND:"):
+            elif user_input.startswith("COMMAND:"):
                 # Process command such as save state
-                command = response[8:]
+                command = user_input[8:]
                 if user['admin']:
                     if (command == "SAVE"):
                         # Save current state.
                         globals.save()
-                        await websocket.send("STATUS:System saving...")
+                        await websocket.send("STATUS:System saving...".encode())
                     elif (command == "CLOSE"):
                         # Save and close down the system.
-                        await websocket.send("STATUS:System shutting down...")
+                        await websocket.send("STATUS:System shutting down...".encode())
                         globals.quit()
                 else:
-                    await websocket.send("STATUS:Insufficient Authority.")
+                    await websocket.send("STATUS:Insufficient Authority.".encode())
     except Exception as err:
         print(err)
 # Listen for incoming connections

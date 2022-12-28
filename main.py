@@ -38,5 +38,5 @@ except OperationalError as err:
 async def main():
     await asyncio.gather(thoughts.boot_ai(), server.listen())
 
-globals.load(physiology)
+globals.load(thoughts, physiology)
 asyncio.run(main())

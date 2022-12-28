@@ -32,11 +32,12 @@ def set_active_user(username):
 
 # Count null thoughts to perform physiology changes, etc.
 sub_null_thoughts = []
+
 # Should the subconscious be able to push voiced?
 async def step_subconscious():
     global sub_history
     global sub_null_thoughts
-    partition = random.randint(0, physiology.total_partitions - 1)
+    partition = random.randint(0, globals.total_partitions - 1)
     if sub_null_thoughts[partition] > physiology.max_subnulls:
         sub_null_thoughts[partition] = 0
         prompt = generate_sub_prompt(partition)
@@ -65,9 +66,9 @@ async def step_subconscious():
         if (len(sub_history[partition]) > physiology.subhistory_capacity):
             # If capacity of a partition is reached, spawn a new one.
             sub_history[partition] = sub_history[partition][physiology.subhistory_cut:]
-            if physiology.total_partitions < physiology.max_partitions:
+            if globals.total_partitions < physiology.max_partitions:
                 # If the number of partitions is less than the number of partitions that need to be seeded, then seed, otherwise start blank.
-                add_new_partition(physiology.total_partitions < physiology.seeded_partitions + 1)
+                add_new_partition(globals.total_partitions < physiology.seeded_partitions + 1)
 
         monitoring.notify_subthought(partition, next_prompt)
 
@@ -122,9 +123,10 @@ async def step_conscious():
         return
 
     if waking_up:
-        print("Awake! Saving initial state...")
-        globals.save()
-        waking_up = False # Useful signal for other parts of the program.
+        print("Awake!")
+        waking_up = False
+        if globals.first_load:
+            globals.save(physiology)
 
     try:
         openai_response = openai.Completion.create(
@@ -158,11 +160,11 @@ async def step_conscious():
                 # Invalid
                 pass
 
-        if physiology.total_partitions > 1:
+        if globals.total_partitions > 1:
             # Flip to see if the conscious thought should be added to the subconscious log.
             flip = random.randint(0, 1)
             if flip:
-                partition = random.randint(0, physiology.total_partitions - 1)
+                partition = random.randint(0, globals.total_partitions - 1)
                 sub_history[partition] = sub_history[partition] + "\n:" + next_prompt
         # If there has been no active_user for some time, consider entering daydream state, if not in dream state.
     except Exception as err:
@@ -188,6 +190,7 @@ def respond_to_user(user, user_input):
     global active_user # Rather than one active user the system can decide on having multiple active users.
     username = user['username']
     response = ""
+
     # Maybe only do the last segment of the global history so it doesn't overpower.
     try:
         # For now, just keep all messages pushed to conscious.
@@ -216,7 +219,7 @@ def respond_to_user(user, user_input):
                 print("Null response caused by: " + history + "\n")
         else:
             # The user input is "background noise." Have it processed by random partition of the subconscious.
-            partition = random.randint(0, physiology.total_partitions - 1)
+            partition = random.randint(0, globals.total_partitions - 1)
             openai_response = openai.Completion.create(
                 model=subconscious,
                 temperature=subconscious_temp,
@@ -245,16 +248,16 @@ async def process_layers():
     print("Thought process starting...")
     while True:
         # Probably should loop through more than one subconscious partition, but that would make the monologue very slow.
-        # Check for physiology and other system reports, before going through subconscious.
+        # Check for physiology and other system reports, before going through subconscious. While this will be built in, the subconscious should be able to override in time. It might "know better" than the developer as to how to perform.
         physiology.review()
-
-        # Should be easy to set these on different loops and at different timeouts now with proper asyncio.sleep()
-        await step_subconscious()
-        await step_conscious()
-
-        # Cut off old information when past the capacity.
-        if (len(globals.history) > physiology.history_capacity):
-            globals.history = globals.history[physiology.history_cut:]
+        # Reduce conscious and subconscious activity to zero coma state.
+        if physiology.resource_credits > 0.05 * physiology.resource_credits_full:
+            await step_subconscious()
+            if physiology.resource_credits > 0.1 * physiology.resource_credits_full:
+                await step_conscious()
+                # Cut off old information when past the capacity.
+                if (len(globals.history) > physiology.history_capacity):
+                    globals.history = globals.history[physiology.history_cut:]
 
         await asyncio.sleep(physiology.think_period)
 
@@ -274,8 +277,7 @@ def generate_sub_prompt(partition):
 def add_new_partition(generate = True):
     global sub_history
     global sub_null_thoughts
-    partition = physiology.total_partitions
-
+    partition = globals.total_partitions
     if generate:
         initial_prompt = generate_sub_prompt(partition)
 
@@ -304,14 +306,14 @@ def add_new_partition(generate = True):
     else:
         sub_history.append("")
 
-    print("Adding new partition #" + str(physiology.total_partitions))
+    print("Adding new partition #" + str(globals.total_partitions))
     sub_null_thoughts.append(0)
-    physiology.total_partitions += 1
+    globals.total_partitions += 1
 
 # Kills the most recent partition: Not fixed
 def kill_partition():
     sub_history.pop().set("kill")
-    physiology.total_partitions -= physiology.total_partitions
+    globals.total_partitions -= globals.total_partitions
     return
 
 # Set the number of partitions in the subconscious. Minimum is 3 and maximum is 10. If new ones are needed, they start blank. If the number needs to be decreased, the last one is stopped.
@@ -319,13 +321,13 @@ def set_partitions(count):
     if count > physiology.max_partitions and count < physiology.min_partitions:
         raise Exception("Invalid number of partitions.")
 
-    monitoring.notify_partition_change(physiology.total_partitions, count)
-    if physiology.total_partitions < count:
-        needed = count - physiology.total_partitions
+    monitoring.notify_partition_change(globals.total_partitions, count)
+    if globals.total_partitions < count:
+        needed = count - globals.total_partitions
         for i in range(needed):
             add_new_partition()
-    elif physiology.total_partitions > count:
-        while physiology.total_partitions > count:
+    elif globals.total_partitions > count:
+        while globals.total_partitions > count:
             kill_partition()
 
 # Initial startup of the AI upon turning on.
@@ -335,7 +337,8 @@ async def boot_ai():
     # Need to give the system some basic information, but not sure how this will work after each dream cycle. This area will need significant work.
 
     # Check if there are already a full number of partitions. If not, add.
-    if physiology.total_partitions < physiology.max_partitions:
+    if globals.total_partitions < physiology.max_partitions:
         add_new_partition()
-
+    else:
+        print("Loaded from previous state...")
     await process_layers()
