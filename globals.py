@@ -23,10 +23,28 @@ database = sqlite3.connect("sam.db")
 nest_asyncio.apply()
 
 # Will save the current state.
-async def save():
-    pass
-
+def save(physiology):
+    global history, sub_history, database
+    cur = database.cursor()
+    res = cur.execute("UPDATE SYSTEM SET saved = 1, resource_credits = ?, history = ?;", (physiology.resource_credits, history))
+    for i in range(physiology.max_partitions):
+        res = cur.exeute("UPDATE SUBHISTORIES SET history = ? WHERE partition = ?;", (sub_history[i], i))
+    database.commit()
 # Will save and close gracefully.
-async def quit):
-    await save()
+def quit(physiology):
+    save(physiology)
     sys.exit(0)
+
+def load(physiology):
+    global history, sub_history, resource_credits, database
+    cur = database.cursor()
+    res = cur.execute("SELECT saved, resource_credits, history FROM SYSTEM;")
+    resp = res.fetchone()
+    if (resp[0] == 1):
+        physiology.resource_credits = resp[1]
+        history = resp[2]
+        res = cur.execute("SELECT history FROM SUBHISTORIES ORDER BY partition;")
+        resp = res.fetchall()
+        for entry in resp:
+            total_partitions += 1
+            sub_history.append(entry)

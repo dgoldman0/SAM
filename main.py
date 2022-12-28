@@ -4,6 +4,7 @@ import server
 import admin
 import monitoring
 import asyncio
+import physiology
 from sqlite3 import OperationalError
 from threading import Thread
 
@@ -37,4 +38,5 @@ except OperationalError as err:
 async def main():
     await asyncio.gather(thoughts.boot_ai(), server.listen())
 
+globals.load(physiology)
 asyncio.run(main())
