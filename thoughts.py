@@ -228,7 +228,7 @@ def respond_to_user(user, user_input):
             if len(response) > 0:
                 globals.history += ("\n//" + username + ":" + response)
                 user['history'] += ("\n//" + username + ":" + response)
-                user['history_tuples'].append([hist_cut, user_cut, response, physiology.resource_credits])
+                user['history_tuples'].append([hist_cut, user_hist_cut, response, physiology.resource_credits])
             else:
                 # Ignore null responses.
                 print("Null response caused by: " + history + "\n")
