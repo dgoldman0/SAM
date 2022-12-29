@@ -45,7 +45,7 @@ async def step_subconscious():
     if sub_null_thoughts[partition] > physiology.max_subnulls:
         sub_null_thoughts[partition] = 0
         prompt = generate_sub_prompt(partition)
-        sub_history[partition] += "\n" + prompt
+        sub_history[partition] += "\n><" + prompt
 
     prompt = sub_history[partition]
     if (len(prompt)) > physiology.subhistory_capacity:
@@ -60,7 +60,7 @@ async def step_subconscious():
             frequency_penalty=0,
             presence_penalty=0,
             prompt=prompt,
-            stop='\n')
+            stop="\n><")
         next_prompt = openai_response["choices"][0]["text"].strip()
         physiology.resource_credits -= openai_response["usage"]["total_tokens"]
 
@@ -68,9 +68,9 @@ async def step_subconscious():
             sub_null_thoughts[partition] += 1
             return
 
-        print("SUB[" + str(partition) + "]: " + str(len(next_prompt)))
-
-        sub_history[partition] = sub_history[partition] + "\n" + next_prompt
+        # This replacement will prevent some confusion between system generated fake keycodes and real ones.
+        next_prompt = next_prompt.replace('\n><', '\n%3E%3C').replace('\n<>', '\n%3C%3E').replace('\n<SYSTEM>', '\n%3CSYSTEM%3E').replace('\nCOMMAND:', '\nCOMMAND%3A')
+        sub_history[partition] = sub_history[partition] + "\n><" + next_prompt
         if (len(sub_history[partition]) > physiology.subhistory_capacity) and data.total_partitions < physiology.max_partitions:
             # If the number of partitions is less than the number of partitions that need to be seeded, then seed, otherwise start blank.
             add_new_partition(data.total_partitions < physiology.seeded_partitions + 1)
@@ -79,18 +79,8 @@ async def step_subconscious():
 
         if next_prompt.startswith("COMMAND:"):
             command = next_prompt[8:]
-            system.handle_system_command(command)
+            system.handle_system_command(command, True)
             return
-        elif next_prompt.startswith("<SYSTEM>"):
-            push_system_message("<SYSTEM> at the start of a line indicates a system notice to you. Did you mean to start the line with that?", True)
-            return
-        try:
-            # Check if there's a COMMAND: anywhere in the reply and let SAM know subconsciously that to work, COMMAND: has to be at the beginning of the reply.
-            next_prompt.index("COMMAND:")
-            push_system_message("COMMAND: must be at the start of a reply to be registered by the system.", True)
-            return
-        except Exception:
-            pass
 
         # Determine if the thought propogates to the conscious. These values will be changed by physiology at some point.
         propogate = False
@@ -106,7 +96,7 @@ async def step_subconscious():
             else:
                 propogate = (roll < 5)
         if propogate:
-            data.history = data.history + "\n" + next_prompt
+            data.history = data.history + "\n<>" + next_prompt
             monitoring.notify_thought(next_prompt)
     except Exception as err:
         if str(err) == "You exceeded your current quota, please check your plan and billing details.":
@@ -145,7 +135,7 @@ async def step_conscious():
             frequency_penalty=0,
             presence_penalty=0,
             prompt=prompt,
-            stop='\n')
+            stop='\n><')
         next_prompt = openai_response["choices"][0]["text"].strip()
         physiology.resource_credits -= openai_response["usage"]["total_tokens"]
 
@@ -153,11 +143,11 @@ async def step_conscious():
             # Don't include null thoughts.
             return
 
-        data.history += ("\n" + next_prompt)
-        monitoring.notify_thought(next_prompt)
+        next_prompt = next_prompt.replace('\n//', '\n%2F%2F').replace('\n||', '\n%7C%7C').replace('\n><', '\n%3E%3C').replace('\n<SYSTEM>', '\n%3CSYSTEM%3E').replace('\nCOMMAND:', '\nCOMMAND%3A').replace('\n<>', '\n%3C%3E')
 
         # Check for special information in response. This might best go in its own method.
         if next_prompt.startswith("//"):
+            data.history += ('\n' + next_prompt)
             remainder = next_prompt[2:]
             try:
                 loc = remainder.index(":")
@@ -167,13 +157,16 @@ async def step_conscious():
             except Exception:
                 # Invalid
                 pass
+        else:
+            data.history += ("\n><" + next_prompt)
 
+        monitoring.notify_thought(next_prompt)
         if data.total_partitions > 1:
             # Flip to see if the conscious thought should be added to the subconscious log.
             flip = random.randint(0, 1)
             if flip:
                 partition = random.randint(0, data.total_partitions - 1)
-                sub_history[partition] = sub_history[partition] + "\n:" + next_prompt
+                sub_history[partition] = sub_history[partition] + "\n<>:" + next_prompt
         # If there has been no active_user for some time, consider entering daydream state, if not in dream state.
     except Exception as err:
         if str(err) == "You exceeded your current quota, please check your plan and billing details.":
@@ -200,6 +193,7 @@ def respond_to_user(user, user_input):
     response = ""
 
     # Maybe only do the last segment of the global history so it doesn't overpower.
+    user_input = user_input.replace('\n><', '\n%3E%3C').replace('\n<SYSTEM>', '\n%3CSYSTEM%3E').replace('\n<>', '\n%3C%3E').replace('\n<' + username + '>', '\n%3C' + username + '%3E')
     try:
         # For now, just keep all messages pushed to conscious. Will go to subconscious when daydreaming.
         if True:
@@ -220,16 +214,17 @@ def respond_to_user(user, user_input):
                 frequency_penalty=0.1,
                 presence_penalty=0.1,
                 prompt=history,
-                stop='\n')
+                stop="\n||")
             response = openai_response["choices"][0]["text"].strip()
+            response = response.replace('\n||', '\n%7C%7C').replace('\n<SYSTEM>', '\n%3CSYSTEM%3E').replace('\n<>', '\n%3C%3E').replace('\n<' + username + '>', '\n%3C' + username + '%3E')
             tokens = openai_response["usage"]["total_tokens"]
             physiology.resource_credits -= tokens
             user['tokens_spent'] += tokens
             print("Response: " + response)
-            data.history += ("\<" + username + "> :" + user_input)
+            data.history += ("\<" + username + ">:" + user_input)
             if len(response) > 0:
-                data.history += ("\n//" + username + ":" + response)
-                user['history'] += ("\n//" + username + ":" + response)
+                data.history += ("\n||" + username + ":" + response)
+                user['history'] += ("\n><" + username + ":" + response)
                 user['history_tuples'].append([hist_cut, user_hist_cut, response, physiology.resource_credits])
             else:
                 # Ignore null responses.
@@ -246,13 +241,13 @@ def respond_to_user(user, user_input):
                 frequency_penalty=0.1,
                 presence_penalty=0.1,
                 prompt=history,
-                stop='\n')
+                stop="\n><")
             response = openai_response["choices"][0]["text"].strip()
             physiology.resource_credits -= openai_response["usage"]["total_tokens"]
 
-            sub_history[partition] += ("\nMessage from " + username + ":" + user_input)
+            sub_history[partition] += ("\<" + username + ">:" + user_input)
             if len(response) > 0:
-                sub_history[partition] += ("\n//" + username + ":" + response)
+                sub_history[partition] += ("\n<" + username + ">:" + response)
         # Need to slice off old history as with other histories.
     except Exception as err:
         if str(err) == "You exceeded your current quota, please check your plan and billing details.":
@@ -281,7 +276,7 @@ def generate_sub_prompt(partition):
     initial_prompt = ""
     if partition == 0:
         # Partition zero is the system interface partition so that's where this should go.
-        initial_prompt = "<SYSTEM>: Waking up. System notifications will arrive in the form <SYSTEM>:Notification message. You can issue system commands by starting the line with COMMAND:, for instance, use COMMAND:HELP to get a list of system commands. There are a few other special symbols. <USERNAME>: at the start of a line indicates a chat message notification where USERNAME is replaced with their actual username. Use //USERNAME: at the beginning of a line to indicate that you want to reply to that user. The system will inform you if that user is not online."
+        initial_prompt = "<SYSTEM>:Waking up. System notifications will arrive in the form <SYSTEM>:Notification message. You can issue system commands by starting the line with COMMAND:, for instance, use COMMAND:HELP to get a list of system commands. There are a few other special symbols. <USERNAME>: at the start of a line indicates a chat message notification where USERNAME is replaced with their actual username. Use //USERNAME: at the beginning of a line to indicate that you want to reply to that user. The system will inform you if that user is not online."
     else:
         # Have to be careful, because some prompts give very short completions which can kill the subconscious thread.
         prompt_options = ["Tell me a story.", "Pick a topic and write a paragraph about it.", "Write a paragraph about what you want to do today."]
@@ -295,7 +290,7 @@ def add_new_partition(generate = True):
     global sub_null_thoughts
     partition = data.total_partitions
     if generate:
-        initial_prompt = generate_sub_prompt(partition)
+        initial_prompt = "><" + generate_sub_prompt(partition)
 
         # Generate initial material for subconscious thought by utilizing openai to generate some text.
         try:
@@ -307,7 +302,7 @@ def add_new_partition(generate = True):
                 frequency_penalty=0,
                 presence_penalty=0,
                 prompt=initial_prompt,
-                stop='\n')
+                stop="\n><")
             initial = openai_response["choices"][0]["text"].strip()
             physiology.resource_credits -= openai_response["usage"]["total_tokens"]
 

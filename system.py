@@ -6,7 +6,8 @@ import server
 import physiology
 
 # Should only occur within lock
-def handle_system_command(command):
+def handle_system_command(command, subconscious = False):
+    # Figure out which commands should be accessible to conscious vs subconscious layer, if any should be available to the conscious layer.
     command = command.upper()
     if command == "HELP":
         thoughts.push_system_message("Use COMMAND:HELP GENERAL to request general information. Use COMMAND:HELP USERS to get help with user information. Use COMMAND:HELP INFO to get a list of commands accessing external information sources. Use COMMAND: HELP PHYSIOLOGY to get physiology help.", True)

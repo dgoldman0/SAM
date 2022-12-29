@@ -12,10 +12,13 @@ dreaming = False
 async def daydream():
     global daydreaming
     daydreaming = True
+    print("Daydreaming...")
     for user in server.user_connections.items():
         tips = user['tips']
         spent = user['tokens_spent']
-        if spent > 0:
+        print("Spent: " + str(spent))
+        if True:
+#        if spent > 0:
             efficiency = tips / spent
             history = user['history'].split("\n")
             # Require minimum of 20 lines of chat.
@@ -50,7 +53,13 @@ async def daydream():
                     training += '{"prompt":Current thoughts:\\n' + tuple[0].replace('\n', '\\n')  + '\\n\\nCurrent discussion with ' + user['username'] + ':\\n' + tuple[1].replace('\n', '\\n') + '\\n, "completion":' + tuple[2].replace('\n', '\\n')}'
 
     # Train model and update.
+    # For test run just dump to file.
+    f = open("training.txt", "w")
+    print("Training file size: " + str(len(training)))
+    f.write(training)
+    f.close()
     # Number of epochs used should probably be higher in a dream state than daydream, and also higher under better conditions.
     daydreaming = False
+    print("Daydreaming Finished")
 
 async def dream():

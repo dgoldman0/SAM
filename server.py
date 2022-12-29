@@ -43,11 +43,11 @@ async def authenticate_user(websocket):
                         user['websocket'] = websocket
                         return user
 
-# Push a messaage to an active user.
+# Push a messaage to a user. Since this message is not coming as a reply, it is tagged with "//"
 async def message_user(username, message):
     user = user_connections.get(username)
     if user is not None:
-        user['history'] += "\n" + message
+        user['history'] += "\n//" + message
         await user['websocket'].send(("MSG:" + message).encode())
     else:
         # Notify SAM that no user is present.
@@ -118,6 +118,7 @@ async def converse(websocket):
                         tip = int(command[4:])
                         if user['tips'] + tip < max_user_tips:
                             user['tips'] += tip
+                            user['history'] += "<SYSTEM>:User tipped " + str(tip)
                             await websocket.send("STATUS:Tipped successfully.".encode())
                         else:
                             await websocket.send("STATUS:Insufficient balance.".encode())

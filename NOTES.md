@@ -29,6 +29,13 @@ Unlike with system notifications, commands issued by SAM will have to be in a sp
 - Block User (allows the system to block non-admin users for privacy)
 - Unblock User
 
+## Keycodes
+
+\>\< indicates start of new "native" thought.
+\<\> indicates inter-layer ("foreign") communication between conscious and subconscious.
+|| is used to indicate a voiced response coming from the user layer.
+// is used to indicate a voiced response coming from the conscious layer.
+
 # Parameter Tweaking
 
 There's still a lot of testing to do to figure out which parameters seem to work the best. However, it might be useful to have dynamic parameters. Indeed, doing so can help produce various mental states, including deep focus, creative, etc.
@@ -58,7 +65,7 @@ Subconscious is harder to figure out. The goal of the subconscious partition 0 i
 # Openai create fine-tune
 
 Include (history + user_history, SAM response) first, then randomly break up user_history into chunks and train on that too.
- 
+
 import os
 import openai
 openai.api_key = os.getenv("OPENAI_API_KEY")
