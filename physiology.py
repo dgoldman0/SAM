@@ -35,11 +35,7 @@ subthink_period = awake_subthink_period
 
 max_history_capacity = 2560
 max_subhistory_capacity = 1280
-max_user_history = 2560
-
-history_cut = 640
-subhistory_cut = 320
-userhistory_cut = 640
+max_userhistory_capacity = 2560
 
 min_subthought = 16
 max_subthought = 1024
@@ -53,6 +49,7 @@ max_subnulls = 2
 
 history_capacity = max_history_capacity
 subhistory_capacity = max_subhistory_capacity
+userhistory_capacity = max_userhistory_capacity
 
 # The number of resource credits that is full (will be changed to the approximate amount that would get the system through a 24 hour period.)
 resource_credits_full = 1000000

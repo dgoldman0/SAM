@@ -54,3 +54,20 @@ The starved, hungry,full, gorged parameters should be flexible.
 Cut off conscious thought and direct user input to the subconscious without rely and leave the subconscious running as a "daydream." while the system trains on the conscious and chat layer data.
 
 Subconscious is harder to figure out. The goal of the subconscious partition 0 is to regulate, so it might need to be a separate model. When very hungry, favor subconscious zero that yields the least resource drain?
+
+# Openai create fine-tune
+
+Include (history + user_history, SAM response) first, then randomly break up user_history into chunks and train on that too.
+ 
+import os
+import openai
+openai.api_key = os.getenv("OPENAI_API_KEY")
+openai.File.create(
+  file=open("mydata.jsonl", "rb"),
+  purpose='fine-tune'
+)
+
+import os
+import openai
+openai.api_key = os.getenv("OPENAI_API_KEY")
+openai.FineTune.create(training_file="file-XGinujblHPwGLSztz8cPS8XY")

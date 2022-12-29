@@ -37,7 +37,7 @@ async def authenticate_user(websocket):
                 if resp is not None:
                     await websocket.send("WELCOME".encode())
                     if user is None:
-                        return {"user_id": resp[0], "username": username, "display_name": resp[1], "admin": resp[2], "websocket": websocket, "history": ""}
+                        return {"user_id": resp[0], "username": username, "display_name": resp[1], "admin": resp[2], "websocket": websocket, "history": "", "history_tuples": [], "tokens_spent": 0, "tips": 0}
                     else:
                         user['websocket'] = websocket
                         return user
@@ -88,7 +88,7 @@ async def converse(websocket):
                     # Connection closed. Notify system and delete.
                     monitoring.notify_chat_closed(username)
                     thoughts.push_system_message(username + " disconnected.")
-                    user_connections[user['username']].websocket = None
+                    user_connections[user['username']]['websocket'] = None
             elif user_input.startswith("COMMAND:"):
                 # Process command such as save state
                 command = user_input[8:]

@@ -26,6 +26,8 @@ active_last_changed = 0
 
 waking_up = True
 
+# Should check to see if the system works with stop = \n in place now.
+
 def set_active_user(username):
     active_user = username
     active_last_changed = time.time()
@@ -43,6 +45,9 @@ async def step_subconscious():
         prompt = generate_sub_prompt(partition)
         sub_history[partition] += "\n" + prompt
 
+    prompt = sub_history[partition]
+    if (len(prompt)) > physiology.subhistory_capacity:
+        prompt = prompt[-physiology.subhistory_capacity:]
     # Get next completion from the subconscious based on existing subconscious dialogue. Maybe add randomness by seeding with random thoughts.
     try:
         openai_response = openai.Completion.create(
@@ -52,7 +57,8 @@ async def step_subconscious():
             top_p=physiology.subconscious_top_p,
             frequency_penalty=0,
             presence_penalty=0,
-            prompt=sub_history[partition])
+            prompt=prompt,
+            stop='\n')
         next_prompt = openai_response["choices"][0]["text"].strip()
         physiology.resource_credits -= openai_response["usage"]["total_tokens"]
 
@@ -63,12 +69,9 @@ async def step_subconscious():
         print("SUB[" + str(partition) + "]: " + str(len(next_prompt)))
 
         sub_history[partition] = sub_history[partition] + "\n" + next_prompt
-        if (len(sub_history[partition]) > physiology.subhistory_capacity):
-            # If capacity of a partition is reached, spawn a new one.
-            sub_history[partition] = sub_history[partition][physiology.subhistory_cut:]
-            if globals.total_partitions < physiology.max_partitions:
-                # If the number of partitions is less than the number of partitions that need to be seeded, then seed, otherwise start blank.
-                add_new_partition(globals.total_partitions < physiology.seeded_partitions + 1)
+        if (len(sub_history[partition]) > physiology.subhistory_capacity) and globals.total_partitions < physiology.max_partitions:
+            # If the number of partitions is less than the number of partitions that need to be seeded, then seed, otherwise start blank.
+            add_new_partition(globals.total_partitions < physiology.seeded_partitions + 1)
 
         monitoring.notify_subthought(partition, next_prompt)
 
@@ -118,8 +121,8 @@ async def step_conscious():
     global waking_up
 
     # Don't do anything if there isn't already something in the thought process. Wait until subconscious trickles up and fills the conscious with thoughts.
+    print("Conscious Length: " + str(len(globals.history)))
     if len(globals.history) < (physiology.history_capacity):
-        print("Conscious Length: " + str(len(globals.history)))
         return
 
     if waking_up:
@@ -128,6 +131,9 @@ async def step_conscious():
         if globals.first_load:
             globals.save(physiology)
 
+    prompt = globals.history
+    if (len(prompt)) > physiology.history_capacity:
+        prompt = prompt[-physiology.history_capacity:]
     try:
         openai_response = openai.Completion.create(
             model=conscious,
@@ -136,7 +142,8 @@ async def step_conscious():
             top_p=physiology.conscious_top_p,
             frequency_penalty=0,
             presence_penalty=0,
-            prompt=globals.history)
+            prompt=prompt,
+            stop='\n')
         next_prompt = openai_response["choices"][0]["text"].strip()
         physiology.resource_credits -= openai_response["usage"]["total_tokens"]
 
@@ -145,7 +152,6 @@ async def step_conscious():
             return
 
         globals.history += ("\n" + next_prompt)
-#        print("THOUGHT: " + next_prompt + "\n")
         monitoring.notify_thought(next_prompt)
 
         # Check for special information in response. This might best go in its own method.
@@ -197,7 +203,13 @@ def respond_to_user(user, user_input):
         if True:
             # Summarize the concscious history to make it easier to process with user input.
             user['history'] += ("\n" + "<" + username + ">" + ":" + user_input)
-            history = "Current thoughts:\n" + globals.history + "\n\nCurrent discussion with " + username + ":\n" + user['history']
+            hist_cut = globals.history
+            user_hist_cut = user['history']
+            if (len(hist_cut)) > physiology.history_capacity:
+                hist_cut = hist_cut[-physiology.history_capacity:]
+            if (len(user_hist_cut)) > physiology.userhistory_capacity:
+                hist_cut = hist_cut[-physiology.userhistory_capacity:]
+            history = "Current thoughts:\n" + hist_cut + "\n\nCurrent discussion with " + username + ":\n" + user_hist_cut
             openai_response = openai.Completion.create(
                 model=conscious,
                 temperature=physiology.conscious_temp,
@@ -205,15 +217,18 @@ def respond_to_user(user, user_input):
                 top_p=physiology.conscious_temp,
                 frequency_penalty=0.1,
                 presence_penalty=0.1,
-                prompt=history)
+                prompt=history,
+                stop='\n')
             response = openai_response["choices"][0]["text"].strip()
-            physiology.resource_credits -= openai_response["usage"]["total_tokens"]
-
+            tokens = openai_response["usage"]["total_tokens"]
+            physiology.resource_credits -= tokens
+            user['tokens_spent'] += tokens
             print("Response: " + response)
             globals.history += ("\<" + username + "> :" + user_input)
             if len(response) > 0:
                 globals.history += ("\n//" + username + ":" + response)
                 user['history'] += ("\n//" + username + ":" + response)
+                user['history_tuples'].append([hist_cut, user_cut, response, physiology.resource_credits])
             else:
                 # Ignore null responses.
                 print("Null response caused by: " + history + "\n")
@@ -227,7 +242,8 @@ def respond_to_user(user, user_input):
                 top_p=subconscious_top_p,
                 frequency_penalty=0.1,
                 presence_penalty=0.1,
-                prompt=history)
+                prompt=history,
+                stop='\n')
             response = openai_response["choices"][0]["text"].strip()
             physiology.resource_credits -= openai_response["usage"]["total_tokens"]
 
@@ -255,9 +271,6 @@ async def process_layers():
             await step_subconscious()
             if physiology.resource_credits > 0.1 * physiology.resource_credits_full:
                 await step_conscious()
-                # Cut off old information when past the capacity.
-                if (len(globals.history) > physiology.history_capacity):
-                    globals.history = globals.history[physiology.history_cut:]
 
         await asyncio.sleep(physiology.think_period)
 
@@ -290,7 +303,8 @@ def add_new_partition(generate = True):
                 top_p=physiology.subconscious_top_p,
                 frequency_penalty=0,
                 presence_penalty=0,
-                prompt=initial_prompt)
+                prompt=initial_prompt,
+                stop='\n')
             initial = openai_response["choices"][0]["text"].strip()
             physiology.resource_credits -= openai_response["usage"]["total_tokens"]
 

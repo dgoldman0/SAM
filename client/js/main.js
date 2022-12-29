@@ -46,7 +46,7 @@ $(document).ready(function() {
               msg = input.val();
               input.val("")
               if (msg.startsWith("/")) {
-                command = message.slice(1).toUpperCase();
+                command = msg.slice(1).toUpperCase();
                 switch (command) {
                   case 'QUIT':
                   ws.close();
