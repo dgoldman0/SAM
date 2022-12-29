@@ -11,13 +11,11 @@ conscious_defaults = {"awake_temp": 0.5, "awake_top_p": 1, "sleep_temp": 1, "sle
 subconscious_defaults = {"awake_temp": 0.9, "awake_top_p": 1, "sleep_temp": 1, "sleep_top_p": 1}
 
 awake_think_period = 1
-awake_subthink_period = 2
 
 max_think_period = 3
-min_think_period = 2 # For testing to see if this is bugging out the server connection.
+min_think_period = 0.5
 
 sleep_think_period = 0.5
-sleep_subthink_period = 1.5
 
 conscious_temp = conscious_defaults["awake_temp"]
 conscious_top_p = conscious_defaults["awake_top_p"]
@@ -31,8 +29,6 @@ userreply_tokens = 64
 
 # These rates might need to eb and flow within their parameter ranges. There can be long pauses beteeen thoughts. Another possibiltiy is that conscious thought rate will already depend on how many subconscious partitions there are. That might be enough modulation.
 think_period = awake_think_period
-# Might get rid of separate subthink period. It could be replaced with a multiprocess count, i.e. rather then running step_subconscious once in a loop, run it n times.
-subthink_period = awake_subthink_period
 
 max_history_capacity = 2560
 max_subhistory_capacity = 1280
@@ -54,8 +50,9 @@ userhistory_capacity = max_userhistory_capacity
 
 # The number of resource credits that is full (will be changed to the approximate amount that would get the system through a 24 hour period.)
 resource_credits_full = 1000000
-# The number of resource credits currently available. Start at hungry at the first load, but when this is stored in the DB keep it at whatever it is.
-resource_credits = resource_credits_full
+
+# The number of resource credits currently available.
+resource_credits = resource_credits_full / 2
 
 # Until the dream system is implemented, this is always true.
 awake = True
@@ -81,7 +78,6 @@ def review():
     global resource_credits, resource_credits_full, think_period, max_think_period, min_think_period, awake_think_period, sleep_think_period, full_status, awake
     print(datetime.now(timezone.utc).strftime("%H:%M:%S") + ": " + str(resource_credits) + " w/ think period of " + str(think_period))
     if resource_credits < 0.25 * resource_credits_full:
-        # Slow down thinking to the average of the current rate and the slowest rate to conserve resources.
         depress()
         if resource_credits < 0.125 * resource_credits_full:
             thoughts.push_system_message("Starving", True)
@@ -91,9 +87,8 @@ def review():
         full_status = "Hungry"
         return
 
-    # Having too few credits is less important than having too many, so notifications here should be more limited.
+    # Having too many credits is less important than having too few, so notifications here should be more limited.
     if resource_credits > 0.75 * resource_credits_full:
-        # Speed up thinking to the average of the current rate and the fastest rate to take advantage of extra resources.
         excite()
         if resource_credits > 0.875 * resource_credits_full:
             thoughts.push_system_message("Gorged", True)
