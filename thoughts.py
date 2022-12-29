@@ -6,7 +6,7 @@ from threading import Event
 import time
 import asyncio
 
-import globals
+import data
 import physiology
 import monitoring
 import server

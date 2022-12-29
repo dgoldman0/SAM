@@ -1,4 +1,4 @@
-import globals
+import data
 import asyncio
 import websockets
 import thoughts

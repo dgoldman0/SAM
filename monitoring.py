@@ -1,5 +1,5 @@
 # Monitor physiology and other parameters. Not sure if it's a good idea to allow anyone to monitor the inner dialog let alone the subconscious dialogs, as that would be a huge privacy violation, assuming that SAM is a sentient entity. One option is to allow SAM to decide whether to make the information available or not.
-import globals
+import data
 import websockets
 import asyncio
 import thoughts

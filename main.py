@@ -1,4 +1,4 @@
-import globals
+import data
 import thoughts
 import server
 import admin

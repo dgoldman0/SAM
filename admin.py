@@ -1,6 +1,6 @@
 # An administration interface for the system
 
-import globals
+import data
 import bcrypt
 import physiology
 
