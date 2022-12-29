@@ -10,7 +10,7 @@ max_user_tips = 10000
 user_connections = {}
 
 async def authenticate_user(websocket):
-    database = globals.database
+    database = data.database
     await websocket.send("SAM Chat Interface".encode())
     response = await websocket.recv()
     if response is not None:
@@ -91,30 +91,41 @@ async def converse(websocket):
                     thoughts.push_system_message(username + " disconnected.")
                     user_connections[user['username']]['websocket'] = None
             elif user_input.startswith("COMMAND:"):
-                # Process command such as save state
+                # Process command such as save state. This code should go in its own function, but for now this is fine.
                 command = user_input[8:].upper()
-                if user['admin']:
-                    if (command == "SAVE"):
-                        # Save current state.
-                        globals.save()
+                if (command == "SAVE"):
+                    # Save current state.
+                    if user['admin']:
+                        data.save()
                         await websocket.send("STATUS:System saving...".encode())
-                    elif (command == "CLOSE"):
-                        # Save and close down the system.
+                    else:
+                        await websocket.send("STATUS:Insufficient Authority.".encode())
+                elif command == "CLOSE":
+                    # Save and close down the system.
+                    if user['admin']:
                         await websocket.send("STATUS:System shutting down...".encode())
-                        globals.quit()
-                    elif (command.startswith("TIP ")):
-                        try:
-                            tip = int(command[4:])
-                            if user['tips'] + tip < max_user_tips:
-                                user['tips'] += tip
-                                await websocket.send("STATUS:Tipped successfully.".encode())
-                            else:
-                                await websocket.send("STATUS:Insufficient balance.".encode())
-                        except Exception as err:
-                            print("ERR: " + err)
-                            await websocket.send("STATUS:Invalid tip amount.".encode())
+                        data.quit()
+                    else:
+                        await websocket.send("STATUS:Insufficient Authority.".encode())
+                elif command == "DAYDREAM":
+                    if user['admin']:
+                        await websocket.send("STATUS:System entering daydream...".encode())
+                        await learning.daydream()
+                    else:
+                        await websocket.send("STATUS:Insufficient Authority.".encode())
+                elif command.startswith("TIP "):
+                    try:
+                        tip = int(command[4:])
+                        if user['tips'] + tip < max_user_tips:
+                            user['tips'] += tip
+                            await websocket.send("STATUS:Tipped successfully.".encode())
+                        else:
+                            await websocket.send("STATUS:Insufficient balance.".encode())
+                    except Exception as err:
+                        print("ERR: " + err)
+                        await websocket.send("STATUS:Invalid tip amount.".encode())
                 else:
-                    await websocket.send("STATUS:Insufficient Authority.".encode())
+                    await websocket.send("STATUS:Unknown command.".encode())
     except Exception as err:
         print(err)
 

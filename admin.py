@@ -5,7 +5,7 @@ import bcrypt
 import physiology
 
 def initialize_database(admin_password):
-    database = globals.database
+    database = data.database
     # Check if already initialized
     cur = database.cursor()
     try:
@@ -23,7 +23,7 @@ def initialize_database(admin_password):
             cur.execute("CREATE TABLE SUBHISTORIES(partition INT NOT NULL, history TEXT NOT NULL DEFAULT '');")
             # Fill system and subhistory tables with blank data.
             database.execute("INSERT INTO SYSTEM(saved) VALUES(0);")
-            for i in range (globals.max_partitions):
+            for i in range (data.max_partitions):
                 database.execute("INSERT INTO SUBHISTORIES(partition) VALUES(" + str(i) + ");")
             database.commit()
         else:

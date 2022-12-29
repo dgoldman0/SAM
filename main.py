@@ -13,7 +13,7 @@ from threading import Thread
 
 # Want to be able to include an offline history so the bot can talk to the users while they're offline. Though not what kind of code to get the bot to do that.
 
-database = globals.database
+database = data.database
 
 cur = database.cursor()
 
@@ -38,5 +38,5 @@ except OperationalError as err:
 async def main():
     await asyncio.gather(thoughts.boot_ai(), server.listen())
 
-globals.load(thoughts, physiology)
+data.load(thoughts, physiology)
 asyncio.run(main())
