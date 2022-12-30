@@ -65,16 +65,3 @@ Subconscious is harder to figure out. The goal of the subconscious partition 0 i
 # Openai create fine-tune
 
 Include (history + user_history, SAM response) first, then randomly break up user_history into chunks and train on that too.
-
-import os
-import openai
-openai.api_key = os.getenv("OPENAI_API_KEY")
-openai.File.create(
-  file=open("mydata.jsonl", "rb"),
-  purpose='fine-tune'
-)
-
-import os
-import openai
-openai.api_key = os.getenv("OPENAI_API_KEY")
-openai.FineTune.create(training_file="file-XGinujblHPwGLSztz8cPS8XY")

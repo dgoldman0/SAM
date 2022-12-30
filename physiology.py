@@ -38,7 +38,7 @@ min_subthought = 16
 max_subthought = 1024
 
 # Because they're only executed one at a time, at least right now, adding more partitions just increases concurrent thoughts without adding lag.
-min_partitions = 10
+min_partitions = 5
 seeded_partitions = 4 # seed the first n partitions after partition 0 (since partition 0 is for system and must always be seeded)
 max_partitions = 10
 
@@ -56,6 +56,13 @@ resource_credits = resource_credits_full / 2
 
 # Until the dream system is implemented, this is always true.
 awake = True
+
+full_status = ""
+
+# Dreaming and Learning
+max_dream_cycles = 10
+max_dream_length = 150
+max_epochs = 10
 
 # Excite and depress physiology.
 def excite():

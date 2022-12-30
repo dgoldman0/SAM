@@ -3,6 +3,7 @@ import asyncio
 import websockets
 import thoughts
 import monitoring
+import learning
 
 from threading import Thread
 

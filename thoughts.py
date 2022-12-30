@@ -167,6 +167,7 @@ async def step_conscious():
             if flip:
                 partition = random.randint(0, data.total_partitions - 1)
                 sub_history[partition] = sub_history[partition] + "\n<>:" + next_prompt
+
         # If there has been no active_user for some time, consider entering daydream state, if not in dream state.
     except Exception as err:
         if str(err) == "You exceeded your current quota, please check your plan and billing details.":
@@ -204,8 +205,8 @@ def respond_to_user(user, user_input):
             if (len(hist_cut)) > physiology.history_capacity:
                 hist_cut = hist_cut[-physiology.history_capacity:]
             if (len(user_hist_cut)) > physiology.userhistory_capacity:
-                hist_cut = hist_cut[-physiology.userhistory_capacity:]
-            history = "Current thoughts:\n" + hist_cut + "\n\nCurrent discussion with " + username + ":\n" + user_hist_cut
+                user_hist_cut = user_hist_cut[-physiology.userhistory_capacity:]
+            history = "<SYSTEM>:Current thoughts:\n" + hist_cut + "\n\n<SYSTEM>:Current discussion with " + username + ":\n" + user_hist_cut
             openai_response = openai.Completion.create(
                 model=user_model,
                 temperature=physiology.conscious_temp,
@@ -214,7 +215,7 @@ def respond_to_user(user, user_input):
                 frequency_penalty=0.1,
                 presence_penalty=0.1,
                 prompt=history,
-                stop="\n||")
+                stop="\n><")
             response = openai_response["choices"][0]["text"].strip()
             response = response.replace('\n||', '\n%7C%7C').replace('\n<SYSTEM>', '\n%3CSYSTEM%3E').replace('\n<>', '\n%3C%3E').replace('\n<' + username + '>', '\n%3C' + username + '%3E')
             tokens = openai_response["usage"]["total_tokens"]
