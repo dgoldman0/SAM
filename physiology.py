@@ -73,15 +73,14 @@ async def cycle_rhythm():
     # Enter daydream every hour or so, and sleep every 18 hours or so.
     hours_awake = 0
     while True:
+        # Right now the system doesn't keep track of lost sleep, but that's important to help conserve resources and to ensure dreaming.
         if hours_awake == 18:
             hours_awake = 0
-            learning.dream()
+            comppleted = await learning.dream()
         else:
             await asyncio.sleep(3600)
-            learning.daydream()
+            await learning.daydream()
             hours_awake += 1
-
-    pass
 
 # Excite and depress physiology.
 def excite():

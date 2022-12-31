@@ -164,14 +164,32 @@ async def daydream():
     print("Daydreaming Finished")
 
 # Dream is different from daydreaming in that the system runs through multiple iterations where new monologue is processed.
-async def dream():
+async def dream(reentry = 0):
     global dream_state
     dream_state = "Dreaming"
+    thoughts.push_system_message("Entering dream state.")
 
     full_status = physiology.full_status
 
+    # Train control partition #0: control should prioritize neither hunger nor fullness. Control training is first to let the system wake up right away.
+    n_epochs = physiology.max_epochs
+    if full_status == "Starving" or full_status == "Gorged":
+        n_epochs = max(1, round(0.25 * n_epochs))
+    elif full_status == "Hungry" or full_status == "Full"
+        n_epochs = max(1, round(0.5 * n_epochs))
+    training = split(data.sub_history[0])
+    control_model = thoughts.control_model
+    if control_model == "text-davinci-003":
+        control_model = "davinci"
+    model = await run_training(training, control_model, n_epochs)
+    thoughts.control_model = model['fine_tuned_model']
+
+    # Allow the system to break out of the dream state.
+    if dream_state == "Awake":
+        return False # Return not completed.
+
     # Hungrier means shorter dreams and fewer cycles to conserve resources. Minimum of one dream cycle and 50 or iterations so should give a good training body regardless.
-    dream_cycles = max(1, round(physiology.max_dream_cycles * physiology.resource_credits / physiology.resource_credits_full))
+    dream_cycles = max(1, round(physiology.max_dream_cycles * physiology.resource_credits / physiology.resource_credits_full) - reentry)
     dream_length = max(50, round(physiology.max_dream_length * physiology.resource_credits / physiology.resource_credits_full))
 
     # The ideal state is being neither starved nor gorged, with a slight emphasis on preferring being full to being hungry.
@@ -213,25 +231,9 @@ async def dream():
         model = await run_training(training, subconscious_model, n_epochs)
         thoughts.subconscious_model = model['fine_tuned_model']
 
-        # Train control partition #0: control should prioritize neither hunger nor fullness, so it'll use a different epoch system.
-        n_epochs = physiology.max_epochs
-        if full_status == "Starving" or full_status == "Gorged":
-            n_epochs = max(1, round(0.25 * n_epochs))
-        elif full_status == "Hungry" or full_status == "Full"
-            n_epochs = max(1, round(0.5 * n_epochs))
-        training = split(data.sub_history[0])
-        control_model = thoughts.control_model
-        if control_model == "text-davinci-003":
-            control_model = "davinci"
-        model = await run_training(training, control_model, n_epochs)
-        thoughts.control_model = model['fine_tuned_model']
-
         # Pause between dreams. The hungrier the system is, the fewer dreams it should have to conserve resources during the full day.
         await asyncio.sleep(round(physiology.max_dream_break * (1-(physiology.resource_credits / physiology.resource_credits_full))))
-        # Allow the system to break out of the dream state.
-        if dream_state == "Awake":
-            data.save(physiology)
-            break
 
     data.save(physiology)
     dream_state = "Awake"
+    return True # Return completed
