@@ -15,8 +15,6 @@ awake_think_period = 3
 max_think_period = 4
 min_think_period = 2
 
-sleep_think_period = 0.5
-
 conscious_temp = conscious_defaults["awake_temp"]
 conscious_top_p = conscious_defaults["awake_top_p"]
 subconscious_temp = subconscious_defaults["awake_temp"]
@@ -30,19 +28,24 @@ userreply_tokens = 64
 # These rates might need to eb and flow within their parameter ranges. There can be long pauses beteeen thoughts. Another possibiltiy is that conscious thought rate will already depend on how many subconscious partitions there are. That might be enough modulation.
 think_period = awake_think_period
 
-max_history_capacity = 2560
-max_subhistory_capacity = 1280
+max_history_capacity = 5120
+max_subhistory_capacity = 2560
 max_userhistory_capacity = 2560
 
 min_subthought = 16
 max_subthought = 1024
 
 # Because they're only executed one at a time, at least right now, adding more partitions just increases concurrent thoughts without adding lag.
-min_partitions = 5
+min_partitions = 2
 seeded_partitions = 4 # seed the first n partitions after partition 0 (since partition 0 is for system and must always be seeded)
 max_partitions = 10
+# Will control how many active
+focus_level = 5
 
 max_subnulls = 2
+
+# May be used to increase quality of responses when there's excess energy to burn up.
+best_of = 1
 
 history_capacity = max_history_capacity
 subhistory_capacity = max_subhistory_capacity
@@ -63,6 +66,22 @@ full_status = ""
 max_dream_cycles = 10
 max_dream_length = 150
 max_epochs = 10
+max_dream_break = 1200
+
+# Cycle between periods of wakefulness and sleep.
+async def cycle_rhythm():
+    # Enter daydream every hour or so, and sleep every 18 hours or so.
+    hours_awake = 0
+    while True:
+        if hours_awake == 18:
+            hours_awake = 0
+            learning.dream()
+        else:
+            await asyncio.sleep(3600)
+            learning.daydream()
+            hours_awake += 1
+
+    pass
 
 # Excite and depress physiology.
 def excite():
@@ -74,15 +93,12 @@ def depress():
     think_period = 0.5 * (think_period + max_think_period)
 
 def stabilize():
-    global think_period, awake_think_period, sleep_think_period
-    if awake:
-        think_period = 0.5 * (think_period + awake_think_period)
-    else:
-        think_period = 0.5 * (think_period + sleep_think_period)
+    global think_period, awake_think_period
+    think_period = 0.5 * (think_period + awake_think_period)
 
 # Review physiology and push any notifications necessary.
 def review():
-    global resource_credits, resource_credits_full, think_period, max_think_period, min_think_period, awake_think_period, sleep_think_period, full_status, awake
+    global resource_credits, resource_credits_full, think_period, max_think_period, min_think_period, awake_think_period, full_status, awake
     print(datetime.now(timezone.utc).strftime("%H:%M:%S") + ": " + str(resource_credits) + " w/ think period of " + str(think_period))
     if resource_credits < 0.25 * resource_credits_full:
         depress()

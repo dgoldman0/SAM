@@ -11,6 +11,7 @@ import physiology
 import monitoring
 import server
 import system
+import learning
 
 # Eventually it might possibly make sense to replace a single string with a list of strings, to make it easier to cut up by prompt and completion.
 sub_history = data.sub_history
@@ -21,6 +22,7 @@ user_model = "text-davinci-003"
 conscious_model = "text-davinci-003"
 regulator_model = "text-davinci-003"
 subconscious_model = "text-davinci-003"
+control_model = "text-davinci-003"
 
 # The current user that SAM is listening to, if any, and set the time at which it was changed.
 active_user = ""
@@ -38,10 +40,11 @@ def set_active_user(username):
 sub_null_thoughts = []
 
 # Should the subconscious be able to push voiced?
-async def step_subconscious():
+async def step_subconscious(partition = None):
     global sub_history
     global sub_null_thoughts
-    partition = random.randint(0, data.total_partitions - 1)
+    if partition is None:
+        partition = random.randint(1, data.total_partitions - 1)
     if sub_null_thoughts[partition] > physiology.max_subnulls:
         sub_null_thoughts[partition] = 0
         prompt = generate_sub_prompt(partition)
@@ -51,9 +54,12 @@ async def step_subconscious():
     if (len(prompt)) > physiology.subhistory_capacity:
         prompt = prompt[-physiology.subhistory_capacity:]
     # Get next completion from the subconscious based on existing subconscious dialogue. Maybe add randomness by seeding with random thoughts.
+    model = subconscious_model
+    if partition == 0:
+        model = control_model
     try:
         openai_response = openai.Completion.create(
-            model=subconscious_model,
+            model=model,
             temperature=physiology.subconscious_temp,
             max_tokens=physiology.conscious_tokens,
             top_p=physiology.subconscious_top_p,
@@ -77,7 +83,8 @@ async def step_subconscious():
 
         monitoring.notify_subthought(partition, next_prompt)
 
-        if next_prompt.startswith("COMMAND:"):
+        # Commands can only come from control partition.
+        if partition == 0 and next_prompt.startswith("COMMAND:"):
             command = next_prompt[8:]
             system.handle_system_command(command, True)
             return
@@ -197,7 +204,7 @@ def respond_to_user(user, user_input):
     user_input = user_input.replace('\n><', '\n%3E%3C').replace('\n<SYSTEM>', '\n%3CSYSTEM%3E').replace('\n<>', '\n%3C%3E').replace('\n<' + username + '>', '\n%3C' + username + '%3E')
     try:
         # For now, just keep all messages pushed to conscious. Will go to subconscious when daydreaming.
-        if True:
+        if learning.dream_state != "Dreaming" and learning.dream_state != "Daydreaming":
             # Summarize the concscious history to make it easier to process with user input.
             user['history'] += ("\n" + "<" + username + ">" + ":" + user_input)
             hist_cut = data.history
@@ -231,24 +238,8 @@ def respond_to_user(user, user_input):
                 # Ignore null responses.
                 print("Null response caused by: " + history + "\n")
         else:
-            # This hasn't been updated yet. It probably will break when it's used.
-            # The user input is "background noise." Have it processed by random partition of the subconscious.
-            partition = random.randint(0, data.total_partitions - 1)
-            openai_response = openai.Completion.create(
-                model=subconscious_model,
-                temperature=subconscious_temp,
-                max_tokens=physiology.conscious_tokens,
-                top_p=subconscious_top_p,
-                frequency_penalty=0.1,
-                presence_penalty=0.1,
-                prompt=history,
-                stop="\n><")
-            response = openai_response["choices"][0]["text"].strip()
-            physiology.resource_credits -= openai_response["usage"]["total_tokens"]
-
-            sub_history[partition] += ("\<" + username + ">:" + user_input)
-            if len(response) > 0:
-                sub_history[partition] += ("\n<" + username + ">:" + response)
+            # Not paying attention, so push to first non-control subconscious layer.
+            data.sub_history[1] += ("\<" + username + ">:" + user_input)
         # Need to slice off old history as with other histories.
     except Exception as err:
         if str(err) == "You exceeded your current quota, please check your plan and billing details.":
@@ -263,10 +254,11 @@ async def process_layers():
     print("Thought process starting...")
     while True:
         # Probably should loop through more than one subconscious partition, but that would make the monologue very slow.
-        # Check for physiology and other system reports, before going through subconscious. While this will be built in, the subconscious should be able to override in time. It might "know better" than the developer as to how to perform.
+        # Always run through the control system and review.
+        await step_subconscious(0)
         physiology.review()
-        # Reduce conscious and subconscious activity to zero coma state.
-        if physiology.resource_credits > 0.05 * physiology.resource_credits_full:
+        # Reduce conscious and subconscious activity to zero coma state, and also don't iterate when dreaming, since that would interfere.
+        if physiology.resource_credits > 0.05 * physiology.resource_credits_full and learning.dream_state != "Dreaming":
             await step_subconscious()
             if physiology.resource_credits > 0.1 * physiology.resource_credits_full:
                 await step_conscious()

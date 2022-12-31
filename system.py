@@ -18,7 +18,7 @@ def handle_system_command(command, subconscious = False):
     elif command == "HELP INFO":
         thoughts.push_system_message("Use COMMAND:DATETIME to get current date and time (UTC) as day/month/year hour/minute/second.", True)
     elif command == "HELP PHYSIOLOGY":
-        thoughts.push_system_message("Use COMMAND:CREDITS to get current resource credits available. Use COMMAND:PERIOD to get thought period. Use COMMAND:EXCITE to decrease think period (speed up thinking). Use COMMAND:DEPRESS to increase thought period (slow down thought period). Use COMMAND:STABILIZE to stabilize the thought period.", True)
+        thoughts.push_system_message("Use COMMAND:CREDITS to get current resource credits available. Use COMMAND:PERIOD to get thought period. Use COMMAND:EXCITE to decrease think period (speed up thinking). Use COMMAND:DEPRESS to increase thought period (slow down thought period). Use COMMAND:STABILIZE to stabilize the thought period. COMMAND:CHECKDREAM will let you know if you are currently dreaming or not. COMMAND:AWAKE will wake you from a dream state.", True)
     elif command == "COMMAND:CREDITS":
         thoughts.push_system_message("Current resource credits available: " + str(physiology.resource_credits), True)
     elif command == "COMMAND:PERIOD":
@@ -32,6 +32,12 @@ def handle_system_command(command, subconscious = False):
     elif command == "COMMAND:STABILIZE":
         physiology.stabilize()
         thoughts.push_system_message("Stabilized. Current think period: " + str(physiology.think_period), True)
+    elif command == "CHECKDREAM":
+        # Check dreaming status.
+        pass
+    elif command == "WAKE":
+        # Force wakeup from dream.
+        pass
     elif command == "DATETIME":
         thoughts.push_system_message("The current datetime is " + datetime.now(timezone.utc).strftime("%d/%m/%Y %H:%M:%S"), True)
     elif command == "LISTUSERS":
