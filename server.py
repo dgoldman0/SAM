@@ -10,6 +10,7 @@ from threading import Thread
 max_user_tips = 10000
 user_connections = {}
 
+# Should probably move to admin or something.
 async def authenticate_user(websocket):
     database = data.database
     await websocket.send("SAM Chat Interface".encode())
@@ -22,13 +23,17 @@ async def authenticate_user(websocket):
             if user is not None and user['websocket'] is not None:
                 return user # User was already connected so let them keep their history.
             cur = database.cursor()
-            res = cur.execute("SELECT salt FROM USERS WHERE username = ?;", (username, ))
+            res = cur.execute("SELECT blocked, salt FROM USERS WHERE username = ?;", (username, ))
             resp = res.fetchone()
             if resp is None:
                 # No such user or database not initialized.
+                await websocket.send("UNKNOWN")
                 print("Unidentified user: " + username)
                 return None
-            salt = resp[0].decode()
+            if resp[0] == False:
+                await websocket.send("BLOCKED")
+                return None
+            salt = resp[1].decode()
             await websocket.send(("CHALLENGE:" + str(salt)).encode())
             response = await websocket.recv()
             if response is not None:
@@ -43,7 +48,8 @@ async def authenticate_user(websocket):
                     else:
                         user['websocket'] = websocket
                         return user
-
+                else:
+                    await websocket.send("INVALID")
 # Push a messaage to a user. Since this message is not coming as a reply, it is tagged with "//"
 async def message_user(username, message):
     user = user_connections.get(username)

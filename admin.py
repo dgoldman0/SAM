@@ -14,7 +14,7 @@ def initialize_database(admin_password):
     except Exception as err:
         if str(err) == "no such table: USERS":
             # Create user table and add the administrator.
-            cur.execute("CREATE TABLE USERS(user_id INT PRIMARY KEY, username TEXT NOT NULL, display_name TEXT NOT NULL, passwd TEXT NOT NULL, salt TEXT NOT NULL, admin INT DEFAULT FALSE, credits INT NOT NULL DEFAULT 0);")
+            cur.execute("CREATE TABLE USERS(user_id INT PRIMARY KEY, username TEXT NOT NULL, display_name TEXT NOT NULL, passwd TEXT NOT NULL, salt TEXT NOT NULL, admin INT DEFAULT FALSE, credits INT NOT NULL DEFAULT 0, blocked NOT NULL DEFAULT FALSE);")
             salt = bcrypt.gensalt()
             password = bcrypt.hashpw(admin_password.encode(), salt)
             cur.execute("INSERT INTO USERS (username, display_name, passwd, salt, admin) VALUES (?, ?, ?, ?, ?);", ("admin", "System Administrator", password, salt, True))
@@ -28,3 +28,16 @@ def initialize_database(admin_password):
             database.commit()
         else:
             raise Exception("Unknown Error")
+
+
+def block_user(username):
+    database = data.database
+    cur = database.cursor()
+    cur.execute("UPDATE USERS SET blocked = TRUE WHERE username = ?", (username, ))
+    database.commit()
+
+def unblock_user(username):
+    database = data.database
+    cur = database.cursor()
+    cur.execute("UPDATE USERS SET blocked = FALSE WHERE username = ?", (username, ))
+    database.commit()

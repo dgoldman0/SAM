@@ -4,6 +4,8 @@ from datetime import datetime, timezone
 import thoughts
 import server
 import physiology
+import learning
+import admin
 
 # Should only occur within lock
 def handle_system_command(command, subconscious = False):
@@ -34,17 +36,26 @@ def handle_system_command(command, subconscious = False):
         thoughts.push_system_message("Stabilized. Current think period: " + str(physiology.think_period), True)
     elif command == "CHECKDREAM":
         # Check dreaming status.
-        pass
+        if learning.dream_state == "Dreaming":
+            thoughts.push_system_message("Currently asleep.", True)
+        else:
+            thoughts.push_system_message("Currently awake.", True)
     elif command == "WAKE":
-        # Force wakeup from dream.
-        pass
+        learning.dream_state = "Awake"
+        thoughts.push_system_message("Forced wakeup started.", True)
     elif command == "DATETIME":
         thoughts.push_system_message("The current datetime is " + datetime.now(timezone.utc).strftime("%d/%m/%Y %H:%M:%S"), True)
     elif command == "LISTUSERS":
         thoughts.push_system_message("Here is the list of active users: " + str(server.users.keys()), True)
     elif command.startswith("BLOCK:"):
-        pass
+        username = command[6:]
+        if len(username) > 0:
+            admin.block(username)
+            thoughts.push_system_message("User was blocked by request.", True)
     elif command.startswith("UNBLOCK:"):
-        pass
+        username = command[6:]
+        if len(username) > 0:
+            admin.unblock(username)
+            thoughts.push_system_message("User was unblocked by request.", True)
     else:
         thoughts.push_system_message("Unknown command. Please try a different command or use HELP GENERAL for more information on available commands.", True)

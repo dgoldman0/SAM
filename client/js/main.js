@@ -62,7 +62,12 @@ $(document).ready(function() {
               input.focus();
               return false;
             });
+          } else if (msg == "INVALID" || msg == "UNKNOWN") {
+            f.innerHTML = "Unable to connect: Invalid login credentials."
+          } else if (msg == "BLOCKED") {
+            f.innerHTML = "Unable to connect: User is blocked from accessing SAM."
           }
+
         break;
         default:
           if (msg.startsWith("MSG:")) {

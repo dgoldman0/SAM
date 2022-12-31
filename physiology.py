@@ -10,6 +10,8 @@ conscious_defaults = {"awake_temp": 0.5, "awake_top_p": 1, "sleep_temp": 1, "sle
 # Need to revise
 subconscious_defaults = {"awake_temp": 0.9, "awake_top_p": 1, "sleep_temp": 1, "sleep_top_p": 1}
 
+maximum_active_chats = 10
+
 # Start slow for testing.
 awake_think_period = 3
 max_think_period = 4
@@ -29,6 +31,7 @@ userreply_tokens = 64
 think_period = awake_think_period
 
 max_history_capacity = 5120
+max_control_capacity = 5120
 max_subhistory_capacity = 2560
 max_userhistory_capacity = 2560
 
@@ -48,6 +51,7 @@ max_subnulls = 2
 best_of = 1
 
 history_capacity = max_history_capacity
+control_capacity = max_control_capacity
 subhistory_capacity = max_subhistory_capacity
 userhistory_capacity = max_userhistory_capacity
 
