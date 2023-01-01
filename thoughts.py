@@ -20,9 +20,9 @@ sub_history = data.sub_history
 
 user_model = "text-davinci-003"
 conscious_model = "text-davinci-003"
-regulator_model = "text-davinci-003"
-subconscious_model = "text-davinci-003"
-control_model = "text-davinci-003"
+# Subconscious and control may be able to do well enough with curie as the model. 
+subconscious_model = "text-curie-001"
+control_model = "text-curie-001"
 
 # The current user that SAM is listening to, if any, and set the time at which it was changed.
 active_user = ""
@@ -92,7 +92,7 @@ async def step_subconscious(partition = None):
             system.handle_system_command(command, True)
             return
 
-        # Determine if the thought propogates to the conscious. These values will be changed by physiology at some point.
+        # Decide if the thought propogates to the conscious. These values will be changed by physiology at some point.
         propogate = False
         roll = random.randint(0, 9)
         if len(server.user_connections) != 0:

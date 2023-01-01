@@ -146,16 +146,16 @@ async def daydream():
             if line is not in training:
                 training.append(line)
     subconscious_model = thoughts.subconscious_model
-    if subconscious_model == "text-davinci-003":
-        subconscious_model = "davinci"
+    if subconscious_model == "text-curie-001":
+        subconscious_model = "curie"
     model = await run_training(training, subconscious_model, n_epochs)
     thoughts.subconscious_model = model['fine_tuned_model']
 
     # Train control partition #0: control should prioritize neither hunger nor fullness.
     training = split(data.sub_history[0])
     control_model = thoughts.control_model
-    if control_model == "text-davinci-003":
-        control_model = "davinci"
+    if control_model == "text-curie-001":
+        control_model = "curie"
     model = await run_training(training, control_model, n_epochs)
     thoughts.control_model = model['fine_tuned_model']
 
@@ -177,10 +177,11 @@ async def dream(reentry = 0):
         n_epochs = max(1, round(0.25 * n_epochs))
     elif full_status == "Hungry" or full_status == "Full"
         n_epochs = max(1, round(0.5 * n_epochs))
+
     training = split(data.sub_history[0])
     control_model = thoughts.control_model
-    if control_model == "text-davinci-003":
-        control_model = "davinci"
+    if control_model == "text-curie-001":
+        control_model = "curie"
     model = await run_training(training, control_model, n_epochs)
     thoughts.control_model = model['fine_tuned_model']
 
@@ -194,7 +195,6 @@ async def dream(reentry = 0):
 
     # The ideal state is being neither starved nor gorged, with a slight emphasis on preferring being full to being hungry.
     n_epochs = physiology.max_epochs
-
     if full_status = "Starving" or full_status == "Gorged":
         n_epochs = max(1, round(0.25 * n_epochs))
     if full_status = "Hungry":
@@ -226,8 +226,8 @@ async def dream(reentry = 0):
                 if line is not in training:
                     training.append(line)
         subconscious_model = thoughts.subconscious_model
-        if subconscious_model == "text-davinci-003":
-            subconscious_model = "davinci"
+        if subconscious_model == "text-curie-001":
+            subconscious_model = "curie"
         model = await run_training(training, subconscious_model, n_epochs)
         thoughts.subconscious_model = model['fine_tuned_model']
 
