@@ -165,7 +165,6 @@ async def step_conscious():
                 message = remainder[loc + 1:]
                 await server.message_user(username, message)
             except Exception:
-                # Invalid
                 pass
         else:
             data.history += ("\n><" + next_prompt)
