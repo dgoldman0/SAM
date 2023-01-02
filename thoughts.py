@@ -20,7 +20,7 @@ sub_history = data.sub_history
 
 user_model = "text-davinci-003"
 conscious_model = "text-davinci-003"
-# Subconscious and control may be able to do well enough with curie as the model. 
+# Subconscious and control may be able to do well enough with curie as the model.
 subconscious_model = "text-curie-001"
 control_model = "text-curie-001"
 
@@ -206,7 +206,7 @@ def respond_to_user(user, user_input):
     response = ""
 
     # Maybe only do the last segment of the global history so it doesn't overpower.
-    user_input = user_input..replace('\n|', '\n%7C').replace('\n<', '\n%3C').replace('\n>', '\n%3E')
+    user_input = user_input.replace('\n|', '\n%7C').replace('\n<', '\n%3C').replace('\n>', '\n%3E')
     try:
         # For now, just keep all messages pushed to conscious. Will go to subconscious when daydreaming.
         if learning.dream_state != "Dreaming" and learning.dream_state != "Daydreaming":

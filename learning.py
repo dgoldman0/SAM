@@ -20,7 +20,7 @@ dream_state = "Awake"
 # Create prompts and completions by randomly breaking up the history into chunks between 1 and 5 lines long, multiple times. Right now 3, but will change based on a number of factors.
 def split(text, iterations = 5, min = 1, max = 5):
     training = []
-    for in in range(iterations):
+    for i in range(iterations):
         cur = 0
         while cur < len(text) - 2:
             prompt = []
@@ -35,8 +35,8 @@ def split(text, iterations = 5, min = 1, max = 5):
                 prompt = history[cur:-1]
                 completion = history[-1]
                 cur = len(history)
-            line = '{"prompt":' + "\\n".join(prompt) + '\\n, "completion":' '\\n'.join(completion) + "\\n}"]
-            if line is not in training:
+            line = '{"prompt":' + "\\n".join(prompt) + '\\n, "completion":' '\\n'.join(completion) + "\\n}"
+            if line not in training:
                 training.append(line)
     return training
 
@@ -56,7 +56,7 @@ async def run_training(data, model, epochs):
       file=open("./temp/training_data_" + tag + ".jsonl", "rb"),
       purpose='fine-tune'
     )['id']
-    training_id = openai.FineTune.create(training_file=file_id
+    training_id = openai.FineTune.create(training_file=file_id,
     model=model,
     n_epochs=epochs)['id']
     print("Training ID: " + training_id)
@@ -106,8 +106,8 @@ async def daydream():
                 tuples = user['history_tuples']
                 for tuple in tuples:
                     # Right now it's just global history state + user history state, response
-                    line = '{"prompt":<SYSTEM>:Current thoughts:\\n' + tuple[0].replace('\n', '\\n')  + '\\n\\n<SYSTEM>:Current discussion with ' + user['username'] + ':\\n' + tuple[1].replace('\n', '\\n') + '\\n, "completion":' + tuple[2].replace('\n', '\\n')}'
-                    if line is not in training:
+                    line = '{"prompt":<SYSTEM>:Current thoughts:\\n' + tuple[0].replace('\n', '\\n')  + '\\n\\n<SYSTEM>:Current discussion with ' + user['username'] + ':\\n' + tuple[1].replace('\n', '\\n') + '\\n, "completion":' + tuple[2].replace('\n', '\\n') + '}'
+                    if line not in training:
                         training.append(line)
 
                 # Train model and update.
@@ -144,7 +144,7 @@ async def daydream():
     training = []
     for i in range(1, physiology.total_partitions - 1):
         for line in split(data.sub_history[i]):
-            if line is not in training:
+            if line not in training:
                 training.append(line)
     subconscious_model = thoughts.subconscious_model
     if subconscious_model == "text-curie-001":
@@ -202,9 +202,9 @@ async def dream(reentry = 0):
 
     # The ideal state is being neither starved nor gorged, with a slight emphasis on preferring being full to being hungry.
     n_epochs = physiology.max_epochs
-    if full_status = "Starving" or full_status == "Gorged":
+    if full_status == "Starving" or full_status == "Gorged":
         n_epochs = max(1, round(0.25 * n_epochs))
-    if full_status = "Hungry":
+    if full_status == "Hungry":
         n_epochs = max(1, round(0.5 * n_epochs))
     for i in range(dream_cycles):
         # Train on conscious monologue history, and repeat.
@@ -230,7 +230,7 @@ async def dream(reentry = 0):
         training = []
         for i in range(1, physiology.total_partitions - 1):
             for line in split(data.sub_history[i]):
-                if line is not in training:
+                if line not in training:
                     training.append(line)
         subconscious_model = thoughts.subconscious_model
         if subconscious_model == "text-curie-001":
