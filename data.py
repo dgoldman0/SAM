@@ -29,6 +29,7 @@ def save(physiology):
     try:
         global total_partitions, history, sub_history, database
         cur = database.cursor()
+        # Continue to add system state information from physiology
         res = cur.execute("UPDATE SYSTEM SET saved = 1, resource_credits = ?, history = ?;", (physiology.resource_credits, history))
         for i in range(total_partitions):
             res = cur.execute("UPDATE SUBHISTORIES SET history = ? WHERE partition = ?;", (sub_history[i], i))

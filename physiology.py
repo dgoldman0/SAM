@@ -5,11 +5,6 @@ from datetime import datetime, timezone
 
 # Control over physiology will occur on the subconscious level.
 
-# Default values for openai
-conscious_defaults = {"awake_temp": 0.5, "awake_top_p": 1, "sleep_temp": 1, "sleep_top_p": 1}
-# Need to revise
-subconscious_defaults = {"awake_temp": 0.9, "awake_top_p": 1, "sleep_temp": 1, "sleep_top_p": 1}
-
 maximum_active_chats = 10
 
 # Start slow for testing.
@@ -17,10 +12,18 @@ awake_think_period = 3
 max_think_period = 4
 min_think_period = 2
 
-conscious_temp = conscious_defaults["awake_temp"]
-conscious_top_p = conscious_defaults["awake_top_p"]
-subconscious_temp = subconscious_defaults["awake_temp"]
-subconscious_top_p = subconscious_defaults["awake_top_p"]
+user_temp = 0.7
+user_top_p = 0.8
+conscious_temp = 0.9
+conscious_top_p = 1
+subconscious_temp = 0.7
+subconscious_top_p = 1
+control_temp = 0.5
+control_top_p = 1
+min_temp = 0.5
+min_top_p = 0.5
+max_temp = 1
+max_top_p = 1
 
 conscious_tokens = 128
 subconscious_tokens = 64
@@ -98,6 +101,39 @@ def depress():
 def stabilize():
     global think_period, awake_think_period
     think_period = 0.5 * (think_period + awake_think_period)
+
+# Control the temp and top_p of the different layers.
+# Layer 0 = user
+# Layer 1 = monologue
+# Layer 2 = subconscious
+# Layer 3 = control
+
+def reduce_temp(layer = 0):
+    global min_temp, conscious_temp, subconscious_temp, user_temp, control_temp
+    if layer == 0:
+        user_temp = 0.5 * (user_temp + min_temp)
+    elif layer == 1:
+        conscious_temp = 0.5 * (conscious_temp + min_temp)
+    elif layer == 2:
+        subconscious_temp = 0.5 * (subconscious_temp + min_temp)
+    elif layer == 3:
+        control_temp = 0.5 * (control_temp + min_temp)
+
+def increase_temp(layer = 0):
+    global max_temp, conscious_temp, subconscious_temp, user_temp, control_temp
+    if layer == 0:
+        user_temp = 0.5 * (user_temp + max_temp)
+    elif layer == 1:
+        conscious_temp = 0.5 * (conscious_temp + max_temp)
+    elif layer == 2:
+        subconscious_temp = 0.5 * (subconscious_temp + max_temp)
+    elif layer == 3:
+        control_temp = 0.5 * (control_temp + max_temp)
+
+def increase_topp(layer = 0):
+    pass
+def reduce_topp(layer = 0):
+    pass
 
 # Review physiology and push any notifications necessary.
 def review():

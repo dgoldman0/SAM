@@ -96,30 +96,31 @@ async def daydream():
         if prioritize:
             slope = -n_epochs / len(users)
         for user in users:
-            history = user['history'].split("\n")
-            training = []
+            if efficiency(user) > 0:
+                history = user['history'].split("\n")
+                training = []
 
-            training = split(history)
+                training = split(history)
 
-            # Training data needs to include the global state at the time of the response, which is why tuples are needed.
-            tuples = user['history_tuples']
-            for tuple in tuples:
-                # Right now it's just global history state + user history state, response
-                line = '{"prompt":<SYSTEM>:Current thoughts:\\n' + tuple[0].replace('\n', '\\n')  + '\\n\\n<SYSTEM>:Current discussion with ' + user['username'] + ':\\n' + tuple[1].replace('\n', '\\n') + '\\n, "completion":' + tuple[2].replace('\n', '\\n')}'
-                if line is not in training:
-                    training.append(line)
+                # Training data needs to include the global state at the time of the response, which is why tuples are needed.
+                tuples = user['history_tuples']
+                for tuple in tuples:
+                    # Right now it's just global history state + user history state, response
+                    line = '{"prompt":<SYSTEM>:Current thoughts:\\n' + tuple[0].replace('\n', '\\n')  + '\\n\\n<SYSTEM>:Current discussion with ' + user['username'] + ':\\n' + tuple[1].replace('\n', '\\n') + '\\n, "completion":' + tuple[2].replace('\n', '\\n')}'
+                    if line is not in training:
+                        training.append(line)
 
-            # Train model and update.
-            # Need to remove duplicate entries.
-            # Number of epochs used should probably be higher in a dream state than daydream, and also higher under better conditions.
-            # For test run just dump to file.
-            user_model = thoughts.user_model
-            if user_model == "text-davinci-003":
-                user_model = "davinci"
-            model = await run_training(training, user_model, max(1, round(n_epochs)))
-            thoughts.user_model = model['fine_tuned_model']
+                # Train model and update.
+                # Need to remove duplicate entries.
+                # Number of epochs used should probably be higher in a dream state than daydream, and also higher under better conditions.
+                # For test run just dump to file.
+                user_model = thoughts.user_model
+                if user_model == "text-davinci-003":
+                    user_model = "davinci"
+                model = await run_training(training, user_model, max(1, round(n_epochs)))
+                thoughts.user_model = model['fine_tuned_model']
 
-            n_epochs += slope
+                n_epochs += slope
 
             # Reset history and tip data.
             if (len(user['history'])) > physiology.userhistory_capacity:
@@ -152,6 +153,12 @@ async def daydream():
     thoughts.subconscious_model = model['fine_tuned_model']
 
     # Train control partition #0: control should prioritize neither hunger nor fullness.
+    n_epochs = physiology.max_epochs
+    if full_status == "Starving" or full_status == "Gorged":
+        n_epochs = max(1, round(0.25 * n_epochs))
+    elif full_status == "Hungry" or full_status == "Full":
+        n_epochs = max(1, round(0.5 * n_epochs))
+
     training = split(data.sub_history[0])
     control_model = thoughts.control_model
     if control_model == "text-curie-001":
@@ -175,7 +182,7 @@ async def dream(reentry = 0):
     n_epochs = physiology.max_epochs
     if full_status == "Starving" or full_status == "Gorged":
         n_epochs = max(1, round(0.25 * n_epochs))
-    elif full_status == "Hungry" or full_status == "Full"
+    elif full_status == "Hungry" or full_status == "Full":
         n_epochs = max(1, round(0.5 * n_epochs))
 
     training = split(data.sub_history[0])
