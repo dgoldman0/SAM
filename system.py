@@ -7,10 +7,13 @@ import physiology
 import learning
 import admin
 
+help_prompt = "<SYSTEM>:System notifications will arrive in the form <SYSTEM>:Notification message. You can issue system commands by starting the line with COMMAND:, for instance, use COMMAND:HELP to get a list of system commands. There are a few other special symbols. <USERNAME>: at the start of a line indicates a chat message notification where USERNAME is replaced with their actual username. Use //USERNAME: at the beginning of a line to indicate that you want to reply to that user. The system will inform you if that user is not online."
+
 # Should only occur within lock
 def handle_system_command(command, subconscious = False):
     # Figure out which commands should be accessible to conscious vs subconscious layer, if any should be available to the conscious layer.
     command = command.upper()
+    print("Command Executed: " + command)
     if command == "HELP":
         thoughts.push_system_message("Use COMMAND:HELP GENERAL to request general information. Use COMMAND:HELP USERS to get help with user information. Use COMMAND:HELP INFO to get a list of commands accessing external information sources. Use COMMAND: HELP PHYSIOLOGY to get physiology help.", True)
     elif command == "HELP GENERAL":

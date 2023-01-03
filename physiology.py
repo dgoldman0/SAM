@@ -8,9 +8,9 @@ from datetime import datetime, timezone
 maximum_active_chats = 10
 
 # Start slow for testing.
-awake_think_period = 3
+awake_think_period = 0.5
 max_think_period = 4
-min_think_period = 2
+min_think_period = 0.5
 
 user_temp = 0.7
 user_top_p = 0.8
@@ -28,14 +28,14 @@ max_top_p = 1
 conscious_tokens = 128
 subconscious_tokens = 64
 initialize_tokens = 128
-userreply_tokens = 64
+userreply_tokens = 256
 
 # These rates might need to eb and flow within their parameter ranges. There can be long pauses beteeen thoughts. Another possibiltiy is that conscious thought rate will already depend on how many subconscious partitions there are. That might be enough modulation.
 think_period = awake_think_period
 
 max_history_capacity = 5120
-max_control_capacity = 5120
-max_subhistory_capacity = 2560
+max_control_capacity = 2560
+max_subhistory_capacity = 1280
 max_userhistory_capacity = 2560
 
 min_subthought = 16
@@ -58,7 +58,7 @@ control_capacity = max_control_capacity
 subhistory_capacity = max_subhistory_capacity
 userhistory_capacity = max_userhistory_capacity
 
-# The number of resource credits that is full (will be changed to the approximate amount that would get the system through a 24 hour period.)
+# The number of resource credits that is full (will be changed to the approximate amount that would get the system through a 24 hour period.) Resource credit use does not equal token use because Davinci costs 10x as much as Curie.
 resource_credits_full = 1000000
 
 # The number of resource credits currently available.
@@ -140,13 +140,14 @@ def review():
     global resource_credits, resource_credits_full, think_period, max_think_period, min_think_period, awake_think_period, full_status, awake
     print(datetime.now(timezone.utc).strftime("%H:%M:%S") + ": " + str(resource_credits) + " w/ think period of " + str(think_period))
     if resource_credits < 0.25 * resource_credits_full:
-        depress()
+        depress() # Maybe just do a pre-training on control model and let it handle this.
         if resource_credits < 0.125 * resource_credits_full:
             thoughts.push_system_message("Starving", True)
             full_status = "Starving"
             return
-        thoughts.push_system_message("Hungry", True)
-        full_status = "Hungry"
+        if full_status != "Hungry":
+            thoughts.push_system_message("Hungry", True)
+            full_status = "Hungry"
         return
 
     # Having too many credits is less important than having too few, so notifications here should be more limited.

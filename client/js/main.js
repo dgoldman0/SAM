@@ -1,6 +1,9 @@
 // Source code uses examples from https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API/Writing_WebSocket_client_applications
 status = 'connecting';
 
+function htmlEncode(str) {
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
 $(document).ready(function() {
   const urlParams = new URLSearchParams(window.location.search);
   // Yes I know this isn't a secure way to do things, but for now it's fine and I'm too exhausted to create a better system.
@@ -16,6 +19,7 @@ $(document).ready(function() {
     };
 
     ws.onmessage = async function(event) {
+      console.log(event)
       msg = await event.data.text();
       switch (status) {
         case 'connecting':
@@ -58,7 +62,7 @@ $(document).ready(function() {
               } else {
                 await ws.send(new Blob(["MSG:" + msg]));
               }
-              f.innerHTML += `<br/>&lt;${username}&gt;: ${msg}`;
+              f.innerHTML += `<br/>&lt;${username}&gt;: ${htmlEncode(msg)}`;
               input.focus();
               return false;
             });
@@ -71,9 +75,9 @@ $(document).ready(function() {
         break;
         default:
           if (msg.startsWith("MSG:")) {
-            f.innerHTML += `<br/>&lt;SAM&gt;: ${msg.slice(4)}`;
+            f.innerHTML += `<br/>&lt;SAM&gt;: ${htmlEncode(msg.slice(4))}`;
           } else if (msg.startsWith("STATUS:")){
-            f.innerHTML += `<br/>System Notice: ${msg.slice(7)}`;
+            f.innerHTML += `<br/>System Notice: ${htmlEncode(msg.slice(7))}`;
           }
       }
     };

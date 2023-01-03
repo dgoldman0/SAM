@@ -30,6 +30,7 @@ def save(physiology):
         global total_partitions, history, sub_history, database
         cur = database.cursor()
         # Continue to add system state information from physiology
+        print("History: " + history)
         res = cur.execute("UPDATE SYSTEM SET saved = 1, resource_credits = ?, history = ?;", (physiology.resource_credits, history))
         for i in range(total_partitions):
             res = cur.execute("UPDATE SUBHISTORIES SET history = ? WHERE partition = ?;", (sub_history[i], i))
@@ -43,7 +44,7 @@ def quit(physiology):
     sys.exit(0)
 
 def load(thoughts, physiology):
-    global total_partitions, history, sub_history, resource_credits, database
+    global total_partitions, history, sub_history, resource_credits, database, first_load
     cur = database.cursor()
     res = cur.execute("SELECT saved, resource_credits, history FROM SYSTEM;")
     resp = res.fetchone()
@@ -55,5 +56,4 @@ def load(thoughts, physiology):
         resp = res.fetchall()
         for entry in resp:
             total_partitions += 1
-            thoughts.sub_null_thoughts.append(0)
             sub_history.append(entry[0])

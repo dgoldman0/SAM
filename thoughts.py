@@ -16,11 +16,8 @@ import learning
 # Eventually it might possibly make sense to replace a single string with a list of strings, to make it easier to cut up by prompt and completion.
 sub_history = data.sub_history
 
-# Good to test code with the super cheap basic models, at least to check for errors. In the final version, the conscious and subconscious models might be different from each other to allow the inner workings of SAM's mind to be different from the conscious workings. The most recent trained model names will also have to be obtained.
-
 user_model = "text-davinci-003"
 conscious_model = "text-davinci-003"
-# Subconscious and control may be able to do well enough with curie as the model.
 subconscious_model = "text-curie-001"
 control_model = "text-curie-001"
 
@@ -36,19 +33,12 @@ def set_active_user(username):
     active_user = username
     active_last_changed = time.time()
 
-# Count null thoughts to perform physiology changes, etc.
-sub_null_thoughts = []
-
 # Should the subconscious be able to push voiced?
 async def step_subconscious(partition = None):
     global sub_history
-    global sub_null_thoughts
+
     if partition is None:
         partition = random.randint(1, data.total_partitions - 1)
-    if sub_null_thoughts[partition] > physiology.max_subnulls:
-        sub_null_thoughts[partition] = 0
-        prompt = generate_sub_prompt(partition)
-        sub_history[partition] += "\n><" + prompt
 
     capacity = physiology.subhistory_capacity
     if partition == 0:
@@ -68,17 +58,18 @@ async def step_subconscious(partition = None):
             top_p=physiology.subconscious_top_p,
             frequency_penalty=0,
             presence_penalty=0,
-            prompt=prompt,
-            stop="\n><")
+            prompt=prompt + '\n',
+            stop="><")
         next_prompt = openai_response["choices"][0]["text"].strip()
-        physiology.resource_credits -= openai_response["usage"]["total_tokens"]
+        physiology.resource_credits -= 0.1 * openai_response["usage"]["total_tokens"]
 
-        if len(next_prompt) == 0:
-            sub_null_thoughts[partition] += 1
-            return
+#        if len(next_prompt) == 0:
+#            if partition == 0:
+#                sub_history[0] += "\n" + system.help_prompt
+#            return
 
         # This replacement will prevent some confusion between system generated fake keycodes and real ones.
-        next_prompt = next_prompt.replace('\n>', '\n%3E').replace('\n<', '\n%3C').replace('\nCOMMAND:', '\nCOMMAND%3A')
+        next_prompt = next_prompt.replace('>', '%3E').replace('<', '%3C').replace('\nCOMMAND:', '\nCOMMAND%3A')
         sub_history[partition] = sub_history[partition] + "\n><" + next_prompt
         if (len(sub_history[partition]) > physiology.subhistory_capacity) and data.total_partitions < physiology.max_partitions:
             # If the number of partitions is less than the number of partitions that need to be seeded, then seed, otherwise start blank.
@@ -96,7 +87,7 @@ async def step_subconscious(partition = None):
         propogate = False
         roll = random.randint(0, 9)
         if len(server.user_connections) != 0:
-            # If there are active connecitons, propogation should be slower.
+            # If there are active connections, propogation should be slower.
             length = len(next_prompt)
             propogate = (roll < 2)
         else:
@@ -114,7 +105,7 @@ async def step_subconscious(partition = None):
             monitoring.notify_starvation()
             time.sleep(0.25) # For now just pause for a second, but in the future notify monitor and also adjust phsyiology.
         else:
-            print(err)
+            raise err
 
 # One iteration of inner dialog. This method needs to be able to initiate communications with users so it needs websockets. Or it could use a log.
 async def step_conscious():
@@ -131,7 +122,7 @@ async def step_conscious():
         print("Awake!")
         waking_up = False
         if data.first_load:
-            data.save(physiology)
+            data.quit(physiology) # Save and quit for analysis.
 
     prompt = data.history
     if (len(prompt)) > physiology.history_capacity:
@@ -144,7 +135,7 @@ async def step_conscious():
             top_p=physiology.conscious_top_p,
             frequency_penalty=0,
             presence_penalty=0,
-            prompt=prompt,
+            prompt=prompt + '\n',
             stop='\n><')
         next_prompt = openai_response["choices"][0]["text"].strip()
         physiology.resource_credits -= openai_response["usage"]["total_tokens"]
@@ -153,31 +144,35 @@ async def step_conscious():
             # Don't include null thoughts.
             return
 
-        next_prompt = next_prompt.replace('\n/', '\n%2F').replace('\n|', '\n%7C%').replace('\n>', '\n%3E').replace('\n<', '\n%3C').replace('\nCOMMAND:', '\nCOMMAND%3A')
+        next_prompt = next_prompt.replace('|', '%7C%').replace('>', '%3E').replace('<', '%3C').replace('COMMAND:', 'COMMAND%3A')
 
         # Check for special information in response. This might best go in its own method.
         if next_prompt.startswith("//"):
-            data.history += ('\n' + next_prompt)
+            next_prompt = next_prompt[2:].replace('/', '%2F')
+            data.history += ('\n//' + next_prompt)
             remainder = next_prompt[2:]
             try:
                 loc = remainder.index(":")
                 username = remainder[:loc]
                 message = remainder[loc + 1:]
                 await server.message_user(username, message)
-            except Exception:
+            except Exception as err:
+                print(err)
                 pass
         else:
+            next_prompt = next_prompt.replace('/', '%2F')
             data.history += ("\n><" + next_prompt)
 
-        monitoring.notify_thought(next_prompt)
-        if data.total_partitions > 1:
-            # Always add cosncious thought to control log.
-            sub_history[0] = sub_history[partition] + "\n<>:" + next_prompt
-            # Flip to see if the conscious thought should be added to the subconscious log.
-            flip = random.randint(0, 1)
-            if flip:
-                partition = random.randint(1, data.total_partitions - 1)
-                sub_history[partition] = sub_history[partition] + "\n<>:" + next_prompt
+            monitoring.notify_thought(next_prompt)
+            if data.total_partitions > 1:
+                # Always add non-voiced cosncious thought to control log.
+                sub_history[0] = sub_history[0] + "\n<>:" + next_prompt
+
+                # Flip to see if the conscious thought should be added to the subconscious log.
+                flip = random.randint(0, 1)
+                if flip:
+                    partition = random.randint(1, data.total_partitions - 1)
+                    sub_history[partition] = sub_history[partition] + "\n<>:" + next_prompt
 
         # If there has been no active_user for some time, consider entering daydream state, if not in dream state.
     except Exception as err:
@@ -185,7 +180,7 @@ async def step_conscious():
             print("Starved")
             monitoring.notify_starvation()
         else:
-            print(str(err))
+            raise err
 
 def push_system_message(message, subconscious = False):
     global sub_history
@@ -204,8 +199,7 @@ def respond_to_user(user, user_input):
     username = user['username']
     response = ""
 
-    # Maybe only do the last segment of the global history so it doesn't overpower.
-    user_input = user_input.replace('\n|', '\n%7C').replace('\n<', '\n%3C').replace('\n>', '\n%3E')
+    user_input = user_input.replace('|', '%7C').replace('<', '%3C').replace('>', '%3E').replace('/', '%2F')
     try:
         # For now, just keep all messages pushed to conscious. Will go to subconscious when daydreaming.
         if learning.dream_state != "Dreaming" and learning.dream_state != "Daydreaming":
@@ -225,10 +219,10 @@ def respond_to_user(user, user_input):
                 top_p=physiology.conscious_temp,
                 frequency_penalty=0.1,
                 presence_penalty=0.1,
-                prompt=history,
+                prompt=history + '\n',
                 stop="\n><")
-            response = openai_response["choices"][0]["text"].strip()
-            response = response.replace('\n|', '\n%7C').replace('\n<', '\n%3C').replace('\n>', '\n%3E')
+            to_user = openai_response["choices"][0]["text"].strip()
+            response = to_user.replace('|', '%7C').replace('<', '%3C').replace('>', '%3E').replace('/', '%2F')
             tokens = openai_response["usage"]["total_tokens"]
             physiology.resource_credits -= tokens
             user['tokens_spent'] += tokens
@@ -236,7 +230,7 @@ def respond_to_user(user, user_input):
             data.history += ("\<" + username + ">:" + user_input)
             if len(response) > 0:
                 data.history += ("\n||" + username + ":" + response)
-                user['history'] += ("\n><" + username + ":" + response)
+                user['history'] += ("\n><" + response)
                 user['history_tuples'].append([hist_cut, user_hist_cut, response, physiology.resource_credits])
             else:
                 # Ignore null responses.
@@ -249,9 +243,9 @@ def respond_to_user(user, user_input):
         if str(err) == "You exceeded your current quota, please check your plan and billing details.":
             return "I'm starved and am unabe to respond right now. More credits are needed..."
         else:
-            print(err)
+            raise err
 
-    return response
+    return to_user
 
 # Totally have to rewrite these next two methods to get it to work without threads.
 async def process_layers():
@@ -263,31 +257,27 @@ async def process_layers():
         physiology.review()
         # Reduce conscious and subconscious activity to zero coma state, and also don't iterate when dreaming, since that would interfere.
         if physiology.resource_credits > 0.05 * physiology.resource_credits_full and learning.dream_state != "Dreaming":
-            await step_subconscious()
+            if data.total_partitions > 1:
+                await step_subconscious()
             if physiology.resource_credits > 0.1 * physiology.resource_credits_full:
                 await step_conscious()
 
         await asyncio.sleep(physiology.think_period)
 
-def generate_sub_prompt(partition):
-    initial_prompt = ""
-    if partition == 0:
-        # Partition zero is the system interface partition so that's where this should go.
-        initial_prompt = "<SYSTEM>:Waking up. System notifications will arrive in the form <SYSTEM>:Notification message. You can issue system commands by starting the line with COMMAND:, for instance, use COMMAND:HELP to get a list of system commands. There are a few other special symbols. <USERNAME>: at the start of a line indicates a chat message notification where USERNAME is replaced with their actual username. Use //USERNAME: at the beginning of a line to indicate that you want to reply to that user. The system will inform you if that user is not online."
-    else:
-        # Have to be careful, because some prompts give very short completions which can kill the subconscious thread.
-        prompt_options = ["Tell me a story.", "Pick a topic and write a paragraph about it.", "Write a paragraph about what you want to do today."]
-        roll = random.randint(0, len(prompt_options) - 1)
-        initial_prompt = prompt_options[roll]
+def generate_sub_prompt():
+    prompt_options = ["Tell me a story.", "Pick a topic and write a paragraph about it.", "Write a paragraph about what you want to do today."]
+    roll = random.randint(0, len(prompt_options) - 1)
+    initial_prompt = prompt_options[roll]
     return initial_prompt
 
 # Subconscious to conscious interaction loops
 def add_new_partition(generate = True):
     global sub_history
-    global sub_null_thoughts
     partition = data.total_partitions
     if generate:
-        initial_prompt = "><" + generate_sub_prompt(partition)
+        initial_prompt = system.help_prompt
+        if partition != 0:
+            initial_prompt = "><" + generate_sub_prompt()
 
         # Generate initial material for subconscious thought by utilizing openai to generate some text.
         try:
@@ -298,12 +288,12 @@ def add_new_partition(generate = True):
                 top_p=physiology.subconscious_top_p,
                 frequency_penalty=0,
                 presence_penalty=0,
-                prompt=initial_prompt,
+                prompt=initial_prompt + '\n',
                 stop="\n><")
             initial = openai_response["choices"][0]["text"].strip()
-            physiology.resource_credits -= openai_response["usage"]["total_tokens"]
+            physiology.resource_credits -= 0.1 * openai_response["usage"]["total_tokens"]
 
-            sub_history.append(initial)
+            sub_history.append(initial_prompt + "\n" + initial)
         except Exception as err:
             if str(err) == "You exceeded your current quota, please check your plan and billing details.":
                 print("Starved")
@@ -316,7 +306,6 @@ def add_new_partition(generate = True):
         sub_history.append("")
 
     print("Adding new partition #" + str(data.total_partitions))
-    sub_null_thoughts.append(0)
     data.total_partitions += 1
 
 # Kills the most recent partition: Not fixed

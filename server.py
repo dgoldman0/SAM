@@ -4,6 +4,7 @@ import websockets
 import thoughts
 import monitoring
 import learning
+import physiology
 
 from threading import Thread
 
@@ -30,7 +31,7 @@ async def authenticate_user(websocket):
                 await websocket.send("UNKNOWN")
                 print("Unidentified user: " + username)
                 return None
-            if resp[0] == False:
+            if resp[0]:
                 await websocket.send("BLOCKED")
                 return None
             salt = resp[1].decode()
@@ -103,7 +104,7 @@ async def converse(websocket):
                 if (command == "SAVE"):
                     # Save current state.
                     if user['admin']:
-                        data.save()
+                        data.save(physiology)
                         await websocket.send("STATUS:System saving...".encode())
                     else:
                         await websocket.send("STATUS:Insufficient Authority.".encode())
@@ -111,13 +112,19 @@ async def converse(websocket):
                     # Save and close down the system.
                     if user['admin']:
                         await websocket.send("STATUS:System shutting down...".encode())
-                        data.quit()
+                        data.quit(physiology)
                     else:
                         await websocket.send("STATUS:Insufficient Authority.".encode())
                 elif command == "DAYDREAM":
                     if user['admin']:
                         await websocket.send("STATUS:System entering daydream...".encode())
                         await learning.daydream()
+                    else:
+                        await websocket.send("STATUS:Insufficient Authority.".encode())
+                elif command == "DREAM":
+                    if user['admin']:
+                        await websocket.send("STATUS:System entering daydream...".encode())
+                        await learning.dream()
                     else:
                         await websocket.send("STATUS:Insufficient Authority.".encode())
                 elif command.startswith("TIP "):
@@ -135,7 +142,7 @@ async def converse(websocket):
                 else:
                     await websocket.send("STATUS:Unknown command.".encode())
     except Exception as err:
-        print(err)
+        raise err
 
 # Listen for incoming connections
 async def serve(stop):
