@@ -140,7 +140,6 @@ def review():
     global resource_credits, resource_credits_full, think_period, max_think_period, min_think_period, awake_think_period, full_status, awake
     print(datetime.now(timezone.utc).strftime("%H:%M:%S") + ": " + str(resource_credits) + " w/ think period of " + str(think_period))
     if resource_credits < 0.25 * resource_credits_full:
-        depress() # Maybe just do a pre-training on control model and let it handle this.
         if resource_credits < 0.125 * resource_credits_full:
             thoughts.push_system_message("Starving", True)
             full_status = "Starving"
@@ -152,7 +151,6 @@ def review():
 
     # Having too many credits is less important than having too few, so notifications here should be more limited.
     if resource_credits > 0.75 * resource_credits_full:
-        excite()
         if resource_credits > 0.875 * resource_credits_full:
             thoughts.push_system_message("Gorged", True)
             full_status = "Gorged"
