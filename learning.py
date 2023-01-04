@@ -36,7 +36,7 @@ def split(text, iterations = 5, min = 1, max = 5):
                 completion = text[-1]
                 cur = len(text)
             if len(completion) > 0:
-                line = '{"prompt":"' + ("\\n".join(prompt)).replace('\\', '\\\\').replace('"', '\\"') + '\\n", "completion":" ' + ('\\n'.join(completion)).replace('\\', '\\\\').replace('"', '\\"') + '\\n"}'
+                line = '{"prompt":"' + ("\n".join(prompt)).replace('\\', '\\\\').replace('"', '\\"') + '\\n", "completion":" ' + ('\n'.join(completion)).replace('\\', '\\\\').replace('"', '\\"') + '\\n"}'
                 if line not in training:
                     training.append(line)
     return training
@@ -57,7 +57,7 @@ async def run_training(data, model, epochs):
       file=open("./temp/training_data_" + tag + ".jsonl", "r"),
       purpose='fine-tune'
     )['id']
-
+    return model # Remove after further testing.
     training_id = openai.FineTune.create(training_file=file_id,
     model=model,
     n_epochs=epochs)['id']
@@ -97,7 +97,20 @@ async def process_user_histories():
                 tuples = user['history_tuples']
                 for tuple in tuples:
                     # Right now it's just global history state + user history state, response
-                    line = '{"prompt":"<SYSTEM>:Current thoughts:\\n' + tuple[0].replace('\\', '\\\\').replace('\n', '\\n').replace('"', '\\"')  + '\\n\\n<SYSTEM>:Current discussion with ' + user['username'] + ':\\n' + tuple[1].replace('\\', '\\\\').replace('\n', '\\n').replace('"', '\\"') + '", "completion":" ' + tuple[2].replace('\n', '\\n').replace('"', '\\"') + '\\n"}'
+                    # I can use global + splits of (user history\n\response)
+
+                    # Cuts have to be different because the last n global history lines have to be followed by the FIRST m user history lines
+#                    hist_cut = tuples[0].split('\n')
+#                    user_cut = tuples[1].split('\n')
+#                    for n in range(len(hist_cut)):
+#                        for m in range(len(user_cut)):
+#                            prompt = "<SYSTEM>:Current thoughts:\\n" + ('\n'.join(hist_cut[-n:])).replace('\\', '\\\\').replace('"', '\\"') + "\\n"
+#                            prompt += "<SYSTEM>:Current discussion with" + user['username'] + ':\\n' + ('\n'.join(user_cut[m:])).replace('\\', '\\\\').replace('"', '\\"') + "\\n"
+#                            completion = ""
+#                            line = '{"prompt":"' + prompt + '", "completion":"' + completion + '"}'
+
+
+                    line = '{"prompt":"<SYSTEM>:Current thoughts:\\n' + tuple[0].replace('\\', '\\\\').replace('"', '\\"') + '\\n\\n<SYSTEM>:Current discussion with '  + user['username'] + '\\n' + tuple[1].replace('\\', '\\\\').replace('"', '\\"') + '", "completion":" ' + tuple[2].replace('\\', '\\\\').replace('"', '\\"') + '\\n"}'
                     if line not in training:
                         training.append(line)
 

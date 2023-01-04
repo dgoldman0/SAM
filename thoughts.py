@@ -63,42 +63,47 @@ async def step_subconscious(partition = None):
         next_prompt = openai_response["choices"][0]["text"].strip()
         physiology.resource_credits -= 0.1 * openai_response["usage"]["total_tokens"]
 
-#        if len(next_prompt) == 0:
-#            if partition == 0:
-#                sub_history[0] += "\n" + system.help_prompt
-#            return
-
         # This replacement will prevent some confusion between system generated fake keycodes and real ones.
         next_prompt = next_prompt.replace('>', '%3E').replace('<', '%3C').replace('\nCOMMAND:', '\nCOMMAND%3A')
         sub_history[partition] = sub_history[partition] + "\n><" + next_prompt
-        if (len(sub_history[partition]) > physiology.subhistory_capacity) and data.total_partitions < physiology.max_partitions:
-            # If the number of partitions is less than the number of partitions that need to be seeded, then seed, otherwise start blank.
-            add_new_partition(data.total_partitions < physiology.seeded_partitions + 1)
 
         monitoring.notify_subthought(partition, next_prompt)
 
         # Commands can only come from control partition.
         if partition == 0 and next_prompt.startswith("COMMAND:"):
             command = next_prompt[8:]
+            next_prompt = next_prompt.replace('/', '%2F')
+            sub_history[partition] = sub_history[partition] + "\n" + next_prompt
             system.handle_system_command(command, True)
             return
-
-        # Decide if the thought propogates to the conscious. These values will be changed by physiology at some point.
-        propogate = False
-        roll = random.randint(0, 9)
-        if len(server.user_connections) != 0:
-            # If there are active connections, propogation should be slower.
-            length = len(next_prompt)
-            propogate = (roll < 2)
+        elif partition == 0 and next_prompt.startswith("//"):
+            next_prompt = "//" + next_prompt[2:].replace('/', '%2F')
+            sub_history[partition] = sub_history[partition] + "\n" + next_prompt
+            data.history += "\n<>" + next_prompt[2:]
         else:
-            # If nobody is connected, subconscious thoughts can propogate faster, especially when the history is not close to full.
-            if len(data.history) < (physiology.history_capacity * 3/4):
-                propogate = (roll != 9)
-            else:
-                propogate = (roll < 5)
-        if propogate:
-            data.history = data.history + "\n<>" + next_prompt
-            monitoring.notify_thought(next_prompt)
+            # Decide if the thought propogates to the conscious. These values will be changed by physiology at some point.
+            sub_history[partition] = sub_history[partition] + "\n><" + next_prompt
+            if (partition != 0):
+                # Don't propogate from partition 0. Instead, control will have to learn how and when to push information to the conscious layer.
+                propogate = False
+                roll = random.randint(0, 9)
+                if len(server.user_connections) != 0:
+                    # If there are active connections, propogation should be slower.
+                    length = len(next_prompt)
+                    propogate = (roll < 2)
+                else:
+                    # If nobody is connected, subconscious thoughts can propogate faster, especially when the history is not close to full.
+                    if len(data.history) < (physiology.history_capacity * 3/4):
+                        propogate = (roll != 9)
+                    else:
+                        propogate = (roll < 5)
+                if propogate:
+                    data.history = data.history + "\n<>" + next_prompt
+                    monitoring.notify_thought(next_prompt)
+
+        if (len(sub_history[partition]) > physiology.subhistory_capacity) and data.total_partitions < physiology.max_partitions:
+            # If the number of partitions is less than the number of partitions that need to be seeded, then seed, otherwise start blank.
+            add_new_partition(data.total_partitions < physiology.seeded_partitions + 1)
     except Exception as err:
         if str(err) == "You exceeded your current quota, please check your plan and billing details.":
             print("Starved")
@@ -144,12 +149,13 @@ async def step_conscious():
             # Don't include null thoughts.
             return
 
-        next_prompt = next_prompt.replace('|', '%7C%').replace('>', '%3E').replace('<', '%3C').replace('COMMAND:', 'COMMAND%3A')
+        # Do I really need to encode these characters everywhere they appear?
+        next_prompt = next_prompt.replace('|', '%7C%').replace('>', '%3E').replace('<', '%3C')
 
         # Check for special information in response. This might best go in its own method.
         if next_prompt.startswith("//"):
-            next_prompt = next_prompt[2:].replace('/', '%2F')
-            data.history += ('\n//' + next_prompt)
+            next_prompt = "//" + next_prompt[2:.replace('/', '%2F')
+            data.history += ('\n' + next_prompt)
             remainder = next_prompt[2:]
             try:
                 loc = remainder.index(":")
@@ -227,7 +233,7 @@ def respond_to_user(user, user_input):
             physiology.resource_credits -= tokens
             user['tokens_spent'] += tokens
             print("Response: " + response)
-            data.history += ("\<" + username + ">:" + user_input)
+            data.history += ("\n<" + username + ">:" + user_input)
             if len(response) > 0:
                 data.history += ("\n||" + username + ":" + response)
                 user['history'] += ("\n><" + response)

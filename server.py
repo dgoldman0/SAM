@@ -51,12 +51,16 @@ async def authenticate_user(websocket):
                         return user
                 else:
                     await websocket.send("INVALID")
+
+# Converts encoded protected characters back to normal.
+def clean_message(message):
+    return message.replace('%7C', '|').replace('%3C', '<').replace('%3E', '>').replace('%2F', '/').replace('%3A', ":")
+
 # Push a messaage to a user. Since this message is not coming as a reply, it is tagged with "//"
 async def message_user(username, message):
     user = user_connections.get(username)
     if user is not None:
-        user['history'] += "\n//" + message
-        await user['websocket'].send(("MSG:" + message).encode())
+        await user['websocket'].send(("MSG:" + clean_message(message)).encode())
     else:
         # Notify SAM that no user is present.
         thoughts.push_system_message(username + " is not logged in.")
@@ -90,7 +94,7 @@ async def converse(websocket):
             if user_input.startswith("MSG:"):
                 # If not waking up still, process message.
                 if not thoughts.waking_up:
-                    response = thoughts.respond_to_user(user, user_input[4:])
+                    response = clean_message(thoughts.respond_to_user(user, user_input[4:]))
                 try:
                     await websocket.send(("MSG:" + response).encode())
                 except Exception:
