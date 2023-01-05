@@ -16,7 +16,7 @@ import learning
 # Eventually it might possibly make sense to replace a single string with a list of strings, to make it easier to cut up by prompt and completion.
 sub_history = data.sub_history
 
-user_model = "text-davinci-003"
+user_model = "davinci:ft-personal-2023-01-05-23-43-54"
 conscious_model = "text-davinci-003"
 subconscious_model = "text-curie-001"
 control_model = "text-curie-001"
@@ -61,7 +61,6 @@ async def step_subconscious(partition = None):
             prompt=prompt + '\n',
             stop="><")
         next_prompt = openai_response["choices"][0]["text"].strip()
-        print("Sub#" + str(partition) + " completion: " + next_prompt + "\n\n")
         physiology.resource_credits -= 0.1 * openai_response["usage"]["total_tokens"]
 
         # This replacement will prevent some confusion between system generated fake keycodes and real ones.
@@ -215,7 +214,7 @@ def respond_to_user(user, user_input):
             hist_cut = data.history
             user_hist_cut = user['history']
             if (len(hist_cut)) > physiology.history_capacity:
-                hist_cut = hist_cut[-physiology.history_capacity:]
+                hist_cut = hist_cut[-physiology.historyuser_capacity:]
             if (len(user_hist_cut)) > physiology.userhistory_capacity:
                 user_hist_cut = user_hist_cut[-physiology.userhistory_capacity:]
             history = "<SYSTEM>:Current thoughts:\n" + hist_cut + "\n\n<SYSTEM>:Current discussion with <" + username + ">\n" + user_hist_cut
@@ -227,7 +226,7 @@ def respond_to_user(user, user_input):
                 frequency_penalty=0.1,
                 presence_penalty=0.1,
                 prompt=history + '\n',
-                stop="\n")
+                stop="><")
             to_user = openai_response["choices"][0]["text"].strip()
             response = to_user.replace('|', '%7C').replace('<', '%3C').replace('>', '%3E').replace('/', '%2F')
             tokens = openai_response["usage"]["total_tokens"]

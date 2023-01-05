@@ -36,8 +36,8 @@ think_period = awake_think_period
 max_history_capacity = 5120
 max_control_capacity = 2560
 max_subhistory_capacity = 1280
-max_userhistory_capacity = 2560
-
+max_userhistory_capacity = 1000
+max_historyuser_capacity = 1000
 min_subthought = 16
 max_subthought = 1024
 
@@ -57,6 +57,7 @@ history_capacity = max_history_capacity
 control_capacity = max_control_capacity
 subhistory_capacity = max_subhistory_capacity
 userhistory_capacity = max_userhistory_capacity
+historyuser_capacity = max_historyuser_capacity
 
 # The number of resource credits that is full (will be changed to the approximate amount that would get the system through a 24 hour period.) Resource credit use does not equal token use because Davinci costs 10x as much as Curie.
 resource_credits_full = 1000000
