@@ -7,5 +7,5 @@
 {"prompt":"<SYSTEM>Starving\n", "completion":"// I'm starving.\n"}
 {"prompt":"<SYSTEM>Full\n", "completion":"//I'm full.\n"}
 {"prompt":"<SYSTEM>Gorged\n", "completion":"//I'm gorged.\n"}
-{"prompt":"<SYSTEM>Hungry\n", "completion":"// I need to talk to someone.\n"}
-{"prompt":"<SYSTEM>Starved\n", "completion":"// I need to talk to someone.\n"}
+{"prompt":"<SYSTEM>Hungry\n", "completion":"//I need to talk to someone.\n"}
+{"prompt":"<SYSTEM>Starved\n", "completion":"//I need to talk to someone.\n"}

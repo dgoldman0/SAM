@@ -40,6 +40,7 @@ async def step_subconscious(partition = None):
     if partition is None:
         partition = random.randint(1, data.total_partitions - 1)
 
+    print("Sub#" + str(partition) + " len: " + str(len(sub_history[partition])))
     capacity = physiology.subhistory_capacity
     if partition == 0:
         capacity = physiology.control_capacity
@@ -73,13 +74,13 @@ async def step_subconscious(partition = None):
         if partition == 0 and next_prompt.startswith("COMMAND:"):
             command = next_prompt[8:]
             next_prompt = next_prompt.replace('/', '%2F')
-            sub_history[partition] = sub_history[partition] + "\n" + next_prompt
+            sub_history[partition] += "\n" + next_prompt
             system.handle_system_command(command, True)
             return
         elif partition == 0 and next_prompt.startswith("//"):
-            next_prompt = "//" + next_prompt[2:].replace('/', '%2F')
-            sub_history[partition] = sub_history[partition] + "\n" + next_prompt
-            data.history += "\n<>" + next_prompt[2:]
+            next_prompt = next_prompt[2:].replace('/', '%2F')
+            sub_history[partition] += "\n//" + next_prompt
+            data.history += "\n<>" + next_prompt
         else:
             # Decide if the thought propogates to the conscious. These values will be changed by physiology at some point.
             sub_history[partition] = sub_history[partition] + "\n><" + next_prompt
@@ -101,7 +102,7 @@ async def step_subconscious(partition = None):
                     data.history = data.history + "\n<>" + next_prompt
                     monitoring.notify_thought(next_prompt)
 
-        if (len(sub_history[partition]) > physiology.subhistory_capacity) and data.total_partitions < physiology.max_partitions:
+        if (partition == data.total_partitions -1 and len(sub_history[partition]) > physiology.subhistory_capacity) and data.total_partitions < physiology.max_partitions:
             # If the number of partitions is less than the number of partitions that need to be seeded, then seed, otherwise start blank.
             add_new_partition(data.total_partitions < physiology.seeded_partitions + 1)
     except Exception as err:
@@ -154,7 +155,7 @@ async def step_conscious():
 
         # Check for special information in response. This might best go in its own method.
         if next_prompt.startswith("//"):
-            next_prompt = "//" + next_prompt[2:.replace('/', '%2F')
+            next_prompt = "//" + next_prompt[2:].replace('/', '%2F')
             data.history += ('\n' + next_prompt)
             remainder = next_prompt[2:]
             try:
