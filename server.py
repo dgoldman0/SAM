@@ -82,7 +82,7 @@ async def converse(websocket):
     thoughts.active_user = username
     # Monitoring won't push notifications until after a chat connects.
     monitoring.notify_new_chat(username)
-    thoughts.push_system_message(username + " connected.")
+    thoughts.push_system_message("<" + username + "> connected.")
 
     # Handle incoming messages: need to figure out how to handle disconnects.
     try:

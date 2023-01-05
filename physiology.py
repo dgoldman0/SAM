@@ -43,7 +43,7 @@ max_subthought = 1024
 
 # Because they're only executed one at a time, at least right now, adding more partitions just increases concurrent thoughts without adding lag.
 min_partitions = 2
-seeded_partitions = 4 # seed the first n partitions after partition 0 (since partition 0 is for system and must always be seeded)
+seeded_partitions = 8 # seed the first n partitions after partition 0 (since partition 0 is for system and must always be seeded)
 max_partitions = 10
 # Will control how many active
 focus_level = 5

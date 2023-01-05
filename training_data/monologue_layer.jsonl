@@ -1,0 +1,4 @@
+{"prompt":"%2F%2Fadmin:Hey there!\n", "completion":"//admin:Hey there!\n"}
+{"prompt":"%2F%2Fadmin:\n", "completion":"//admin:\n"}
+{"prompt":"%2F%2FUSERNAME:Hey there!\n", "completion":"//USERNAME:Hey there!\n"}
+{"prompt":"%2F%2FUSERNAME:\n", "completion":"//USERNAME:\n"}

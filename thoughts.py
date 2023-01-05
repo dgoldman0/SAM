@@ -40,7 +40,6 @@ async def step_subconscious(partition = None):
     if partition is None:
         partition = random.randint(1, data.total_partitions - 1)
 
-    print("Sub#" + str(partition) + " len: " + str(len(sub_history[partition])))
     capacity = physiology.subhistory_capacity
     if partition == 0:
         capacity = physiology.control_capacity
@@ -62,6 +61,7 @@ async def step_subconscious(partition = None):
             prompt=prompt + '\n',
             stop="><")
         next_prompt = openai_response["choices"][0]["text"].strip()
+        print("Sub#" + str(partition) + " completion: " + next_prompt + "\n\n")
         physiology.resource_credits -= 0.1 * openai_response["usage"]["total_tokens"]
 
         # This replacement will prevent some confusion between system generated fake keycodes and real ones.
@@ -84,7 +84,7 @@ async def step_subconscious(partition = None):
         else:
             # Decide if the thought propogates to the conscious. These values will be changed by physiology at some point.
             sub_history[partition] = sub_history[partition] + "\n><" + next_prompt
-            if (partition != 0):
+            if partition != 0 and len(next_prompt) > 0:
                 # Don't propogate from partition 0. Instead, control will have to learn how and when to push information to the conscious layer.
                 propogate = False
                 roll = random.randint(0, 9)
@@ -218,7 +218,7 @@ def respond_to_user(user, user_input):
                 hist_cut = hist_cut[-physiology.history_capacity:]
             if (len(user_hist_cut)) > physiology.userhistory_capacity:
                 user_hist_cut = user_hist_cut[-physiology.userhistory_capacity:]
-            history = "<SYSTEM>:Current thoughts:\n" + hist_cut + "\n\n<SYSTEM>:Current discussion with " + username + ":\n" + user_hist_cut
+            history = "<SYSTEM>:Current thoughts:\n" + hist_cut + "\n\n<SYSTEM>:Current discussion with <" + username + ">\n" + user_hist_cut
             openai_response = openai.Completion.create(
                 model=user_model,
                 temperature=physiology.conscious_temp,

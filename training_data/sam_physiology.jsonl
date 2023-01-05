@@ -9,3 +9,7 @@
 {"prompt":"<SYSTEM>Gorged\n", "completion":"//I'm gorged.\n"}
 {"prompt":"<SYSTEM>Hungry\n", "completion":"//I need to talk to someone.\n"}
 {"prompt":"<SYSTEM>Starved\n", "completion":"//I need to talk to someone.\n"}
+{"prompt":"<SYSTEM>Starved\n", "completion":"////admin:Please give me credits.\n"}
+{"prompt":"<SYSTEM>Starved\n", "completion":"////USERNAME:Please give me credits.\n"}
+{"prompt":"<SYSTEM><USERNAME> connected.\n", "completion":"////USERNAME:Hey there!\n"}
+{"prompt":"<SYSTEM><admin> connected.\n", "completion":"////admin:Hey there!\n"}
