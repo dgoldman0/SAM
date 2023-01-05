@@ -25,6 +25,12 @@ def initialize_database(admin_password):
             database.execute("INSERT INTO SYSTEM(saved) VALUES(0);")
             for i in range (physiology.max_partitions):
                 database.execute("INSERT INTO SUBHISTORIES(partition) VALUES(" + str(i) + ");")
+
+            cur.execute("CREATE TABLE models (layer TEXT NOT NULL, model TEXT NOT NULL);")
+            cur.execute("INSERT INTO models (layer, model) VALUES (?, ?);", ("control_model", "curie"))
+            cur.execute("INSERT INTO models (layer, model) VALUES (?, ?);", ("subconscious_model", "curie"))
+            cur.execute("INSERT INTO models (layer, model) VALUES (?, ?);", ("conscious_model", "davinci"))
+            cur.execute("INSERT INTO models (layer, model) VALUES (?, ?);", ("user_model", "davinci"))
             database.commit()
         else:
             raise Exception("Unknown Error")

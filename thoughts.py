@@ -227,7 +227,7 @@ def respond_to_user(user, user_input):
                 frequency_penalty=0.1,
                 presence_penalty=0.1,
                 prompt=history + '\n',
-                stop="\n><")
+                stop="\n")
             to_user = openai_response["choices"][0]["text"].strip()
             response = to_user.replace('|', '%7C').replace('<', '%3C').replace('>', '%3E').replace('/', '%2F')
             tokens = openai_response["usage"]["total_tokens"]

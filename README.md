@@ -10,6 +10,7 @@ The commonly used term of "artificial intelligence" has a connotation that is pr
 
 This work tries whenever possible to use the concept of "digital sentience" in  place of the term "artificial general intelligence" which is currently used to refer to any effort to recreate human-like cognition. The term also recognizes that intelligence can have more than one meaning, and the goal of AGI is to create what we view as a person, or sentient being.
 
+
 ### Language and Thought
 
 Artificial intelligence applications are generally limited. Indeed, for a long time, AI work put aside efforts to recreate human-like sentience and instead AI became synonymous with machine learning, which itself is largely just automated model fitting. And even in work on AGI, commutative AIs (chatbots) lack the richness and fidelity of discussions with humans.
@@ -57,9 +58,13 @@ Even if sentience is achieved, if new information cannot be integrated, it would
 
 Static trained chatbots are similar. No matter how good they are, if they cannot learn, they cannot grow. Luckily, openai added the ability to fine-tune an existing fine-tuned model. Therefore the ability to integrate new information is there.
 
-As with humans, it makes sense that such integration would occur when most external sensory input is turned off so that there isn't added resource demand and all resources can be dedicated to integrating new information into long term memory. Therefore a sleep and dream system will be needed.
+### Initial Training
+
+Initial training will be conducted on the control layer model and the user layer model. The control layer model will be trained to self regulate. The user layer model will be pre-trained for two reasons. The first is to try to get the system to refrain from outputting special characters used in the system. The second is to give the system an initial lesson that I think it should have. The reason this training is done on the user layer is because I don't want to try to force the internal language and thought process. The pre-trained user model basically a guidance function, but over time the system will evolves its own views.
 
 ### Dreaming
+
+As with humans, it makes sense that such integration would occur when most external sensory input is turned off so that there isn't added resource demand and all resources can be dedicated to integrating new information into long term memory. Therefore a sleep and dream system will be needed.
 
 When we sleep, we go through periods where our brains are very active. During sleep is a good time to process the resource intensive task of integrating new information into our long term memory, because the brain doesn't have to dedicate much energy to monitoring external inputs.
 
