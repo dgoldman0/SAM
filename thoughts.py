@@ -36,7 +36,7 @@ def set_active_user(username):
 # Should the subconscious be able to push voiced?
 async def step_subconscious(partition = None):
     global sub_history
-
+Hey there
     if partition is None:
         partition = random.randint(1, data.total_partitions - 1)
 
@@ -65,7 +65,6 @@ async def step_subconscious(partition = None):
 
         # This replacement will prevent some confusion between system generated fake keycodes and real ones.
         next_prompt = next_prompt.replace('>', '%3E').replace('<', '%3C').replace('\nCOMMAND:', '\nCOMMAND%3A')
-        sub_history[partition] = sub_history[partition] + "\n><" + next_prompt
 
         monitoring.notify_subthought(partition, next_prompt)
 
