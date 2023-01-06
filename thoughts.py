@@ -16,10 +16,10 @@ import learning
 # Eventually it might possibly make sense to replace a single string with a list of strings, to make it easier to cut up by prompt and completion.
 sub_history = data.sub_history
 
-user_model = "davinci:ft-personal-2023-01-06-12-46-18"
-conscious_model = "davinci"
-subconscious_model = "curie"
-control_model = "curie"
+user_model = "davinci:ft-personal-2023-01-06-16-31-30"
+conscious_model = "text-davinci-3"
+subconscious_model = "text-curie-001"
+control_model = "curie:ft-personal-2023-01-06-18-00-15"
 
 # The current user that SAM is listening to, if any, and set the time at which it was changed.
 active_user = ""
@@ -59,7 +59,7 @@ async def step_subconscious(partition = None):
             frequency_penalty=0,
             presence_penalty=0,
             prompt=prompt + '\n',
-            stop="><")
+            stop="\n><")
         next_prompt = openai_response["choices"][0]["text"].strip()
         physiology.resource_credits -= 0.1 * openai_response["usage"]["total_tokens"]
 
@@ -77,8 +77,14 @@ async def step_subconscious(partition = None):
             system.handle_system_command(command, True)
             return
         elif partition == 0 and next_prompt.startswith("//"):
-            next_prompt = next_prompt[2:].replace('/', '%2F')
+            next_prompt = next_prompt[2:]
+            if next_prompt.startswith("//"):
+                # This provision lets the subconscious push the conscious to speak outloud.
+                next_prompt = "//" + next_prompt[2:].replace('/', '%2F')
+            else:
+                next_prompt = next_prompt.replace('/', '%2F')
             sub_history[partition] += "\n//" + next_prompt
+            # Will still need to train the system to take <>// to mean speak out load.
             data.history += "\n<>" + next_prompt
         else:
             # Decide if the thought propogates to the conscious. These values will be changed by physiology at some point.
@@ -217,7 +223,7 @@ def respond_to_user(user, user_input):
                 hist_cut = hist_cut[-physiology.historyuser_capacity:]
             if (len(user_hist_cut)) > physiology.userhistory_capacity:
                 user_hist_cut = user_hist_cut[-physiology.userhistory_capacity:]
-            history = hist_cut + "\n\n<SYSTEM>:Current discussion with <" + username + ">\n" + user_hist_cut
+            history = "\n\n<SYSTEM>:Current discussion with <" + username + ">\n" + user_hist_cut
             openai_response = openai.Completion.create(
                 model=user_model,
                 temperature=physiology.conscious_temp,

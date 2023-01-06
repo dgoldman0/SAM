@@ -8,8 +8,8 @@ from datetime import datetime, timezone
 maximum_active_chats = 10
 
 # Start slow for testing.
-awake_think_period = 0.5
-max_think_period = 4
+awake_think_period = 1
+max_think_period = 3
 min_think_period = 0.5
 
 user_temp = 0.7
@@ -33,7 +33,7 @@ userreply_tokens = 256
 # These rates might need to eb and flow within their parameter ranges. There can be long pauses beteeen thoughts. Another possibiltiy is that conscious thought rate will already depend on how many subconscious partitions there are. That might be enough modulation.
 think_period = awake_think_period
 
-max_history_capacity = 5120
+max_history_capacity = 2560
 max_control_capacity = 2560
 max_subhistory_capacity = 1280
 max_userhistory_capacity = 1000
@@ -161,4 +161,5 @@ def review():
             full_status = "Full"
         return
     full_status = ""
+    thoughts.push_system_message("Neutral", True)
     stabilize()
