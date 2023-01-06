@@ -3,7 +3,7 @@ import io
 from random import randint
 
 # Create prompts and completions by randomly breaking up the history into chunks between 1 and 5 lines long, multiple times. Right now 3, but will change based on a number of factors.
-def split(text, iterations = 5, min = 1, max = 5):
+def split(text, iterations = 5, min = 1, max = 10):
     training = []
     for i in range(iterations):
         cur = 0
@@ -32,7 +32,7 @@ if len(sys.argv) == 3:
     input_file = open(input_filename, "r")
     input = input_file.read().replace('\n', '\\n')
     input_file.close()
-    training = split(input.split('.'), 50)
+    training = split(input.split('.'), 100)
     output_file = open(output_filename, "w")
     output_file.write('\n'.join(training))
     output_file.close()
