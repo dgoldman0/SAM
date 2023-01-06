@@ -11,3 +11,13 @@ The themed training system uses discussions, thought maps, and other material fr
 The first component of the training set is the general knowledge training set, which includes a number of questions or statements, and responses to those questions and statements, based on how I would answer them. The next segment of training is the concept connections, which basically is a simple thought web connecting various ideas together.
 
 ## Stream of Thoughts
+
+To create a lot of material, I created a stream of thought essay, where each paragraph is largely self contained information, but the topic of one paragraph extends naturally from the previous topic. The document is then tokenized into chunks of prompts and completions of different lengths for training.
+
+### Prompt-Completions From Stream
+
+To further train the model and make it more responsive, each paragraph from the stream of thoughts essay is coupled with a number of prompt questions and statements that match the content of the paragraph. The training set also includes questions and statements that can be prompted by the statements made in each paragraph.
+
+## Training for Format
+
+One issue with the system is that it tends to output a lot of junk at the beginning of the completion, due to the special keycodes used by the system. Training includes both raw prompt and completions, and also prompts that are prepended with mockup information to help train away the tendency to copy these keycodes.

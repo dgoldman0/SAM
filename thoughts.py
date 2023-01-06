@@ -16,7 +16,7 @@ import learning
 # Eventually it might possibly make sense to replace a single string with a list of strings, to make it easier to cut up by prompt and completion.
 sub_history = data.sub_history
 
-user_model = "text-davinci-003"
+user_model = "davinci:ft-personal-2023-01-06-11-57-03"
 conscious_model = "text-davinci-003"
 subconscious_model = "text-curie-001"
 control_model = "text-curie-001"
@@ -217,7 +217,7 @@ def respond_to_user(user, user_input):
                 hist_cut = hist_cut[-physiology.historyuser_capacity:]
             if (len(user_hist_cut)) > physiology.userhistory_capacity:
                 user_hist_cut = user_hist_cut[-physiology.userhistory_capacity:]
-            history = "<SYSTEM>:Current thoughts:\n" + hist_cut + "\n\n<SYSTEM>:Current discussion with <" + username + ">\n" + user_hist_cut
+            history = hist_cut + "\n\n<SYSTEM>:Current discussion with <" + username + ">\n" + user_hist_cut
             openai_response = openai.Completion.create(
                 model=user_model,
                 temperature=physiology.conscious_temp,

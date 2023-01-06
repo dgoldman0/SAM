@@ -110,7 +110,7 @@ async def process_user_histories():
 #                            line = '{"prompt":"' + prompt + '", "completion":"' + completion + '"}'
 
 
-                    line = '{"prompt":"<SYSTEM>:Current thoughts:\\n' + tuple[0].replace('\\', '\\\\').replace('"', '\\"') + '\\n\\n<SYSTEM>:Current discussion with <'  + user['username'] + '>\\n' + tuple[1].replace('\\', '\\\\').replace('"', '\\"') + '", "completion":" ' + tuple[2].replace('\\', '\\\\').replace('"', '\\"') + '\\n"}'
+                    line = '{"prompt":"' + tuple[0].replace('\\', '\\\\').replace('"', '\\"') + '\\n\\n<SYSTEM>:Current discussion with <'  + user['username'] + '>\\n' + tuple[1].replace('\\', '\\\\').replace('"', '\\"') + '", "completion":" ' + tuple[2].replace('\\', '\\\\').replace('"', '\\"') + '\\n"}'
                     if line not in training:
                         training.append(line)
 
