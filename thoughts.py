@@ -16,10 +16,10 @@ import learning
 # Eventually it might possibly make sense to replace a single string with a list of strings, to make it easier to cut up by prompt and completion.
 sub_history = data.sub_history
 
-user_model = "davinci:ft-personal-2023-01-06-11-57-03"
-conscious_model = "text-davinci-003"
-subconscious_model = "text-curie-001"
-control_model = "text-curie-001"
+user_model = "davinci:ft-personal-2023-01-06-12-46-18"
+conscious_model = "davinci"
+subconscious_model = "curie"
+control_model = "curie"
 
 # The current user that SAM is listening to, if any, and set the time at which it was changed.
 active_user = ""
