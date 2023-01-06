@@ -36,7 +36,7 @@ def split(text, iterations = 5, min = 1, max = 5):
                 completion = text[-1]
                 cur = len(text)
             if len(completion) > 0:
-                line = '{"prompt":"' + ("\n".join(prompt)).replace('\\', '\\\\').replace('"', '\\"') + '\\n", "completion":" ' + ('\n'.join(completion)).replace('\\', '\\\\').replace('"', '\\"') + '\\n"}'
+                line = '{"prompt":"' + ("\n".join(prompt)).replace('\\', '\\\\').replace('"', '\\"') + '\\n", "completion":" ' + ('\n'.join(completion)).replace('\\', '\\\\').replace('"', '\\"') + '\\n><"}'
                 if line not in training:
                     training.append(line)
     return training
