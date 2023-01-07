@@ -24,17 +24,17 @@ def handle_system_command(command, subconscious = False):
         thoughts.push_system_message("Use COMMAND:DATETIME to get current date and time (UTC) as day/month/year hour/minute/second.", True)
     elif command == "HELP PHYSIOLOGY":
         thoughts.push_system_message("Use COMMAND:CREDITS to get current resource credits available. Use COMMAND:PERIOD to get thought period. Use COMMAND:EXCITE to decrease think period (speed up thinking). Use COMMAND:DEPRESS to increase thought period (slow down thought period). Use COMMAND:STABILIZE to stabilize the thought period. COMMAND:CHECKDREAM will let you know if you are currently dreaming or not. COMMAND:AWAKE will wake you from a dream state.", True)
-    elif command == "COMMAND:CREDITS":
+    elif command == "CREDITS":
         thoughts.push_system_message("Current resource credits available: " + str(physiology.resource_credits), True)
-    elif command == "COMMAND:PERIOD":
+    elif command == "PERIOD":
         thoughts.push_system_message("Current think period: " + str(physiology.think_period), True)
-    elif command == "COMMAND:EXCITE":
+    elif command == "EXCITE":
         physiology.excite()
         thoughts.push_system_message("Excited! Current think period: " + str(physiology.think_period), True)
-    elif command == "COMMAND:DEPRESS":
+    elif command == "DEPRESS":
         physiology.depress()
         thoughts.push_system_message("Depressed... Current think period: " + str(physiology.think_period), True)
-    elif command == "COMMAND:STABILIZE":
+    elif command == "STABILIZE":
         physiology.stabilize()
         thoughts.push_system_message("Stabilized. Current think period: " + str(physiology.think_period), True)
     elif command == "CHECKDREAM":

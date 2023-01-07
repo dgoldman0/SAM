@@ -2,6 +2,7 @@
 
 import thoughts
 from datetime import datetime, timezone
+import random
 
 # Control over physiology will occur on the subconscious level.
 
@@ -18,8 +19,9 @@ conscious_temp = 0.9
 conscious_top_p = 1
 subconscious_temp = 0.7
 subconscious_top_p = 1
-control_temp = 0.5
+control_temp = 0.7
 control_top_p = 1
+
 min_temp = 0.5
 min_top_p = 0.5
 max_temp = 1
@@ -27,6 +29,7 @@ max_top_p = 1
 
 conscious_tokens = 128
 subconscious_tokens = 64
+control_tokens = 256
 initialize_tokens = 128
 userreply_tokens = 256
 
@@ -160,6 +163,12 @@ def review():
             thoughts.push_system_message("Full", True)
             full_status = "Full"
         return
-    full_status = ""
-    thoughts.push_system_message("Neutral", True)
+    if full_status != "":
+        thoughts.push_system_message("Neutral", True)
+        full_status = ""
+    else:
+        flip = random.randint(0, 1)
+        if flip:
+            thoughts.push_system_message("Neutral", True)
+
     stabilize()

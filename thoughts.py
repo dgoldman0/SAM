@@ -19,7 +19,7 @@ sub_history = data.sub_history
 user_model = "davinci:ft-personal-2023-01-06-16-31-30"
 conscious_model = "text-davinci-3"
 subconscious_model = "text-curie-001"
-control_model = "curie:ft-personal-2023-01-06-18-00-15"
+control_model = "curie:ft-personal-2023-01-06-23-51-32"
 
 # The current user that SAM is listening to, if any, and set the time at which it was changed.
 active_user = ""
@@ -36,7 +36,7 @@ def set_active_user(username):
 # Should the subconscious be able to push voiced?
 async def step_subconscious(partition = None):
     global sub_history
-Hey there
+
     if partition is None:
         partition = random.randint(1, data.total_partitions - 1)
 
@@ -46,23 +46,30 @@ Hey there
     prompt = sub_history[partition]
     if (len(prompt)) > capacity:
         prompt = prompt[-capacity:]
+
+    print("Prompt: " + prompt)
     # Get next completion from the subconscious based on existing subconscious dialogue. Maybe add randomness by seeding with random thoughts.
     model = subconscious_model
+    temperature = physiology.subconscious_temp
+    top_p = physiology.subconscious_top_p
+    max_tokens = physiology.conscious_tokens
     if partition == 0:
         model = control_model
+        temperature = physiology.control_temp
+        top_p = physiology.control_top_p
+        max_tokens = physiology.control_tokens
     try:
         openai_response = openai.Completion.create(
             model=model,
-            temperature=physiology.subconscious_temp,
-            max_tokens=physiology.subconscious_tokens,
-            top_p=physiology.subconscious_top_p,
+            temperature=temperature,
+            max_tokens=max_tokens,
+            top_p=top_p,
             frequency_penalty=0,
             presence_penalty=0,
-            prompt=prompt + '\n',
-            stop="\n><")
+            prompt=prompt,
+            stop=["\n><"])
         next_prompt = openai_response["choices"][0]["text"].strip()
         physiology.resource_credits -= 0.1 * openai_response["usage"]["total_tokens"]
-
         # This replacement will prevent some confusion between system generated fake keycodes and real ones.
         next_prompt = next_prompt.replace('>', '%3E').replace('<', '%3C').replace('\nCOMMAND:', '\nCOMMAND%3A')
 
@@ -289,30 +296,7 @@ def add_new_partition(generate = True):
         initial_prompt = system.help_prompt
         if partition != 0:
             initial_prompt = "><" + generate_sub_prompt()
-
-        # Generate initial material for subconscious thought by utilizing openai to generate some text.
-        try:
-            openai_response = openai.Completion.create(
-                model=subconscious_model,
-                temperature=physiology.subconscious_temp,
-                max_tokens=physiology.initialize_tokens,
-                top_p=physiology.subconscious_top_p,
-                frequency_penalty=0,
-                presence_penalty=0,
-                prompt=initial_prompt + '\n',
-                stop="\n><")
-            initial = openai_response["choices"][0]["text"].strip()
-            physiology.resource_credits -= 0.1 * openai_response["usage"]["total_tokens"]
-
-            sub_history.append(initial_prompt + "\n" + initial)
-        except Exception as err:
-            if str(err) == "You exceeded your current quota, please check your plan and billing details.":
-                print("Starved")
-                monitoring.notify_starvation()
-                time.sleep(0.25)
-                sub_history.append("")
-            else:
-                raise err
+        sub_history.append(initial_prompt)
     else:
         sub_history.append("")
 
