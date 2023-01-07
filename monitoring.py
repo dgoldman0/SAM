@@ -50,7 +50,6 @@ def notify_subthought(partition, thought):
 
 # Notify all monitors about a system message
 def notify_system_message(message):
-    print("System notification: " + message)
     for monitor in event_monitors.values():
         event_string = "SYSTEM//" + message
         monitor.push_event(event_string)

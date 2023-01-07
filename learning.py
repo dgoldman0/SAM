@@ -144,6 +144,8 @@ async def daydream():
     # Train on user chats.
     await process_user_histories()
 
+    # EDIT NOTE: Only train on most recent part of each history. Do not clear global history after daydreaming, only dreaming. 
+
     # Train on conscious monologue
     training = split(data.history.split('\n'))
     n_epochs = max(1, round(physiology.max_epochs * physiology.resource_credits / physiology.resource_credits_full))
@@ -180,6 +182,9 @@ async def daydream():
         control_model = "curie"
     model = await run_training(training, control_model, n_epochs)
     thoughts.control_model = model['fine_tuned_model']
+
+    # CLear subconscious history.
+    for i in range(0, physiology.total_partitions - 1):
 
     data.save(physiology)
     dream_state = "awake"

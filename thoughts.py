@@ -19,7 +19,7 @@ sub_history = data.sub_history
 user_model = "davinci:ft-personal-2023-01-06-16-31-30"
 conscious_model = "text-davinci-3"
 subconscious_model = "text-curie-001"
-control_model = "curie:ft-personal-2023-01-06-23-51-32"
+control_model = "curie:ft-personal-2023-01-07-12-40-44"
 
 # The current user that SAM is listening to, if any, and set the time at which it was changed.
 active_user = ""
@@ -206,7 +206,7 @@ def push_system_message(message, subconscious = False):
         # Subconscious system notifications always go to partition 0.
         sub_history[0] += "\n<SYSTEM>:" + message
     else:
-        data.history += "\n<SYSTEM>: " + message
+        data.history += "\n<SYSTEM>:" + message
     monitoring.notify_system_message(message)
 
 # Generate response to user input. In the future, the system will be able to ignore user input if it "wants" to. Basically, it will be able to choose to pay attention or not. "Sam" as the preface is basically indicating that it was spoke outloud.
