@@ -133,6 +133,8 @@ async def process_user_histories():
             user['tips'] = 0
             user['tokens_spent'] = 0
 
+# Dreaming and daydreaming don't split the data correctly. The split needs to be done in such a way that the completion is always something that the system produced. That means using the keycode indicators. Alternatively, I could use the same tuple system used for users, or take the tuple system and instead use a split.
+
 # Enter daydreaming mode and train on current chats and the current conscious and subconscious history, including control.
 async def daydream():
     global dream_state
@@ -144,22 +146,25 @@ async def daydream():
     # Train on user chats.
     await process_user_histories()
 
-    # EDIT NOTE: Only train on most recent part of each history. Do not clear global history after daydreaming, only dreaming. 
-
     # Train on conscious monologue
-    training = split(data.history.split('\n'))
+    history = data.history
+    if len(history) > physiology.history_capacity:
+        history = history[-physiology.history_capacity:]
+
+    training = split(history.split('\n'))
+
     n_epochs = max(1, round(physiology.max_epochs * physiology.resource_credits / physiology.resource_credits_full))
     if conscious_model == "text-davinci-003":
         conscious_model = "davinci"
     model = await run_training(training, conscious_model, n_epochs)
     thoughts.conscious_model = model['fine_tuned_model']
-    # Clear old history except for enough to prime the continued thought process.
-    if len(data.history) > physiology.history_capacity:
-        data.history = data.history[-physiology.history_capacity:]
 
     # Train subconscious
     training = []
     for i in range(1, physiology.total_partitions - 1):
+        # Clear old history except for enough to prime the continued thought process.
+        if len(data.sub_history[i]) > physiology.subhistory_capacity:
+            data.sub_history[i] = data.sub_history[i][-physiology.subhistory_capacity:]
         for line in split(data.sub_history[i].split('\n')):
             if line not in training:
                 training.append(line)
@@ -176,15 +181,15 @@ async def daydream():
     elif full_status == "Hungry" or full_status == "Full":
         n_epochs = max(1, round(0.5 * n_epochs))
 
+    # Clear old history except for enough to prime the continued thought process.
+    if len(data.sub_history[0]) > physiology.control_capacity:
+        data.sub_history[0] = data.sub_history[0][-physiology.control_capacity:]
     training = split(data.sub_history[0].split('n'))
     control_model = thoughts.control_model
     if control_model == "text-curie-001":
         control_model = "curie"
     model = await run_training(training, control_model, n_epochs)
     thoughts.control_model = model['fine_tuned_model']
-
-    # CLear subconscious history.
-    for i in range(0, physiology.total_partitions - 1):
 
     data.save(physiology)
     dream_state = "awake"

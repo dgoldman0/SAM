@@ -10,10 +10,10 @@ first_load = True
 
 # The history between active user and Sam, as well as the direct inner dialog.
 history = ""
-
+history_tuples = []
 # History between inner voice and subconscious, to be replaced with an array of histories.
 sub_history = []
-
+sub_history_tuples = []
 total_partitions = 0
 
 # Connect to local file database which will be used to store user information, etc. Maybe one day replace with full MySQL
