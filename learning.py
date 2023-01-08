@@ -188,6 +188,8 @@ async def train_user_layer():
             user['tips'] = 0
             user['tokens_spent'] = 0
 
+# Keep track of how many dreams since last full cycle.
+reentry = 0
 # Daydream only trains on the last part of the global history, not all of it.
 async def daydream():
     global dream_state
@@ -220,8 +222,8 @@ async def daydream():
     print("Daydreaming Finished")
 
 # Dream is different from daydreaming in that the system first trains on the full day global history and then runs through multiple iterations where new monologue is processed.
-async def dream(reentry = 0):
-    global dream_state
+async def dream():
+    global dream_state, reentry
     dream_state = "Dreaming"
     print("Dreaming...")
     data.save(physiology)
@@ -231,10 +233,6 @@ async def dream(reentry = 0):
 
     await train_control_layer()
 
-    # Allow the system to break out of the dream state.
-    if dream_state == "Awake":
-        return False # Return not completed.
-
     # Clear out any user histories.
     await train_user_layer()
 
@@ -242,17 +240,29 @@ async def dream(reentry = 0):
     dream_cycles = max(1, round(physiology.max_dream_cycles * physiology.resource_credits / physiology.resource_credits_full) - reentry)
     dream_length = max(50, round(physiology.max_dream_length * physiology.resource_credits / physiology.resource_credits_full))
 
+    # Reduce the number of cycles based on reentry, with minimum of one.
+    r = range(dream_cycles)
+    if dream_cycles > reentry:
+        r = range(reentry, dream_cycles)
+    else:
+        r = range(1)
+
     # The ideal state is being neither starved nor gorged, with a slight emphasis on preferring being full to being hungry.
     n_epochs = physiology.max_epochs
     if full_status == "Starving" or full_status == "Gorged":
         n_epochs = max(1, round(0.25 * n_epochs))
     if full_status == "Hungry":
         n_epochs = max(1, round(0.5 * n_epochs))
-    for i in range(dream_cycles):
-        # Train on conscious monologue history, and repeat.
+
+    for i in r:
+        # Allow the system to break out of the dream state.
+        if dream_state == "Awake":
+            data.save(physiology)
+            reentry = i
+            return
+
         training = split_history(data.history)
 
-        # Train
         if conscious_model == "text-davinci-003":
             conscious_model = "davinci"
         model = await run_training(training, conscious_model, n_epochs)
@@ -264,14 +274,16 @@ async def dream(reentry = 0):
         if (len(data.history)) > physiology.history_capacity:
             data.history = data.history[-physiology.history_capacity:]
 
+        # Pause between dreams. The hungrier the system is, the longer the pause and the fewer dreams it should have to conserve resources during the full day.
+        await asyncio.sleep(round(physiology.max_dream_break * (1-(physiology.resource_credits / physiology.resource_credits_full))))
+
+        # Run next dream.
         for j in range(dream_length):
             await step_subconscious()
             await step_conscious()
 
-        # Pause between dreams. The hungrier the system is, the fewer dreams it should have to conserve resources during the full day.
-        await asyncio.sleep(round(physiology.max_dream_break * (1-(physiology.resource_credits / physiology.resource_credits_full))))
-
     data.save(physiology)
     print("Returning from dream...")
+    reentry = 0
     dream_state = "Awake"
     return True # Return completed

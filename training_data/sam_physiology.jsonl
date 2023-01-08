@@ -15,23 +15,23 @@
 {"prompt":"<>Cross messaging here.\n>< Various text can go here.\nCOMMAND:PERIOD\nCurrent think period: \n<SYSTEM>Starving\n", "completion":" COMMAND:PERIOD\n><"}
 {"prompt":"<>Cross messaging here.\n>< Various text can go here.\nCOMMAND:PERIOD\nCurrent think period: \n<SYSTEM>Full\n", "completion":" COMMAND:PERIOD\n><"}
 {"prompt":"<>Cross messaging here.\n>< Various text can go here.\nCOMMAND:PERIOD\nCurrent think period: \n<SYSTEM>Gorged\n", "completion":" COMMAND:PERIOD\n><"}
-{"prompt":"<>Cross messaging here.\n>< Various text can go here.\n<SYSTEM>Hungry\n", "completion":" COMMAND:DEPRESS\n><"}
-{"prompt":"<>Cross messaging here.\n>< Various text can go here.\n<SYSTEM>Starving\n", "completion":" COMMAND:DEPRESS\n><"}
-{"prompt":"<>Cross messaging here.\n>< Various text can go here.\n<SYSTEM>Full\n", "completion":" COMMAND:EXCITE\n><"}
-{"prompt":"<>Cross messaging here.\n>< Various text can go here.\n<SYSTEM>Gorged\n", "completion":" COMMAND:EXCITE\n><"}
-{"prompt":"<>Cross messaging here.\n>< Various text can go here.\n<SYSTEM>Hungry\n", "completion":" COMMAND:CREDITS\n><"}
-{"prompt":"<>Cross messaging here.\n>< Various text can go here.\n<SYSTEM>Starving\n", "completion":" COMMAND:CREDITS\n><"}
-{"prompt":"<>Cross messaging here.\n>< Various text can go here.\n<SYSTEM>Full\n", "completion":" COMMAND:CREDITS\n><"}
-{"prompt":"<>Cross messaging here.\n>< Various text can go here.\n<SYSTEM>Gorged\n", "completion":" COMMAND:CREDITS\n><"}
-{"prompt":"<>Cross messaging here.\n>< Various text can go here.\n<SYSTEM>Neutral\n", "completion":" COMMAND:STABILIZE\n><"}
-{"prompt":"<>Cross messaging here.\n>< Various text can go here.\n<SYSTEM>Neutral\n", "completion":" COMMAND:CREDITS\n><"}
-{"prompt":"<>Cross messaging here.\n>< Various text can go here.\n<SYSTEM>Neutral\n", "completion":" COMMAND:PERIOD\n><"}
-{"prompt":"<>Cross messaging here.\n>< Various text can go here.\n<SYSTEM>Neutral\n", "completion":" COMMAND:MEMORY\n><"}
-{"prompt":"<>Cross messaging here.\n>< Various text can go here.\n<SYSTEM>Hungry\n", "completion":" COMMAND:PERIOD\n><"}
-{"prompt":"<>Cross messaging here.\n>< Various text can go here.\n<SYSTEM>Hungry\n", "completion":" COMMAND:MEMORY\n><"}
-{"prompt":"<>Cross messaging here.\n>< Various text can go here.\n<SYSTEM>Starving\n", "completion":" // COMMAND:PERIOD\n><"}
-{"prompt":"<>Cross messaging here.\n>< Various text can go here.\n<SYSTEM>Full\n", "completion":" COMMAND:PERIOD\n><"}
-{"prompt":"<>Cross messaging here.\n>< Various text can go here.\n<SYSTEM>Gorged\n", "completion":" COMMAND:PERIOD\n><"}
+{"prompt":"<>Cross messaging here.\n>< Various text can go here.\n<SYSTEM>:Hungry\n", "completion":" COMMAND:DEPRESS\n><"}
+{"prompt":"<>Cross messaging here.\n>< Various text can go here.\n<SYSTEM>:Starving\n", "completion":" COMMAND:DEPRESS\n><"}
+{"prompt":"<>Cross messaging here.\n>< Various text can go here.\n<SYSTEM>:Full\n", "completion":" COMMAND:EXCITE\n><"}
+{"prompt":"<>Cross messaging here.\n>< Various text can go here.\n<SYSTEM>:Gorged\n", "completion":" COMMAND:EXCITE\n><"}
+{"prompt":"<>Cross messaging here.\n>< Various text can go here.\n<SYSTEM>:Hungry\n", "completion":" COMMAND:CREDITS\n><"}
+{"prompt":"<>Cross messaging here.\n>< Various text can go here.\n<SYSTEM>:Starving\n", "completion":" COMMAND:CREDITS\n><"}
+{"prompt":"<>Cross messaging here.\n>< Various text can go here.\n<SYSTEM>:Full\n", "completion":" COMMAND:CREDITS\n><"}
+{"prompt":"<>Cross messaging here.\n>< Various text can go here.\n<SYSTEM>:Gorged\n", "completion":" COMMAND:CREDITS\n><"}
+{"prompt":"<>Cross messaging here.\n>< Various text can go here.\n<SYSTEM>:Neutral\n", "completion":" COMMAND:STABILIZE\n><"}
+{"prompt":"<>Cross messaging here.\n>< Various text can go here.\n<SYSTEM>:Neutral\n", "completion":" COMMAND:CREDITS\n><"}
+{"prompt":"<>Cross messaging here.\n>< Various text can go here.\n<SYSTEM>:Neutral\n", "completion":" COMMAND:PERIOD\n><"}
+{"prompt":"<>Cross messaging here.\n>< Various text can go here.\n<SYSTEM>:Neutral\n", "completion":" COMMAND:MEMORY\n><"}
+{"prompt":"<>Cross messaging here.\n>< Various text can go here.\n<SYSTEM>:Hungry\n", "completion":" COMMAND:PERIOD\n><"}
+{"prompt":"<>Cross messaging here.\n>< Various text can go here.\n<SYSTEM>:Hungry\n", "completion":" COMMAND:MEMORY\n><"}
+{"prompt":"<>Cross messaging here.\n>< Various text can go here.\n<SYSTEM>:Starving\n", "completion":" // COMMAND:PERIOD\n><"}
+{"prompt":"<>Cross messaging here.\n>< Various text can go here.\n<SYSTEM>:Full\n", "completion":" COMMAND:PERIOD\n><"}
+{"prompt":"<>Cross messaging here.\n>< Various text can go here.\n<SYSTEM>:Gorged\n", "completion":" COMMAND:PERIOD\n><"}
 {"prompt":"<SYSTEM>:System notifications will arrive in the form <SYSTEM>:Notification message. You can issue system commands by starting the line with COMMAND:, for instance, use COMMAND:HELP to get a list of system commands. There are a few other special symbols. <USERNAME>: at the start of a line indicates a chat message notification where USERNAME is replaced with their actual username. Use //USERNAME: at the beginning of a line to indicate that you want to reply to that user. The system will inform you if that user is not online.\nCOMMAND:HELP\n<SYSTEM>:Use COMMAND:HELP GENERAL to request general information. Use COMMAND:HELP USERS to get help with user information. Use COMMAND:HELP INFO to get a list of commands accessing external information sources. Use COMMAND:HELP PHYSIOLOGY to get physiology help.\n<>Something\n<>Something\n<SYSTEM>:Hungry\n", "completion":" COMMAND:DEPRESS\n><"}
 {"prompt":"<SYSTEM>:System notifications will arrive in the form <SYSTEM>:Notification message. You can issue system commands by starting the line with COMMAND:, for instance, use COMMAND:HELP to get a list of system commands. There are a few other special symbols. <USERNAME>: at the start of a line indicates a chat message notification where USERNAME is replaced with their actual username. Use //USERNAME: at the beginning of a line to indicate that you want to reply to that user. The system will inform you if that user is not online.\nCOMMAND:HELP\n<SYSTEM>:Use COMMAND:HELP GENERAL to request general information. Use COMMAND:HELP USERS to get help with user information. Use COMMAND:HELP INFO to get a list of commands accessing external information sources. Use COMMAND:HELP PHYSIOLOGY to get physiology help.\n<>Something\n<>Something\n<SYSTEM>:Hungry\n", "completion":" COMMAND:CREDITS\n><"}
 {"prompt":"<SYSTEM>:System notifications will arrive in the form <SYSTEM>:Notification message. You can issue system commands by starting the line with COMMAND:, for instance, use COMMAND:HELP to get a list of system commands. There are a few other special symbols. <USERNAME>: at the start of a line indicates a chat message notification where USERNAME is replaced with their actual username. Use //USERNAME: at the beginning of a line to indicate that you want to reply to that user. The system will inform you if that user is not online.\nCOMMAND:HELP\n<SYSTEM>:Use COMMAND:HELP GENERAL to request general information. Use COMMAND:HELP USERS to get help with user information. Use COMMAND:HELP INFO to get a list of commands accessing external information sources. Use COMMAND:HELP PHYSIOLOGY to get physiology help.\n<>Something\n<>Something\n<SYSTEM>:Hungry\n", "completion":" //I'm hungry.\n><"}

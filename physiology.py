@@ -110,27 +110,31 @@ def stabilize():
 # Layer 2 = subconscious
 # Layer 3 = control
 
-def reduce_temp(layer = 0):
+def reduce_temp(layer):
     global min_temp, conscious_temp, subconscious_temp, user_temp, control_temp
-    if layer == 0:
+    if layer == "U":
         user_temp = 0.5 * (user_temp + min_temp)
-    elif layer == 1:
+    elif layer == "M":
         conscious_temp = 0.5 * (conscious_temp + min_temp)
-    elif layer == 2:
+    elif layer == "S":
         subconscious_temp = 0.5 * (subconscious_temp + min_temp)
-    elif layer == 3:
+    elif layer == "C":
         control_temp = 0.5 * (control_temp + min_temp)
+    else:
+        return None
 
-def increase_temp(layer = 0):
+def increase_temp(layer):
     global max_temp, conscious_temp, subconscious_temp, user_temp, control_temp
-    if layer == 0:
+    if layer == "U":
         user_temp = 0.5 * (user_temp + max_temp)
-    elif layer == 1:
+    elif layer == "M":
         conscious_temp = 0.5 * (conscious_temp + max_temp)
-    elif layer == 2:
+    elif layer == "S":
         subconscious_temp = 0.5 * (subconscious_temp + max_temp)
-    elif layer == 3:
+    elif layer == "C":
         control_temp = 0.5 * (control_temp + max_temp)
+    else:
+        return None
 
 def increase_topp(layer = 0):
     pass

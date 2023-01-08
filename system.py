@@ -21,10 +21,34 @@ def period():
 def memory():
     return round(100 * (len(data.history) / physiology.history_capacity))
 
-# Should only occur within lock
+# C for control layer, S for subconscious layer, M for conscious monologue layer and U for user layer.
+# Keycodes for layer selection are the same for temp, creative, literal, strict, and loose as well.
+def topp(layer):
+    if layer == "C":
+        return round(100 * (physiology.control_top_p - physiology.min_top_p)/(physiology.max_top_p - physiology.min_top_p))
+    elif layer == "S":
+        return round(100 * (physiology.subconscious_top_p - physiology.min_top_p)/(physiology.max_top_p - physiology.min_top_p))
+    elif layer == "M":
+        return round(100 * (physiology.conscious_top_p - physiology.min_top_p)/(physiology.max_top_p - physiology.min_top_p))
+    elif layer == "U":
+        return round(100 * (physiology.user_top_p - physiology.min_top_p)/(physiology.max_top_p - physiology.min_top_p))
+    else:
+        return None
+
+def temp(layer):
+    if layer == "C":
+        return round(100 * (physiology.control_temp - physiology.min_temp)/(physiology.max_temp - physiology.min_temp))
+    elif layer == "S":
+        return round(100 * (physiology.subconscious_temp - physiology.min_temp)/(physiology.max_temp - physiology.min_temp))
+    elif layer == "M":
+        return round(100 * (physiology.conscious_temp - physiology.min_temp)/(physiology.max_temp - physiology.min_temp))
+    elif layer == "U":
+        return round(100 * (physiology.user_temp - physiology.min_temp)/(physiology.max_temp - physiology.min_temp))
+    else:
+        return None
+
 def handle_system_command(command, subconscious = False):
-    # Figure out which commands should be accessible to conscious vs subconscious layer, if any should be available to the conscious layer.
-    command = command.upper()
+    command = command.upper().strip()
     print("Command Executed: " + command)
     if command == "HELP":
         thoughts.push_system_message("Use COMMAND:HELP GENERAL to request general information. Use COMMAND:HELP USERS to get help with user information. Use COMMAND:HELP INFO to get a list of commands accessing external information sources. Use COMMAND:HELP PHYSIOLOGY to get physiology help.", True)
@@ -43,33 +67,61 @@ def handle_system_command(command, subconscious = False):
         thoughts.push_system_message("Current think period: " + str(period()), True)
     elif command == "MEMORY":
         thoughts.push_system_message("Current memory usage: " + str(memory()), True)
-    elif command == "TOPP":
-        # Keycodes for layer selection are the same for temp, creative, literal, strict, and loose as well.
-        # Numeric represents subconscious layer n, C for conscious and U for user.
-        pass
-    elif command == "TEMP":
-        pass
+    elif command.startswith("TOPP "):
+        layer = command[5:].strip()
+        top_p = topp(layer)
+        if top_p is not None:
+            thoughts.push_system_message("TOPP is " + str(top_p))
+        thoughts.push_system_message("Invalid layer selection.")
+    elif command.startswith("TEMP "):
+        layer = command[5:].strip()
+        _temp = temp(layer)
+        if _temp is not None:
+            thoughts.push_system_message("TEMP is " + str(_temp))
+        else:
+            thoughts.push_system_message("Invalid layer selection.")
     elif command == "EXCITE":
         physiology.excite()
-        thoughts.push_system_message("Excited! Current think period: " + str(physiology.think_period), True)
+        thoughts.push_system_message("Excited. Current think period: " + str(physiology.think_period), True)
     elif command == "DEPRESS":
         physiology.depress()
-        thoughts.push_system_message("Depressed... Current think period: " + str(physiology.think_period), True)
+        thoughts.push_system_message("Depressed. Current think period: " + str(physiology.think_period), True)
     elif command == "STABILIZE":
         physiology.stabilize()
         thoughts.push_system_message("Stabilized. Current think period: " + str(physiology.think_period), True)
-    elif command == "CREATIVE":
+    elif command.startswith("INSPIRE "):
         # Increase temp
-        pass
-    elif command == "LITERAL":
+        layer = command[8:].strip()
+        result = physiology.increase_temp(layer)
+        if result is not None:
+            thoughts.push("Temp increased. Current temp: " + temp(layer))
+        else:
+            thoughts.push_system_message("Invalid layer selection.")
+
+    elif command.startswith("LITERAL "):
         # Decrease temp
-        pass
-    elif command == "STRICT":
+        layer = command[8:].strip()
+        result = physiology.decrease_temp(layer)
+        if result is not None:
+            thoughts.push("Temp decreased. Current temp: " + temp(layer))
+        else:
+            thoughts.push_system_message("Invalid layer selection.")
+    elif command.startswith("RESTRICT "):
         # Increase top_p
-        pass
-    elif command == "LOOSE":
+        layer = command[9:].strip()
+        result = physiology.increase_topp(layer)
+        if result is not None:
+            thoughts.push("Top_p increased. Current top_p: " + top_p(layer))
+        else:
+            thoughts.push_system_message("Invalid layer selection.")
+    elif command.startswith("LOOSEN "):
         # Decrease top_p
-        pass
+        layer = command[7:].strip()
+        result = physiology.decrease_topp(layer)
+        if result is not None:
+            thoughts.push("Top_p decreased. Current top_p: " + top_p(layer))
+        else:
+            thoughts.push_system_message("Invalid layer selection.")
     elif command == "CHECKDREAM":
         # Check dreaming status.
         if learning.dream_state == "Dreaming":
