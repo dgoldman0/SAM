@@ -48,8 +48,6 @@ max_subthought = 1024
 min_partitions = 2
 seeded_partitions = 8 # seed the first n partitions after partition 0 (since partition 0 is for system and must always be seeded)
 max_partitions = 10
-# Will control how many active
-focus_level = 5
 
 max_subnulls = 2
 

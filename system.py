@@ -43,6 +43,12 @@ def handle_system_command(command, subconscious = False):
         thoughts.push_system_message("Current think period: " + str(period()), True)
     elif command == "MEMORY":
         thoughts.push_system_message("Current memory usage: " + str(memory()), True)
+    elif command == "TOPP":
+        # Keycodes for layer selection are the same for temp, creative, literal, strict, and loose as well.
+        # Numeric represents subconscious layer n, C for conscious and U for user.
+        pass
+    elif command == "TEMP":
+        pass
     elif command == "EXCITE":
         physiology.excite()
         thoughts.push_system_message("Excited! Current think period: " + str(physiology.think_period), True)
@@ -52,6 +58,18 @@ def handle_system_command(command, subconscious = False):
     elif command == "STABILIZE":
         physiology.stabilize()
         thoughts.push_system_message("Stabilized. Current think period: " + str(physiology.think_period), True)
+    elif command == "CREATIVE":
+        # Increase temp
+        pass
+    elif command == "LITERAL":
+        # Decrease temp
+        pass
+    elif command == "STRICT":
+        # Increase top_p
+        pass
+    elif command == "LOOSE":
+        # Decrease top_p
+        pass
     elif command == "CHECKDREAM":
         # Check dreaming status.
         if learning.dream_state == "Dreaming":

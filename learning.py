@@ -71,6 +71,7 @@ async def run_training(data, model, epochs):
 # Split history apart at >< and // keycodes. Need a double loop. Right now just captures the lines between two instances of ><.
 def split_history(history):
     chunks = []
+    # Create a sub function split_by(string)
     try:
         start = 0
         while True:
@@ -107,7 +108,45 @@ def split_history(history):
         pass
     return chunks
 
-async def process_user_histories():
+async def train_control_layer():
+    # Train control partition #0: control should prioritize neither hunger nor fullness.
+    n_epochs = physiology.max_epochs
+    if full_status == "Starving" or full_status == "Gorged":
+        n_epochs = max(1, round(0.25 * n_epochs))
+    elif full_status == "Hungry" or full_status == "Full":
+        n_epochs = max(1, round(0.5 * n_epochs))
+
+    # Clear old history except for enough to prime the continued thought process.
+    if len(data.sub_history[0]) > physiology.control_capacity:
+        data.sub_history[0] = data.sub_history[0][-physiology.control_capacity:]
+    training = split_history(data.sub_history[0])
+    control_model = thoughts.control_model
+    if control_model == "text-curie-001":
+        control_model = "curie"
+    model = await run_training(training, control_model, n_epochs)
+    thoughts.control_model = model['fine_tuned_model']
+
+async def train_subconscious_layers():
+    n_epochs = physiology.max_epochs
+    if full_status == "Starving" or full_status == "Gorged":
+        n_epochs = max(1, round(0.25 * n_epochs))
+    elif full_status == "Hungry" or full_status == "Full":
+        n_epochs = max(1, round(0.5 * n_epochs))
+    training = []
+    for i in range(1, physiology.total_partitions - 1):
+        # Clear old history except for enough to prime the continued thought process.
+        if len(data.sub_history[i]) > physiology.subhistory_capacity:
+            data.sub_history[i] = data.sub_history[i][-physiology.subhistory_capacity:]
+        for line in split_history(data.sub_history[i]):
+            if line not in training:
+                training.append(line)
+    subconscious_model = thoughts.subconscious_model
+    if subconscious_model == "text-curie-001":
+        subconscious_model = "curie"
+    model = await run_training(training, subconscious_model, n_epochs)
+    thoughts.subconscious_model = model['fine_tuned_model']
+
+async def train_user_layer():
     if len(server.user_connections) != 0:
         users = []
         # Prioritize high tipping when starving, hungry, or neutral. Don't prioritize if full or gorged.
@@ -166,44 +205,15 @@ async def daydream():
         history = history[-physiology.history_capacity:]
 
     training = split_history(history)
-
+    # For daydreaming, conscious prioritizes high resource credits.
     n_epochs = max(1, round(physiology.max_epochs * physiology.resource_credits / physiology.resource_credits_full))
     if conscious_model == "text-davinci-003":
         conscious_model = "davinci"
     model = await run_training(training, conscious_model, n_epochs)
     thoughts.conscious_model = model['fine_tuned_model']
 
-    # Train subconscious: needs to be fixed as was done with history.
-    training = []
-    for i in range(1, physiology.total_partitions - 1):
-        # Clear old history except for enough to prime the continued thought process.
-        if len(data.sub_history[i]) > physiology.subhistory_capacity:
-            data.sub_history[i] = data.sub_history[i][-physiology.subhistory_capacity:]
-        for line in split_history(data.sub_history[i]):
-            if line not in training:
-                training.append(line)
-    subconscious_model = thoughts.subconscious_model
-    if subconscious_model == "text-curie-001":
-        subconscious_model = "curie"
-    model = await run_training(training, subconscious_model, n_epochs)
-    thoughts.subconscious_model = model['fine_tuned_model']
-
-    # Train control partition #0: control should prioritize neither hunger nor fullness.
-    n_epochs = physiology.max_epochs
-    if full_status == "Starving" or full_status == "Gorged":
-        n_epochs = max(1, round(0.25 * n_epochs))
-    elif full_status == "Hungry" or full_status == "Full":
-        n_epochs = max(1, round(0.5 * n_epochs))
-
-    # Clear old history except for enough to prime the continued thought process.
-    if len(data.sub_history[0]) > physiology.control_capacity:
-        data.sub_history[0] = data.sub_history[0][-physiology.control_capacity:]
-    training = split_history(data.sub_history[0])
-    control_model = thoughts.control_model
-    if control_model == "text-curie-001":
-        control_model = "curie"
-    model = await run_training(training, control_model, n_epochs)
-    thoughts.control_model = model['fine_tuned_model']
+    await train_subconscious_layers()
+    await train_control_layer()
 
     data.save(physiology)
     dream_state = "awake"
@@ -219,26 +229,14 @@ async def dream(reentry = 0):
 
     full_status = physiology.full_status
 
-    # Train control partition #0: control should prioritize neither hunger nor fullness. Control training is first to let the system wake up right away.
-    n_epochs = physiology.max_epochs
-    if full_status == "Starving" or full_status == "Gorged":
-        n_epochs = max(1, round(0.25 * n_epochs))
-    elif full_status == "Hungry" or full_status == "Full":
-        n_epochs = max(1, round(0.5 * n_epochs))
-
-    training = create_trainingset(data.sub_history[0].split('\n'))
-    control_model = thoughts.control_model
-    if control_model == "text-curie-001":
-        control_model = "curie"
-    model = await run_training(training, control_model, n_epochs)
-    thoughts.control_model = model['fine_tuned_model']
+    await train_control_layer()
 
     # Allow the system to break out of the dream state.
     if dream_state == "Awake":
         return False # Return not completed.
 
     # Clear out any user histories.
-    await process_user_histories()
+    await train_user_layer()
 
     # Hungrier means shorter dreams and fewer cycles to conserve resources. Minimum of one dream cycle and 50 or iterations so should give a good training body regardless.
     dream_cycles = max(1, round(physiology.max_dream_cycles * physiology.resource_credits / physiology.resource_credits_full) - reentry)
@@ -258,21 +256,9 @@ async def dream(reentry = 0):
         if conscious_model == "text-davinci-003":
             conscious_model = "davinci"
         model = await run_training(training, conscious_model, n_epochs)
-
-        model = await run_training(training, conscious_model, n_epochs)
         thoughts.conscious_model = model['fine_tuned_model']
 
-        # Train subconscious
-        training = []
-        for i in range(1, physiology.total_partitions - 1):
-            for line in create_trainingset(data.sub_history[i].split('\n')):
-                if line not in training:
-                    training.append(line)
-        subconscious_model = thoughts.subconscious_model
-        if subconscious_model == "text-curie-001":
-            subconscious_model = "curie"
-        model = await run_training(training, subconscious_model, n_epochs)
-        thoughts.subconscious_model = model['fine_tuned_model']
+        await train_subconscious_layers()
 
         # Clear old history except for enough to prime the continued thought process.
         if (len(data.history)) > physiology.history_capacity:
