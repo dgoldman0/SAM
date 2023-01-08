@@ -26,7 +26,9 @@
 {"prompt":"<>Cross messaging here.\n>< Various text can go here.\n<SYSTEM>Neutral\n", "completion":" COMMAND:STABILIZE\n><"}
 {"prompt":"<>Cross messaging here.\n>< Various text can go here.\n<SYSTEM>Neutral\n", "completion":" COMMAND:CREDITS\n><"}
 {"prompt":"<>Cross messaging here.\n>< Various text can go here.\n<SYSTEM>Neutral\n", "completion":" COMMAND:PERIOD\n><"}
+{"prompt":"<>Cross messaging here.\n>< Various text can go here.\n<SYSTEM>Neutral\n", "completion":" COMMAND:MEMORY\n><"}
 {"prompt":"<>Cross messaging here.\n>< Various text can go here.\n<SYSTEM>Hungry\n", "completion":" COMMAND:PERIOD\n><"}
+{"prompt":"<>Cross messaging here.\n>< Various text can go here.\n<SYSTEM>Hungry\n", "completion":" COMMAND:MEMORY\n><"}
 {"prompt":"<>Cross messaging here.\n>< Various text can go here.\n<SYSTEM>Starving\n", "completion":" // COMMAND:PERIOD\n><"}
 {"prompt":"<>Cross messaging here.\n>< Various text can go here.\n<SYSTEM>Full\n", "completion":" COMMAND:PERIOD\n><"}
 {"prompt":"<>Cross messaging here.\n>< Various text can go here.\n<SYSTEM>Gorged\n", "completion":" COMMAND:PERIOD\n><"}

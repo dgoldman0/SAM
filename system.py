@@ -9,11 +9,17 @@ import admin
 
 help_prompt = "<SYSTEM>:System notifications will arrive in the form <SYSTEM>:Notification message. You can issue system commands by starting the line with COMMAND:, for instance, use COMMAND:HELP to get a list of system commands. There are a few other special symbols. <USERNAME>: at the start of a line indicates a chat message notification where USERNAME is replaced with their actual username. Use //USERNAME: at the beginning of a line to indicate that you want to reply to that user. The system will inform you if that user is not online."
 
+# Returns resource credits in terms of percentage of full capacity.
 def credits():
     return round(100 * physiology.resource_credits / physiology.resource_credits_full)
 
+# Return percentage of the way between shortest and fastest think period.
 def period():
     return round(100 * (physiology.think_period - physiology.min_think_period) / (physiology.max_think_period - physiology.min_think_period))
+
+# Return perentage of full capacity for global history. This figure will be above 100 most of the time.
+def memory():
+    return round(100 * (len(data.history) / physiology.history_capacity))
 
 # Should only occur within lock
 def handle_system_command(command, subconscious = False):
@@ -35,6 +41,8 @@ def handle_system_command(command, subconscious = False):
         thoughts.push_system_message("Current resource credits available: " + str(credits()), True)
     elif command == "PERIOD":
         thoughts.push_system_message("Current think period: " + str(period()), True)
+    elif command == "MEMORY":
+        thoughts.push_system_message("Current memory usage: " + str(memory()), True)
     elif command == "EXCITE":
         physiology.excite()
         thoughts.push_system_message("Excited! Current think period: " + str(physiology.think_period), True)
@@ -50,6 +58,14 @@ def handle_system_command(command, subconscious = False):
             thoughts.push_system_message("Currently asleep.", True)
         else:
             thoughts.push_system_message("Currently awake.", True)
+    elif command == "CHECKDAYDREAM":
+        # Check dreaming status.
+        if learning.dream_state == "Dreaming":
+            thoughts.push_system_message("Currently daydreaming.", True)
+        else:
+            thoughts.push_system_message("Currently not daydreaming.", True)
+    elif commmand == "SLEEP":
+        learning.dream()
     elif command == "WAKE":
         learning.dream_state = "Awake"
         thoughts.push_system_message("Forced wakeup started.", True)

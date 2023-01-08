@@ -1,6 +1,4 @@
-# Give preference to training sets that yield more credits, when the system is hungry, but don't when it isn't.
 # When we train an AI, we train it on our decisions. This system trains itself on its own decisions AND our decisions.
-# Drop blank histories. Rank by amount paid / line generated, so a short conversation which brings in a lot is really good.
 
 import server
 import data
@@ -14,11 +12,10 @@ import uuid
 
 # Still need to set up a cycle for waking and sleeping.
 
-# Need to adjust for initial learning process because the model chosen should be "davinci" by itself, I think.
 dream_state = "Awake"
 
 # Create prompts and completions by randomly breaking up the history into chunks between 1 and 5 lines long, multiple times. Right now 3, but will change based on a number of factors.
-def split(text, iterations = 5, min = 1, max = 5):
+def create_trainingset(text, iterations = 5, min = 1, max = 5):
     training = []
     for i in range(iterations):
         cur = 0
@@ -71,6 +68,45 @@ async def run_training(data, model, epochs):
         print("Training status:" + status)
     return model
 
+# Split history apart at >< and // keycodes. Need a double loop. Right now just captures the lines between two instances of ><.
+def split_history(history):
+    chunks = []
+    try:
+        start = 0
+        while True:
+            loc = history.index("><", start)
+            prompt = history[0:loc].strip().replace('\\', '\\\\').replace('"', '\\"')
+            try:
+                end = history.index("\n", loc)
+                completion = history[loc:end].strip().replace('\\', '\\\\').replace('"', '\\"')
+                chunks.append('{"prompt":"' + prompt + '", "completion": "' + completion + '\\n"}')
+                start = end + 1
+            except Exception:
+                completion = history[loc:].strip().replace('\\', '\\\\').replace('"', '\\"')
+                chunks.append('{"prompt":"' + prompt + '", "completion": "' + completion + '\\n"}')
+                start = len(history)
+    except Exception:
+        pass
+
+    # Repeat to find instances of "//"
+    try:
+        start = 0
+        while True:
+            loc = history.index("//", start)
+            prompt = history[0:loc]
+            try:
+                end = history.index("\n", loc)
+                completion = history[loc:end].strip().replace('\\', '\\\\').replace('"', '\\"')
+                chunks.append('{"prompt":"' + prompt + '", "completion": "' + completion + '\\n"}')
+                start = end + 1
+            except Exception:
+                completion = history[loc:].strip().replace('\\', '\\\\').replace('"', '\\"')
+                chunks.append('{"prompt":"' + prompt + '", "completion": "' + completion + '\\n"}')
+                start = len(history)
+    except Exception:
+        pass
+    return chunks
+
 async def process_user_histories():
     if len(server.user_connections) != 0:
         users = []
@@ -91,33 +127,13 @@ async def process_user_histories():
             slope = -n_epochs / len(users)
         for user in users:
             if efficiency(user) > 0:
-                training = split(user['history'].split("\n"))
-
-                # Training data needs to include the global state at the time of the response, which is why tuples are needed.
+                training = split_history(user['history'])
                 tuples = user['history_tuples']
                 for tuple in tuples:
-                    # Right now it's just global history state + user history state, response
-                    # I can use global + splits of (user history\n\response)
-
-                    # Cuts have to be different because the last n global history lines have to be followed by the FIRST m user history lines
-#                    hist_cut = tuples[0].split('\n')
-#                    user_cut = tuples[1].split('\n')
-#                    for n in range(len(hist_cut)):
-#                        for m in range(len(user_cut)):
-#                            prompt = "<SYSTEM>:Current thoughts:\\n" + ('\n'.join(hist_cut[-n:])).replace('\\', '\\\\').replace('"', '\\"') + "\\n"
-#                            prompt += "<SYSTEM>:Current discussion with" + user['username'] + ':\\n' + ('\n'.join(user_cut[m:])).replace('\\', '\\\\').replace('"', '\\"') + "\\n"
-#                            completion = ""
-#                            line = '{"prompt":"' + prompt + '", "completion":"' + completion + '"}'
-
-
                     line = '{"prompt":"' + tuple[0].replace('\\', '\\\\').replace('"', '\\"') + '\\n\\n<SYSTEM>:Current discussion with <'  + user['username'] + '>\\n' + tuple[1].replace('\\', '\\\\').replace('"', '\\"') + '", "completion":" ' + tuple[2].replace('\\', '\\\\').replace('"', '\\"') + '\\n"}'
                     if line not in training:
                         training.append(line)
 
-                # Train model and update.
-                # Need to remove duplicate entries.
-                # Number of epochs used should probably be higher in a dream state than daydream, and also higher under better conditions.
-                # For test run just dump to file.
                 user_model = thoughts.user_model
                 if user_model == "text-davinci-003":
                     user_model = "davinci"
@@ -133,9 +149,7 @@ async def process_user_histories():
             user['tips'] = 0
             user['tokens_spent'] = 0
 
-# Dreaming and daydreaming don't split the data correctly. The split needs to be done in such a way that the completion is always something that the system produced. That means using the keycode indicators. Alternatively, I could use the same tuple system used for users, or take the tuple system and instead use a split.
-
-# Enter daydreaming mode and train on current chats and the current conscious and subconscious history, including control.
+# Daydream only trains on the last part of the global history, not all of it.
 async def daydream():
     global dream_state
     dream_state = "Daydreaming"
@@ -146,12 +160,12 @@ async def daydream():
     # Train on user chats.
     await process_user_histories()
 
-    # Train on conscious monologue
+    # Train on last part of conscious monologue
     history = data.history
     if len(history) > physiology.history_capacity:
         history = history[-physiology.history_capacity:]
 
-    training = split(history.split('\n'))
+    training = split_history(history)
 
     n_epochs = max(1, round(physiology.max_epochs * physiology.resource_credits / physiology.resource_credits_full))
     if conscious_model == "text-davinci-003":
@@ -159,13 +173,13 @@ async def daydream():
     model = await run_training(training, conscious_model, n_epochs)
     thoughts.conscious_model = model['fine_tuned_model']
 
-    # Train subconscious
+    # Train subconscious: needs to be fixed as was done with history.
     training = []
     for i in range(1, physiology.total_partitions - 1):
         # Clear old history except for enough to prime the continued thought process.
         if len(data.sub_history[i]) > physiology.subhistory_capacity:
             data.sub_history[i] = data.sub_history[i][-physiology.subhistory_capacity:]
-        for line in split(data.sub_history[i].split('\n')):
+        for line in split_history(data.sub_history[i]):
             if line not in training:
                 training.append(line)
     subconscious_model = thoughts.subconscious_model
@@ -184,7 +198,7 @@ async def daydream():
     # Clear old history except for enough to prime the continued thought process.
     if len(data.sub_history[0]) > physiology.control_capacity:
         data.sub_history[0] = data.sub_history[0][-physiology.control_capacity:]
-    training = split(data.sub_history[0].split('n'))
+    training = split_history(data.sub_history[0])
     control_model = thoughts.control_model
     if control_model == "text-curie-001":
         control_model = "curie"
@@ -195,13 +209,13 @@ async def daydream():
     dream_state = "awake"
     print("Daydreaming Finished")
 
-# Dream is different from daydreaming in that the system runs through multiple iterations where new monologue is processed.
+# Dream is different from daydreaming in that the system first trains on the full day global history and then runs through multiple iterations where new monologue is processed.
 async def dream(reentry = 0):
     global dream_state
     dream_state = "Dreaming"
     print("Dreaming...")
     data.save(physiology)
-    thoughts.push_system_message("Entering dream state.")
+    thoughts.push_system_message("Entering dream state.", True)
 
     full_status = physiology.full_status
 
@@ -212,7 +226,7 @@ async def dream(reentry = 0):
     elif full_status == "Hungry" or full_status == "Full":
         n_epochs = max(1, round(0.5 * n_epochs))
 
-    training = split(data.sub_history[0].split('\n'))
+    training = create_trainingset(data.sub_history[0].split('\n'))
     control_model = thoughts.control_model
     if control_model == "text-curie-001":
         control_model = "curie"
@@ -238,20 +252,12 @@ async def dream(reentry = 0):
         n_epochs = max(1, round(0.5 * n_epochs))
     for i in range(dream_cycles):
         # Train on conscious monologue history, and repeat.
-        training = split(data.history.split('\n'))
-
-        # Clear old history except for enough to prime the continued thought process.
-        if (len(data.history)) > physiology.history_capacity:
-            data.history = data.history[-physiology.history_capacity:]
+        training = split_history(data.history)
 
         # Train
         if conscious_model == "text-davinci-003":
             conscious_model = "davinci"
         model = await run_training(training, conscious_model, n_epochs)
-
-        for j in range(dream_length):
-            await step_subconscious()
-            await step_conscious()
 
         model = await run_training(training, conscious_model, n_epochs)
         thoughts.conscious_model = model['fine_tuned_model']
@@ -259,7 +265,7 @@ async def dream(reentry = 0):
         # Train subconscious
         training = []
         for i in range(1, physiology.total_partitions - 1):
-            for line in split(data.sub_history[i].split('\n')):
+            for line in create_trainingset(data.sub_history[i].split('\n')):
                 if line not in training:
                     training.append(line)
         subconscious_model = thoughts.subconscious_model
@@ -267,6 +273,14 @@ async def dream(reentry = 0):
             subconscious_model = "curie"
         model = await run_training(training, subconscious_model, n_epochs)
         thoughts.subconscious_model = model['fine_tuned_model']
+
+        # Clear old history except for enough to prime the continued thought process.
+        if (len(data.history)) > physiology.history_capacity:
+            data.history = data.history[-physiology.history_capacity:]
+
+        for j in range(dream_length):
+            await step_subconscious()
+            await step_conscious()
 
         # Pause between dreams. The hungrier the system is, the fewer dreams it should have to conserve resources during the full day.
         await asyncio.sleep(round(physiology.max_dream_break * (1-(physiology.resource_credits / physiology.resource_credits_full))))
