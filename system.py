@@ -21,8 +21,6 @@ def period():
 def memory():
     return round(100 * (len(data.history) / physiology.history_capacity))
 
-# C for control layer, S for subconscious layer, M for conscious monologue layer and U for user layer.
-# Keycodes for layer selection are the same for temp, creative, literal, strict, and loose as well.
 def topp(layer):
     if layer == "C":
         return round(100 * (physiology.control_top_p - physiology.min_top_p)/(physiology.max_top_p - physiology.min_top_p))
@@ -97,7 +95,6 @@ def handle_system_command(command, subconscious = False):
             thoughts.push("Temp increased. Current temp: " + temp(layer))
         else:
             thoughts.push_system_message("Invalid layer selection.")
-
     elif command.startswith("LITERAL "):
         # Decrease temp
         layer = command[8:].strip()

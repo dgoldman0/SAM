@@ -77,20 +77,6 @@ max_dream_length = 150
 max_epochs = 10
 max_dream_break = 1200
 
-# Cycle between periods of wakefulness and sleep.
-async def cycle_rhythm():
-    # Enter daydream every hour or so, and sleep every 18 hours or so.
-    hours_awake = 0
-    while True:
-        # Right now the system doesn't keep track of lost sleep, but that's important to help conserve resources and to ensure dreaming.
-        if hours_awake == 18:
-            hours_awake = 0
-            comppleted = await learning.dream()
-        else:
-            await asyncio.sleep(3600)
-            await learning.daydream()
-            hours_awake += 1
-
 # Excite and depress physiology.
 def excite():
     global think_period, min_think_period
@@ -105,10 +91,10 @@ def stabilize():
     think_period = 0.5 * (think_period + awake_think_period)
 
 # Control the temp and top_p of the different layers.
-# Layer 0 = user
-# Layer 1 = monologue
-# Layer 2 = subconscious
-# Layer 3 = control
+# Layer U = user
+# Layer M = monologue
+# Layer S = subconscious
+# Layer C = control
 
 def reduce_temp(layer):
     global min_temp, conscious_temp, subconscious_temp, user_temp, control_temp
@@ -137,9 +123,30 @@ def increase_temp(layer):
         return None
 
 def increase_topp(layer = 0):
-    pass
+    global max_top_p, conscious_top_p, subconscious_top_p, user_top_p, control_top_p
+    if layer == "U":
+        user_temp = 0.5 * (user_top_p + max_top_p)
+    elif layer == "M":
+        conscious_top_p = 0.5 * (conscious_top_p + max_top_p)
+    elif layer == "S":
+        subconscious_top_p = 0.5 * (subconscious_top_p + max_top_p)
+    elif layer == "C":
+        control_top_p = 0.5 * (control_top_p + max_top_p)
+    else:
+        return None
+
 def reduce_topp(layer = 0):
-    pass
+    global min_top_p, conscious_top_p, subconscious_top_p, user_top_p, control_top_p
+    if layer == "U":
+        user_temp = 0.5 * (user_top_p + min_top_p)
+    elif layer == "M":
+        conscious_top_p = 0.5 * (conscious_top_p + min_top_p)
+    elif layer == "S":
+        subconscious_top_p = 0.5 * (subconscious_top_p + min_top_p)
+    elif layer == "C":
+        control_top_p = 0.5 * (control_top_p + min_top_p)
+    else:
+        return None
 
 # Review physiology and push any notifications necessary.
 def review():

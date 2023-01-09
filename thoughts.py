@@ -19,7 +19,7 @@ sub_history = data.sub_history
 user_model = "davinci:ft-personal-2023-01-06-16-31-30"
 conscious_model = "text-davinci-3"
 subconscious_model = "text-curie-001"
-control_model = "curie:ft-personal-2023-01-07-12-40-44"
+control_model = "curie:ft-personal-2023-01-08-19-21-34"
 
 # The current user that SAM is listening to, if any, and set the time at which it was changed.
 active_user = ""
