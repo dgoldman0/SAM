@@ -164,7 +164,7 @@ def review():
 
     # Having too many credits is less important than having too few, so notifications here should be more limited.
     if resource_credits > 0.75 * resource_credits_full:
-        if resource_credits > 0.875 * resource_credits_full:
+        if resource_credits > resource_credits_full:
             thoughts.push_system_message("Gorged", True)
             full_status = "Gorged"
             return
