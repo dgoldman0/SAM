@@ -50,8 +50,10 @@ def respond_credits(prompt, credits):
     elif credits > 100:
         return recurse(prompt, "COMMAND:EXCITE")
     else:
-        pass
-
+        options = ['COMMAND:PERIOD']
+        n = len(options) - 1
+        return recurse(prompt, options[n])
+        
 def simulate_command(prompt, command):
     if command == "EXCITE":
         period = rantint(0, 100)
