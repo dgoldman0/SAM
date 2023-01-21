@@ -42,7 +42,16 @@ def full_status(lead = None):
         recurse(prompt)
 
 def respond_period(prompt, period):
-    pass
+    options = []
+    if period < 20:
+        options = ["COMMAND:STABILIZE", "COMMAND:SLEEP", "COMMAND:SILENCE"]
+    elif period > 80:
+        options = ["COMMAND:STABILIZE", "COMMAND:LISTEN"]
+    else:
+        options = ["COMMAND:CREDITS", "COMMAND:MEMORY", "COMMAND:LISTUSERS"]
+    n = len(options) - 1
+    completion = options[randint(0, n)]
+    return recurse(prompt, completion)
 
 def respond_credits(prompt, credits):
     if credits < 10:
@@ -53,7 +62,7 @@ def respond_credits(prompt, credits):
         options = ['COMMAND:PERIOD']
         n = len(options) - 1
         return recurse(prompt, options[n])
-        
+
 def simulate_command(prompt, command):
     if command == "EXCITE":
         period = rantint(0, 100)
@@ -104,7 +113,7 @@ def simulate_command(prompt, command):
                         completion = "COMMAND:EXCITE"
             return recurse(prompt + '\\n' + result)
         else:
-            pass
+            recurse(prompt + '\\n' + result)
     elif command == "CREDITS":
         credits = rantint(0, 200)
         result = "<SYSTEM>:Current resource credits available: " + str(period)
