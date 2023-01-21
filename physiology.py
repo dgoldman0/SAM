@@ -27,7 +27,7 @@ min_top_p = 0.5
 max_temp = 1
 max_top_p = 1
 
-conscious_tokens = 128
+conscious_tokens = 64
 subconscious_tokens = 64
 control_tokens = 256
 initialize_tokens = 128
@@ -36,7 +36,7 @@ userreply_tokens = 256
 # These rates might need to eb and flow within their parameter ranges. There can be long pauses beteeen thoughts. Another possibiltiy is that conscious thought rate will already depend on how many subconscious partitions there are. That might be enough modulation.
 think_period = awake_think_period
 
-max_history_capacity = 2560
+max_history_capacity = 512
 max_control_capacity = 2560
 max_subhistory_capacity = 1280
 max_userhistory_capacity = 1000
