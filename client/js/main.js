@@ -24,8 +24,8 @@ $(document).ready(function() {
       switch (status) {
         case 'connecting':
         if (msg == "SAM Chat Interface") {
-          await ws.send(new Blob(["AUTH:" + username]));
           status = "salt"
+          await ws.send(new Blob(["AUTH:" + username]));
         } else {
         }
         break;
@@ -36,8 +36,8 @@ $(document).ready(function() {
           hashed_pw = dcodeIO.bcrypt.hashSync(password, salt);
           hashed_pw = "$2b" + hashed_pw.slice(3);
           console.log(hashed_pw)
-          await ws.send(new Blob([hashed_pw]));
           status = "verifying";
+          await ws.send(new Blob([hashed_pw]));
         }
         break;
         case 'verifying':

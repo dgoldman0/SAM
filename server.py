@@ -21,6 +21,7 @@ async def authenticate_user(websocket):
         if response.startswith("AUTH:"):
             username = response[5:]
             user = user_connections.get(username)
+            # Is user['websocket'] is not None correct?
             if user is not None and user['websocket'] is not None:
                 return user # User was already connected so let them keep their history.
             cur = database.cursor()
