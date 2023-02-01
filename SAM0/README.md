@@ -12,3 +12,8 @@ Commands start with a backslash. The current commands are as follows.
 - working: show current working memory for the current discussion
 - dream: initiate a dream sequence
 - save: save the current long term memory to file.
+
+# Notes
+
+- SAM0 is very susceptible to initial conversation bias, if starting from a blank memory map. However, the bias may reduce over time, as it has a chance to integrate a more diverse set of topics from future conversations.
+- Because of the token limit of token limits for OpenAI models, the associative memory map is restricted to about 8,000 characters. Functionality may become more unpredictable once that limit has been reached.
