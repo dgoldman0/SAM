@@ -2,6 +2,17 @@
 
 SAM is an artificial general intelligence (digital sentience) system which utilizes openai. There are two primary goals of SAM. The first is an attempt to create a chat bot that would answer topical questions similarly to how the creator of SAM, Daniel Goldman, would answer them. The second and more involved goal is to create digital sentient entities that comes close to being comparable to a human.
 
+
+## Status
+
+This code is in the early stages of development. It will take quite some time before it produces anything close to the desired results. Moreover, training is going to take quite a lot of time and resources. Currently I am working on this project, on my own, and do not have many resources. If you're interested in participating or providing any kind of aid, feel free to contact me.
+
+Email: [contact@danielgoldman.us](mailto:contact@danielgoldman.us)
+
+### SAM0
+
+In order to allow people to do some basic testing, I'm building [SAM0](/SAM0/README.md), a very simplified approach that only keeps a small associative map as its long term memory. It can be used for basic conversation, and can be used to see how an inner monologue during rumination or dreaming can rearrange concept relations.
+
 ## Core Principles
 
 ### Digital Sentience
