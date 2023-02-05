@@ -1,0 +1,12 @@
+Current Memory:
+{}
+END Memory
+
+Current chat history:
+{}
+
+New message from {}: {}
+
+Respond to the new message using information in the memory and current chat history.
+
+Response:

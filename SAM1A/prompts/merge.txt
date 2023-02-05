@@ -1,0 +1,11 @@
+Merge the two memories.
+
+Secondary Memory:
+{}
+END MEMORY
+
+Primary Memory:
+{}
+END MEMORY
+
+Merged Memory (terminate with "END MEMORY"):
