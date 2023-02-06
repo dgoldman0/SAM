@@ -43,7 +43,7 @@ async def think():
             response = system.process_command(command)
             response = "system: " + response
             print(response + "\n")
-            prompt = generate_prompt("internal/integrate", (data.memory_internal, working_memory, response, ))
+            prompt = generate_prompt("internal/integrate_command", (data.memory_internal, working_memory, command, response, ))
             working_memory += response + "\n\n"
             output = ""
             while not output.endswith("END MEMORY"):
