@@ -1,0 +1,14 @@
+Current Memory:
+{}
+END MEMORY
+
+Current thoughts:
+{}
+
+You had a new thought.
+
+New Thought: {}
+
+Extract ideas from this new thought, determine how it relates and incorporate the new ideas into the updated memory. Use an associative map.
+
+Updated Memory (rewrite and reorganize to link new information, terminate with "END MEMORY"):
