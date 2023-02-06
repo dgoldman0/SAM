@@ -46,9 +46,17 @@ async def authenticate_user(websocket):
                         user['websocket'] = websocket
                         return user
                 else:
-                    await websocket.send("INVALID")
+                    await websocket.send("INVALID".encode())
         elif response.startsiwth("REGISTER:"):
-            pass
+            username = response[9:]
+            cur = database.cursor()
+            res = cur.execute("SELECT blocked, salt FROM USERS WHERE username = ?;", (username, ))
+            resp = res.fetchone()
+            if resp is None:
+                pass
+            else:
+                await websocket.send("INVALID".encode())
+
 
 async def handle_login(websocket):
     user = await authenticate_user(websocket)
