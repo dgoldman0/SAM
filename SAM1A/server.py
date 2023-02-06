@@ -3,8 +3,13 @@ import asyncio
 import websockets
 import conversations
 import bcrypt
+import internal
 
 user_connections = {}
+
+def notify_disconnect(name):
+    user_connections[name] = None
+    internal.notify_disconnect(name)
 
 # Should probably move to admin or something.
 async def authenticate_user(websocket):
@@ -14,7 +19,8 @@ async def authenticate_user(websocket):
     if response is not None:
         response = response.decode()
         if response.startswith("AUTH:"):
-            username = response[5:]
+            # Username is always lowercase on the server end.
+            username = response[5:].lower()
             user = user_connections.get(username)
             # Is user['websocket'] is not None correct?
             if user is not None and user['websocket'] is not None:
@@ -25,7 +31,6 @@ async def authenticate_user(websocket):
             if resp is None:
                 # No such user or database not initialized.
                 await websocket.send("UNKNOWN")
-                print("Unidentified user: " + username)
                 return None
             if resp[0]:
                 await websocket.send("BLOCKED")
@@ -37,8 +42,8 @@ async def authenticate_user(websocket):
                 password = response
                 res = cur.execute("SELECT user_id, display_name, admin FROM users WHERE username = ? AND passwd = ?;", (username, password))
                 resp = res.fetchone()
-                print(resp)
                 if resp is not None:
+                    internal.notify_connection(username)
                     await websocket.send("WELCOME".encode())
                     if user is None:
                         return {"user_id": resp[0], "username": username, "display_name": resp[1], "admin": resp[2], "websocket": websocket}
@@ -67,7 +72,6 @@ async def handle_login(websocket):
         return
 
     username = user['username']
-    print(username + " has connected.")
     user_connections.update({username: user})
     await conversations.converse(username, websocket)
 

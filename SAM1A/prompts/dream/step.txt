@@ -2,8 +2,6 @@ Current Memory:
 {}
 END MEMORY
 
-Have a thought based on your current memory and current thoughts.
-
 Current Thoughts:
 {}
 

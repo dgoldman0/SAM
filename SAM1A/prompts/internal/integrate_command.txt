@@ -1,0 +1,15 @@
+Current Memory:
+{}
+END MEMORY
+
+Current thoughts:
+{}
+
+You issued a system command:
+
+System Command: {}
+System Response: {}
+
+Incorporate the system command and response and update memory. Use an associative map.
+
+Updated Memory (rewrite and reorganize to link new information, terminate with "END MEMORY"):

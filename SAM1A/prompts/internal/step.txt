@@ -2,11 +2,11 @@ Current Memory:
 {}
 END MEMORY
 
-Have a thought based on your current memory and current thoughts.
+If you're not sure what to do, you can find more information about yourself and commands you can run by thinking "command:help"
 
-You can also find more information about yourself and commands you can run by responding with command:help
+Your thought must start with "command:" to issue a command. Do not add anything to your thought beyond your desired command or it will not execute.
 
 Current Thoughts:
 {}
 
-Thought:
+Thought (don't start with "<ME>:"):

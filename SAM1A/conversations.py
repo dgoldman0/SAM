@@ -4,8 +4,25 @@ import asyncio
 import data
 import dreams
 
-# External dialogue
+server = None
 
+def init(server_module):
+    server = server_module
+
+def push_msg(user, message):
+    username = user['username']
+    socket = user['websocket']
+    working_memory = data.get_workingmen(username)
+    prompt = generate_prompt("internal/integrate", (data.memory, working_memory, "<ME>: " + message, ))
+    output = ""
+    while not output.endswith("END MEMORY"):
+        output = call_openai(prompt, 900)
+    data.memory = output.strip("END MEMORY")
+    working_memory += "<ME>: " + message + "\n\n"
+    data.set_workingmem(to, working_memory)
+    await socket.send(("MSG:" + message).encode())
+
+# External dialogue
 async def converse(name, socket):
     # Need to persist working memory for each user across disconnects.
     connected = True
@@ -70,3 +87,4 @@ async def converse(name, socket):
                 pass
         except Exception as e:
             connected = False
+            server.notify_disconnect(name)

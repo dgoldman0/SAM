@@ -6,26 +6,42 @@ import data
 import dreams
 import system
 
+working_memory = ""
+
+def notify_connection(name):
+    global working_memory
+    notice = "system: " + name + " has connected."
+    print(notice + "\n")
+    prompt = generate_prompt("internal/integrate", (data.memory_internal, working_memory, notice, ))
+    working_memory += notice + "\n\n"
+    output = ""
+    while not output.endswith("END MEMORY"):
+        output = call_openai(prompt, 1800)
+    data.memory_internal = output.strip("END MEMORY")
+
+def notify_disconnect(name):
+    global working_memory
+    notice = "system: " + name + " has disconnected."
+    print(notice + "\n")
+    prompt = generate_prompt("internal/integrate", (data.memory_internal, working_memory, notice, ))
+    working_memory += notice + "\n\n"
+    output = ""
+    while not output.endswith("END MEMORY"):
+        output = call_openai(prompt, 1800)
+    data.memory_internal = output.strip("END MEMORY")
+
 async def think():
+    global working_memory
     print("Thinking")
-    working_memory = ""
     thoughts_since_dream = 0
     while True:
-        # I can't figure out if this paradigm is better or if I should have a separate integrate prompt for when there's a command request.
         prompt = generate_prompt("internal/step", (data.memory_internal, working_memory, ))
         response = call_openai(prompt, 128)
-        prompt = generate_prompt("internal/integrate", (data.memory_internal, working_memory, response, ))
-        output = ""
-        while not output.endswith("END MEMORY"):
-            output = call_openai(prompt, 1800)
-        data.memory_internal = output.strip("END MEMORY")
-        print("Thought: " + response + "\n")
-        working_memory += "<ME>: " + response + "\n\n"
-
         # Check if there's a command to process.
         if response.lower().startswith("command:"):
             command = response[8:].lower()
-            response = "system: " + system.process_command(command)
+            response = system.process_command(command)
+            response = "system: " + response
             print(response + "\n")
             prompt = generate_prompt("internal/integrate", (data.memory_internal, working_memory, response, ))
             working_memory += response + "\n\n"
@@ -33,6 +49,14 @@ async def think():
             while not output.endswith("END MEMORY"):
                 output = call_openai(prompt, 1800)
             data.memory_internal = output.strip("END MEMORY")
+        else:
+            prompt = generate_prompt("internal/integrate", (data.memory_internal, working_memory, response, ))
+            output = ""
+            while not output.endswith("END MEMORY"):
+                output = call_openai(prompt, 1800)
+            data.memory_internal = output.strip("END MEMORY")
+            print("Thought: " + response + "\n")
+            working_memory += "<ME>: " + response + "\n\n"
 
         data.save()
         # Cut last line of old memory.
