@@ -11,8 +11,8 @@ database = sqlite3.connect("sam.db")
 
 nest_asyncio.apply()
 
-memory = "<ME>"
-memory_internal = "<ME>"
+memory = ""
+memory_internal = ""
 
 dreaming = False
 

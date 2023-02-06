@@ -7,6 +7,7 @@ import dreams
 server = None
 
 def init(server_module):
+    global server
     server = server_module
 
 async def push_msg(user, message):
@@ -24,6 +25,7 @@ async def push_msg(user, message):
 
 # External dialogue
 async def converse(name, socket):
+    global server
     # Need to persist working memory for each user across disconnects.
     connected = True
     while connected:
@@ -45,6 +47,7 @@ async def converse(name, socket):
                     prompt = generate_prompt("respond", (merged_memory, working_memory, name, message, ))
                     ai_response = call_openai(prompt, 128)
                     print("Response: " + ai_response + '\n')
+                    
                     # Integrate into conversation memory.
                     prompt = generate_prompt("integrate", (data.memory, working_memory, name, message, ai_response, ))
                     output = ""
