@@ -2,6 +2,7 @@ import data
 import asyncio
 
 async def dream():
+    print("Entering dream mode...\n")
     working_memory = ""
     # Keep track of the last thought to give very limited working memory.
     data.set_dreaming()
