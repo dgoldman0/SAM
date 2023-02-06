@@ -9,7 +9,7 @@ server = None
 def init(server_module):
     server = server_module
 
-def push_msg(user, message):
+async def push_msg(user, message):
     username = user['username']
     socket = user['websocket']
     working_memory = data.get_workingmen(username)

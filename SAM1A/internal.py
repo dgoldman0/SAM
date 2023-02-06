@@ -37,10 +37,11 @@ async def think():
     while True:
         prompt = generate_prompt("internal/step", (data.memory_internal, working_memory, ))
         response = call_openai(prompt, 128)
+        print("Thought: " + response + "\n")
         # Check if there's a command to process.
         if response.lower().startswith("command:"):
             command = response[8:].lower()
-            response = system.process_command(command)
+            response = await system.process_command(command)
             response = "system: " + response
             print(response + "\n")
             prompt = generate_prompt("internal/integrate_command", (data.memory_internal, working_memory, command, response, ))
@@ -55,7 +56,6 @@ async def think():
             while not output.endswith("END MEMORY"):
                 output = call_openai(prompt, 1800)
             data.memory_internal = output.strip("END MEMORY")
-            print("Thought: " + response + "\n")
             working_memory += "<ME>: " + response + "\n\n"
 
         data.save()
@@ -65,8 +65,8 @@ async def think():
             lines = lines[1:]
         working_memory = '\n\n'.join(lines)
         thoughts_since_dream += 1
-        if thoughts_since_dream == 20:
+        if thoughts_since_dream == 100:
             thoughts_since_dream = 0
             await dreams.dream()
         else:
-            await asyncio.sleep(5)
+            await asyncio.sleep(2.5)

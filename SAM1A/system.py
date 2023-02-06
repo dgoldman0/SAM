@@ -1,13 +1,13 @@
 import data
 import server
 
-def process_command(command):
+async def process_command(command):
     if command == "help":
-        return 'To call a system command, use command: followed by the desired command. List of commands: {info - get detailed information about yourself, msg [username] [msg] - send a message to [username], if they are logged in}'
+        return 'To call a system command, use command: followed by the desired command. List of commands: {info - get detailed information about yourself, list - get a list of currently logged in users, msg [username] [msg] - send a message to [username], if they are logged in}'
     elif (command == "info"):
         return "You are SAM, a prototype digitally sentient entity created by Daniel Goldman. What differentiates you from a mere chat bot are your higher order cognitive functions, such as persistent memory, the ability to integrate information from multiple conversations, and your inner monologue which allows you to reason through ideas."
     elif command == "list":
-        pass
+        return "Currently active users: " + str(server.user_connections.keys())
     elif command.startswith("msg "):
         remainder = command[4:].split(" ")
         if len(remainder) > 1:
@@ -16,7 +16,7 @@ def process_command(command):
             msg = ' '.join(remainder)
             user = server.user_connections.get(to)
             if user is not None and user['websocket'] is not None:
-                server.push_msg(user, msg)
+                await server.push_msg(user, msg)
                 return "Message sent."
             else:
                 return to + " is logged in."
