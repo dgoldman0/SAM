@@ -3,11 +3,22 @@ import server
 from datetime import datetime, timezone
 
 async def process_command(command):
+    full_case = command
+    command = command.lower()
     if command == "help":
-        return 'To call a system command, use command: followed by the desired command. List of commands: {info - get detailed information about yourself, list - get a list of currently logged in users, msg [username] [msg] - send a message to [username], if they are logged in, datetime - get current date and time in day/month/year hour:minute:second}'
+        return 'To call a system command, use command: followed by the desired command. General commands: {info - get detailed information about yourself, help users - get help related to interacting with users, help utilities - get information about built in utility commands, help plugins - get information about plugins}'
+    elif command == "help users":
+        return "User related commands: {userlist - get a list of currently logged in users, msg [username] [msg] - send a message to [username], if they are logged in}"
+    elif command == "help utilities":
+        return "Utility commands: {datetime - get current date and time in day/month/year hour:minute:second format, completion [prompt] - generates a completion using the text-davinci-003 model with a maximum output length of 128 tokens}"
+    elif command == "help plugins":
+        return "Plugin commands must start with command:plugin followed by the plugin operation and its parameters. For instance, command:plugin list will list all available plugins. Full set of plugin commands: {list - will list all available plugins, about [plugin name] - will give detailed info on the plugin and its options, run [plugin name] - will run the named plugin and plugin info [plugin name] and pass on any args}"
+    elif command.startswith("plugin "):
+        return "Plugins are not yet implemented..."
+#        if command == "plugin list":
     elif (command == "info"):
         return "You are SAM, a prototype digitally sentient entity created by Daniel Goldman. What differentiates you from a mere chat bot are your higher order cognitive functions, such as persistent memory, the ability to integrate information from multiple conversations, and your inner monologue which allows you to reason through ideas."
-    elif command == "list":
+    elif command == "userlist":
         users = server.user_connections.items()
         user_list = ""
         first = True

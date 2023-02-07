@@ -60,14 +60,15 @@ async def converse(name, socket):
                     output = call_openai(prompt, 1800)
                 data.memory_internal = output.strip("END MEMORY")
 
-                working_memory += name + ": " + message + "\n\n"
-                working_memory += "<ME>: " + ai_response + "\n\n"
+                working_memory += name + ": " + '\t\n'.join(message.split('\n')) + "\n\n"
+                working_memory += "<ME>: " + '\t\n'.join(ai_response.split('\n')) + "\n\n"
 
                 # Cut last line of old memory.
                 lines = working_memory.split('\n\n')
+
                 if len(lines) > 20:
                     lines = lines[1:]
-                working_memory = '\n\n'.join(lines)
+                    working_memory = '\n\n'.join(lines)
                 data.set_workingmem(name, working_memory)
                 await socket.send(("MSG:" + ai_response).encode())
             elif msg.startswith('COMMAND:'):
