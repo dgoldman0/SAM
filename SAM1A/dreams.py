@@ -20,7 +20,7 @@ async def dream():
             data.memory_internal = output.strip("END MEMORY")
             print(response + "\n")
             working_memory += response + "\n\n"
-            asyncio.sleep(0)
+            asyncio.sleep(0.1)
         working_memory = ""
     print("Ending\n" + data.memory_internal + "\n")
     data.save()
