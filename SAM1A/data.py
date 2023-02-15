@@ -12,9 +12,11 @@ database = sqlite3.connect("sam.db")
 nest_asyncio.apply()
 
 memory = ""
-memory_internal = ""
+memory_internal = "I need to use command:help. I have to start my thought with the command: prefix to issue system comands."
 
 dreaming = False
+
+first = True
 
 # Working memories for each user conversation, stored in case of disconnects.
 working_memory = {}
@@ -37,18 +39,21 @@ def check_dreaming():
 
 # Load persistenet memory and initialize database of it does not exist yet.
 def init():
-    global database
+    global database, memory, memory_internal
     # Check if already initialized
     cur = database.cursor()
     try:
         file = open('memory.txt',mode='r')
-        memory = file.read()
+        mem = file.read()
+        memory = mem
         file.close()
         file = open('memory_internal.txt',mode='r')
-        memory = file.read()
+        mem = file.read()
+        memory_internal = mem
         file.close()
+        first = False
     except Exception as e:
-        pass
+        print(e)
     try:
         res = cur.execute("SELECT TRUE FROM USERS WHERE username = ?;", ("admin", ))
     except Exception as err:

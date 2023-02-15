@@ -4,6 +4,7 @@ END Memory
 
 Current chat history:
 {}
+END CHAT HISTORY
 
 New message from {}: {}
 

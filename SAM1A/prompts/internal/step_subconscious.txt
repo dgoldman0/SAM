@@ -3,3 +3,4 @@ Current Memory:
 END MEMORY
 
 {}
+:

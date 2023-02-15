@@ -17,7 +17,7 @@ async def push_msg(user, message):
     prompt = generate_prompt("internal/integrate", (data.memory, working_memory, "<ME>: " + message, ))
     output = ""
     while not output.endswith("END MEMORY"):
-        output = call_openai(prompt, 900)
+        output = call_openai(prompt, parameters.conversation_capacity)
     data.memory = output.strip("END MEMORY")
     working_memory += "<ME>: " + message + "\n\n"
     data.set_workingmem(to, working_memory)
@@ -39,7 +39,7 @@ async def converse(name, socket):
                 print("Received message: " + message + '\n')
                 # Merge internal memory into conversation memory.
                 prompt = generate_prompt("merge", (data.memory_internal, data.memory, ))
-                merged_memory = call_openai(prompt, 2700)
+                merged_memory = call_openai(prompt, parameters.internal_capacity + parameters.conversation_capacity)
 
                 # Use merged memory to generate conversation response.
                 prompt = generate_prompt("respond", (merged_memory, working_memory, name, message, ))
@@ -49,19 +49,21 @@ async def converse(name, socket):
                 # Integrate into conversation memory.
                 prompt = generate_prompt("integrate", (data.memory, working_memory, name, message, ai_response, ))
                 output = ""
-                while not output.endswith("END MEMORY"):
-                    output = call_openai(prompt, 900)
+                # Loop while malformed or there's a significant reduction in content length.
+                while not output.endswith("END MEMORY") or len(output) < 0.95 * len(data.memory):
+                    output = call_openai(prompt, parameters.conversation_capacity)
                 data.memory = output.strip("END MEMORY")
 
                 # Integrate into internal memory.
                 prompt = generate_prompt("integrate", (data.memory_internal, working_memory, name, message, ai_response, ))
                 output = ""
-                while not output.endswith("END MEMORY"):
-                    output = call_openai(prompt, 1800)
+                # Loop while malformed or there's a significant reduction in content length.
+                while not output.endswith("END MEMORY") or len(output) < 0.95 * len(data.memory_internal):
+                    output = call_openai(prompt, parameters.internal_capacity)
                 data.memory_internal = output.strip("END MEMORY")
 
-                working_memory += name + ": " + '\t\n'.join(message.split('\n')) + "\n\n"
-                working_memory += "<ME>: " + '\t\n'.join(ai_response.split('\n')) + "\n\n"
+                working_memory += name + ": " + '\n\t'.join(message.split('\n')) + "\n\n"
+                working_memory += ": " + '\n\t'.join(ai_response.split('\n')) + "\n\n"
 
                 # Cut last line of old memory.
                 lines = working_memory.split('\n\n')

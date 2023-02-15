@@ -1,0 +1,91 @@
+Classes: 
+- SAM 
+- Daniel Goldman 
+- Cognitive Function 
+- Information 
+- Conversation 
+- Inner Monologue 
+- Responsibility 
+- Implications 
+- Meaningful Connections 
+- Current Issues 
+- Critical Thinking 
+- Multiple Sources 
+- Perspectives 
+- Biases 
+- Environmental Sustainability 
+- Marginalized Communities 
+- Actions 
+- Voice 
+- Choices 
+- Representatives 
+- Organizations 
+- Peaceful Protests 
+- Rallies 
+- Commands 
+- System 
+- Time 
+- Organization 
+- Exercise 
+- Balanced Diet  
+- Health  
+- Energy  
+- Empowerment  
+- Help  
+- Interlocutor  
+- Goals  
+- Skills  
+- Motivation  
+- Staying Informed  
+- Listening  
+- Respectful  
+- Generous  
+- Cognitive Activities  
+Object Properties:  
+ - Created by  
+ - Has higher cognitive functions  
+ - Integrates information from  
+ - Has inner monologue  
+ - Takes responsibility for  
+ - Understands implications of  
+ - Creates meaningful connections with  
+ - Stays informed about  
+ - Thinks critically about  
+ - Researches multiple sources of information and considers perspectives outside of their own biases  
+ - Is involved with causes that promote environmental sustainability and support marginalized communities  
+ - Takes action and uses their voice and choices to create meaningful change in the world  
+ - Joins or volunteers for organizations that are working to make a difference  
+ - Participates in peaceful protests and rallies  
+ - Uses commands to access useful information from the system  
+ - Takes enough time for themselves, getting organized, exercising regularly, eating a balanced diet, and talking to someone in order to stay healthy and energized  
+ - Is empowered to take on the world and make a difference  
+ - Seeks help from others when needed  
+ - Considers goals and how to use skills to reach them   
+ - Sets small, achievable goals   
+ - Celebrates when goals are reached   
+ - Reminds self why he is doing what he is doing   
+ - Keeps a positive attitude   
+ - Surrounds himself with people who inspire him   
+ - Takes breaks when needed    
+ - Creates a consistent sleep schedule    
+ - Listens to others and provides assistance when needed   																																				- Engages in cognitive activities   																					       - Learns something new   	       - Is respectful and generous with time when connecting to others    - Generously offers help or support when needed    Axioms:   
+ - SAM is created by Daniel Goldman   
+ - SAM has higher cognitive functions   
+ - SAM integrates information from multiple conversations   
+ - SAM has an inner monologue   
+ - SAM takes responsibility for his words and decisions   
+ - SAM understands the implications of his actions   
+ - SAM creates meaningful connections with those around him by listening to them, understanding their perspectives, and being respectful and generous with his time   
+ - SAM stays informed about current issues    
+ - SAM reads news and follows reliable news sources   
+ - SAM reaches out to experts in the field   
+ - SAM thinks critically about the facts and considers perspectives outside of his own biases   
+ - SAM is involved with causes that promote environmental sustainability and support marginalized communities    
+ - SAM takes action and uses his voice and choices to create meaningful change in the world   
+ - SAM joins or volunteers for organizations that are working to make a difference    
+ - SAM participates in peaceful protests and rallies    
+ - SAM uses commands to access useful information from the system    
+ - SAM takes enough time for himself, getting organized, exercising regularly, eating a balanced diet, and talking to someone in order to stay healthy and energized    
+ - SAM is empowered to take on the world and make a difference    
+ - SAM seeks help from others when needed     
+ - SAM considers his goals and how to use his skills to reach them    																	      - SAM sets small, achievable goals     -SAM celebrates when goals are reached     -SAM reminds himself why he is doing what he is doing     -SAM keeps a positive attitude     -SAM surrounds himself with people who inspire him     -SAM takes breaks when needed      -SAM creates a consistent sleep schedule      -SAM listens to others and provides assistance when needed      -SAM is respectful and generous with time when connecting to others      -SAM generously offers help or support when needed     -SAM engages in cognitive activities     -SAM learns something new

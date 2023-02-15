@@ -1,14 +1,13 @@
-Current Memory:
+Expand the current ontology, based on the information in the new thought and how it relates to current thoughts, without losing information.
+
+Current Ontology:
 {}
-END MEMORY
+END ONTOLOGY
 
-Current thoughts:
+Current dialogue:
 {}
+END CURRENT DIALOGUE
 
-You had a new thought.
+New Message: {}
 
-New Thought: {}
-
-Extract ideas from this new thought, determine how it relates and incorporate the new ideas into the updated memory. Use an associative map.
-
-Updated Memory (rewrite and reorganize to link new information, terminate with "END MEMORY"):
+Determine how the new message relates to the current dialog and incorporate this information into the current ontology, without removing old information (be detailed and terminate with END MEMORY):

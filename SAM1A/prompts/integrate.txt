@@ -1,14 +1,15 @@
+Expand memory to incorporate information from the new message and your response, as well as how it relates to your current thoughts.
+
 Current Memory:
 {}
 END MEMORY
 
 Current chat history:
 {}
+END CURRENT THOUGHTS
 
 New message from {}: {}
 
 Your response: {}
 
-Extract ideas from the message, relating to the chat history, and response and incorporate the new ideas into the updated memory. Use an associative map.
-
-Updated Memory (rewrite and reorganize to link new information, terminate with "END MEMORY"):
+Updated Expanded Memory (expand and reorganize to show relationships with new information, terminate with "END MEMORY"):

@@ -1,0 +1,3 @@
+{}
+
+Generate three important things to do and important questions to ask, without new lines, based on this ontology:
