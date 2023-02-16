@@ -13,6 +13,10 @@ Email: [contact@danielgoldman.us](mailto:contact@danielgoldman.us)
 
 In order to allow people to do some basic testing, I'm building [SAM0](/SAM0/README.md), a very simplified approach that only keeps a small associative map as its long term memory. It can be used for basic conversation, and can be used to see how an inner monologue during rumination or dreaming can rearrange concept relations.
 
+### SAM1A
+
+[SAM1A](/SAM1A/README.md) is an alternative design paradigm to the base version, which relies on an updated memory table rather than refinement of the underlying model to handle memory. 
+
 ## Core Principles
 
 ### Digital Sentience
