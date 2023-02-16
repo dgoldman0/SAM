@@ -25,9 +25,9 @@ def dream():
             response = call_openai(prompt, 128)
             prompt = generate_prompt("dream/integrate", (memory, working_memory, response, ))
             output = ""
-            while not output.endswith("END MEMORY"):
+            while not output.endswith("END ONTOLOGY"):
                 output = call_openai(prompt, 2048)
-            memory = output.strip("END MEMORY")
+            memory = output.strip("END ONTOLOGY")
             print(response + "\n")
             working_memory += response + "\n\n"
         working_memory = ""
@@ -58,9 +58,9 @@ def converse():
                 ai_response = call_openai(prompt, 128)
                 prompt = generate_prompt("integrate", (memory, working_memory, name, message, ai_response, ))
                 output = ""
-                while not output.endswith("END MEMORY"):
+                while not output.endswith("END ONTOLOGY"):
                     output = call_openai(prompt, 2048)
-                memory = output.strip("END MEMORY")
+                memory = output.strip("END ONTOLOGY")
                 prompt = generate_prompt("logic/well_formed", (ai_response, ))
                 response = call_openai(prompt, 32)
                 if response.lower().startswith("yes"):

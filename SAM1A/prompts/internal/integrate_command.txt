@@ -12,4 +12,4 @@ Issued System Command: {}
 
 System Response: {}
 
-Determine how the issued command and system response relate to the current dialog and incorporate this information into the current ontology, without removing old information (be detailed and terminate with END MEMORY):
+Determine how the issued command and system response relate to the current dialog and incorporate this information into the current ontology, without removing old information (be detailed and terminate with END ONTOLOGY):

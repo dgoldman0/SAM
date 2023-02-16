@@ -1,6 +1,6 @@
 Current Memory:
 {}
-END Memory
+END ONTOLOGY
 
 Current chat history:
 {}

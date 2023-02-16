@@ -2,10 +2,10 @@ Merge the two memories.
 
 Secondary Memory:
 {}
-END MEMORY
+END ONTOLOGY
 
 Primary Memory:
 {}
-END MEMORY
+END ONTOLOGY
 
-Merged Memory (terminate with "END MEMORY"):
+Merged Memory (terminate with "END ONTOLOGY"):

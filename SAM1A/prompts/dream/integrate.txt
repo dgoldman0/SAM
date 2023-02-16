@@ -10,4 +10,4 @@ END CURRENT DIALOGUE
 
 New Message: {}
 
-Determine how the new message relates to the current dialog and incorporate this information into the current ontology, without removing old information (be detailed and terminate with END MEMORY):
+Determine how the new message relates to the current dialog and incorporate this information into the current ontology, without removing old information (be detailed and terminate with END ONTOLOGY):

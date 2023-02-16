@@ -16,9 +16,9 @@ def notify_connection(name):
     prompt = generate_prompt("internal/integrate", (data.memory_internal, working_memory, notice, ))
     working_memory += notice + "\n\n"
     output = ""
-    while not output.endswith("END MEMORY"):
+    while not output.endswith("END ONTOLOGY"):
         output = call_openai(prompt, parameters.internal_capacity)
-    data.memory_internal = output.strip("END MEMORY")
+    data.memory_internal = output.strip("END ONTOLOGY")
 
 def notify_disconnect(name):
     global working_memory
@@ -27,9 +27,9 @@ def notify_disconnect(name):
     prompt = generate_prompt("internal/integrate", (data.memory_internal, working_memory, notice, ))
     working_memory += notice + "\n\n"
     output = ""
-    while not output.endswith("END MEMORY"):
+    while not output.endswith("END ONTOLOGY"):
         output = call_openai(prompt, parameters.internal_capacity)
-    data.memory_internal = output.strip("END MEMORY")
+    data.memory_internal = output.strip("END ONTOLOGY")
 
 async def think():
     global working_memory
@@ -59,17 +59,18 @@ async def think():
             working_memory += response + "\n\n"
             output = ""
             # Loop while malformed or there's a significant reduction in content length.
-            while not output.endswith("END MEMORY") or len(output) < 0.95 * len(data.memory_internal):
+            while not output.endswith("END ONTOLOGY") or len(output) < 0.95 * len(data.memory_internal):
                 output = call_openai(prompt, parameters.internal_capacity)
-            data.memory_internal = output.strip("END MEMORY")
+            data.memory_internal = output.strip("END ONTOLOGY")
         else:
             prompt = generate_prompt("internal/integrate", (data.memory_internal, working_memory, ai_response, ))
             output = ""
             # Loop while malformed or there's a significant reduction in content length.
-            while not output.endswith("END MEMORY") or len(output) < 0.95 * len(data.memory_internal):
+            while not output.endswith("END ONTOLOGY") or len(output) < 0.95 * len(data.memory_internal):
                 output = call_openai(prompt, parameters.internal_capacity)
-                print('ratio: ' + str(len(output)/len(data.memory_internal)) + '\n')
-            data.memory_internal = output.strip("END MEMORY")
+#                print('ratio: ' + str(len(output)/len(data.memory_internal)) + '\n')
+#                print(output + "\n\n")
+            data.memory_internal = output.strip("END ONTOLOGY")
             ai_response = '\n\t'.join(ai_response.split('\n'))
             working_memory += ": " + ai_response + "\n\n"
 
@@ -100,17 +101,15 @@ async def subthink():
     while True:
         for i in range(5):
             working_memory = working_memories[i]
-            print(working_memory)
             prompt = generate_prompt("internal/step_subconscious", (data.memory_internal, working_memory, ))
             ai_response = call_openai(prompt, 32, temp = 0.9)
             print("Subthought(" + str(i) + "): " + ai_response + "\n")
             prompt = generate_prompt("internal/integrate", (data.memory_internal, working_memory, ai_response, ))
             output = ""
             # Loop while malformed or there's a significant reduction in content length.
-            while not output.endswith("END MEMORY") or len(output) < 0.95 * len(data.memory_internal):
+            while not output.endswith("END ONTOLOGY") or len(output) < 0.95 * len(data.memory_internal):
                 output = call_openai(prompt, parameters.internal_capacity)
-                print('ratio: ' + str(len(output)/len(data.memory_internal)) + '\n')
-            data.memory_internal = output.strip("END MEMORY")
+            data.memory_internal = output.strip("END ONTOLOGY")
             ai_response = '\n\t'.join(ai_response.split('\n'))
             working_memory += ": " + ai_response + "\n\n"
             working_memories[i] = working_memory

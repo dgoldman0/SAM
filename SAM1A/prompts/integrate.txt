@@ -2,7 +2,7 @@ Expand memory to incorporate information from the new message and your response,
 
 Current Memory:
 {}
-END MEMORY
+END ONTOLOGY
 
 Current chat history:
 {}
@@ -12,4 +12,4 @@ New message from {}: {}
 
 Your response: {}
 
-Updated Expanded Memory (expand and reorganize to show relationships with new information, terminate with "END MEMORY"):
+Updated Expanded Memory (expand and reorganize to show relationships with new information, terminate with "END ONTOLOGY"):

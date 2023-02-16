@@ -1,6 +1,6 @@
 Current Memory:
 {}
-END MEMORY
+END ONTOLOGY
 
 {}
 :

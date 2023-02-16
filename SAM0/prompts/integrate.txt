@@ -1,6 +1,6 @@
 Current Memory:
 {}
-END MEMORY
+END ONTOLOGY
 
 Current chat history:
 {}
@@ -11,4 +11,4 @@ Your response: {}
 
 Extract ideas from the message, relating to the chat history, and response and incorporate the new ideas into the updated memory. Use an associative map.
 
-Updated Memory (rewrite and reorganize to link new information, terminate with "END MEMORY"):
+Updated Memory (rewrite and reorganize to link new information, terminate with "END ONTOLOGY"):
