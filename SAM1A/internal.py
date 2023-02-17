@@ -9,6 +9,11 @@ import parameters
 
 working_memory = ""
 
+def check_valid_memory(memory, new_memory):
+    if len(new_memory) < 0.95 * len(memory) or not new_memory.endswith("END ONTOLOGY"):
+        return false
+    return True
+
 def notify_connection(name):
     global working_memory
     notice = "system: " + name + " has connected."
@@ -16,8 +21,10 @@ def notify_connection(name):
     prompt = generate_prompt("internal/integrate", (data.memory_internal, working_memory, notice, ))
     working_memory += notice + "\n\n"
     output = ""
-    while not output.endswith("END ONTOLOGY"):
+    while output == "":
         output = call_openai(prompt, parameters.internal_capacity)
+        if not check_valid_memory(data.memory_internal, output):
+            output = ""
     data.memory_internal = output.strip("END ONTOLOGY")
 
 def notify_disconnect(name):
@@ -27,8 +34,10 @@ def notify_disconnect(name):
     prompt = generate_prompt("internal/integrate", (data.memory_internal, working_memory, notice, ))
     working_memory += notice + "\n\n"
     output = ""
-    while not output.endswith("END ONTOLOGY"):
+    while output == "":
         output = call_openai(prompt, parameters.internal_capacity)
+        if not check_valid_memory(data.memory_internal, output):
+            output = ""
     data.memory_internal = output.strip("END ONTOLOGY")
 
 async def think():
@@ -58,16 +67,19 @@ async def think():
             working_memory += ": " + ai_response + "\n\n"
             working_memory += response + "\n\n"
             output = ""
-            # Loop while malformed or there's a significant reduction in content length.
-            while not output.endswith("END ONTOLOGY") or len(output) < 0.95 * len(data.memory_internal):
+            while output == "":
                 output = call_openai(prompt, parameters.internal_capacity)
+                if not check_valid_memory(data.memory_internal, output):
+                    output = ""
             data.memory_internal = output.strip("END ONTOLOGY")
         else:
+            # Going to need to heavily rewrite the integration method to also force the output into the correct format. Or just not have a correct format to maintain.
             prompt = generate_prompt("internal/integrate", (data.memory_internal, working_memory, ai_response, ))
             output = ""
-            # Loop while malformed or there's a significant reduction in content length.
-            while not output.endswith("END ONTOLOGY") or len(output) < 0.95 * len(data.memory_internal):
+            while output == "":
                 output = call_openai(prompt, parameters.internal_capacity)
+                if not check_valid_memory(data.memory_internal, output):
+                    output = ""
 #                print('ratio: ' + str(len(output)/len(data.memory_internal)) + '\n')
 #                print(output + "\n\n")
             data.memory_internal = output.strip("END ONTOLOGY")
@@ -106,9 +118,10 @@ async def subthink():
             print("Subthought(" + str(i) + "): " + ai_response + "\n")
             prompt = generate_prompt("internal/integrate", (data.memory_internal, working_memory, ai_response, ))
             output = ""
-            # Loop while malformed or there's a significant reduction in content length.
-            while not output.endswith("END ONTOLOGY") or len(output) < 0.95 * len(data.memory_internal):
+            while output == "":
                 output = call_openai(prompt, parameters.internal_capacity)
+                if not check_valid_memory(data.memory_internal, output):
+                    output = ""
             data.memory_internal = output.strip("END ONTOLOGY")
             ai_response = '\n\t'.join(ai_response.split('\n'))
             working_memory += ": " + ai_response + "\n\n"

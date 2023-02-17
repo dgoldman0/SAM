@@ -22,7 +22,7 @@ async def dream():
         bootstrap = call_openai(prompt, 128, temp = 0.85)
         print("Bootstrap: " + bootstrap + "\n")
         working_memory = bootstrap
-        for j in range(3):
+        for j in range(10):
             prompt = generate_prompt("dream/step", (data.memory_internal, working_memory, ))
             response = call_openai(prompt, 32, temp = 1)
             prompt = generate_prompt("dream/integrate", (data.memory_internal, working_memory, response, ))
