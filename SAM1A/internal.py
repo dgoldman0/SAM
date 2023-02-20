@@ -6,13 +6,9 @@ import data
 import dreams
 import system
 import parameters
+from utils import check_valid_memory
 
 working_memory = ""
-
-def check_valid_memory(memory, new_memory):
-    if len(new_memory) < 0.95 * len(memory) or not new_memory.endswith("END ONTOLOGY"):
-        return false
-    return True
 
 def notify_connection(name):
     global working_memory

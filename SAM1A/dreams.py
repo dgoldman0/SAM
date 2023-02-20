@@ -3,6 +3,7 @@ import asyncio
 from generation import generate_prompt
 from generation import call_openai
 import parameters
+from utils import check_valid_memory
 
 async def dream():
     print("Entering dream mode...\n")
@@ -27,9 +28,10 @@ async def dream():
             response = call_openai(prompt, 32, temp = 1)
             prompt = generate_prompt("dream/integrate", (data.memory_internal, working_memory, response, ))
             output = ""
-            # Loop while malformed or there's a significant reduction in content length.
-            while not output.endswith("END ONTOLOGY") or len(output) < 0.95 * len(data.memory_internal):
+            while output == "":
                 output = call_openai(prompt, parameters.internal_capacity)
+                if not check_valid_memory(data.memory_internal, output):
+                    output = ""
             data.memory_internal = output.strip("END ONTOLOGY")
             print(response + "\n")
             working_memory += response + "\n\n"
