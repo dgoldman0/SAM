@@ -2,6 +2,7 @@ import io
 import sqlite3
 import nest_asyncio
 import bcrypt
+import openai
 
 # Connect to local file database which will be used to store user information, etc. Maybe one day replace with full MySQL
 print("Connecting to database.")
@@ -84,3 +85,7 @@ def save():
         file.close()
     except Exception as e:
         print(e)
+
+# Stub for training feature. Will train and then update the model info
+def train(pairs):
+    pass
