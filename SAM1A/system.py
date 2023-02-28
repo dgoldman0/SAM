@@ -3,6 +3,7 @@ import server
 from datetime import datetime, timezone
 import pycoingecko
 from generation import call_openai
+import twitter
 
 from pycoingecko import CoinGeckoAPI
 cg = CoinGeckoAPI()
@@ -12,11 +13,13 @@ async def process_command(command):
     command = command.lower()
     if command == "help":
         # add help plugins - get information about plugins
-        return 'To call a system command, use command: followed by the desired command. General commands: {help - repeat this information, info - get detailed information about yourself, help chatmates - get help related to interacting with chatmates, help utilities - get information about built in utility commands}'
+        return 'To call a system command, use command: followed by the desired command. General commands: {help - repeat this information, info - get detailed information about yourself, help chatmates - get help related to interacting with chatmates, help utilities - get information about built in utility commands, help twitter - get information about twitter access}'
     elif command == "help chatmates":
         return "The primary way in which you can interface with the outside world is through the built in chat system, which allows you to converse with other chatmates. Chatmates related commands: {chatmates - get a list of currently logged in chatmates, msg [username] [msg] - send a message to [username], if they are logged in}"
     elif command == "help utilities":
         return "Utility commands: {datetime - get current date and time in day/month/year hour:minute:second format, completion [prompt] - generates a completion using the text-davinci-003 model with a maximum output length of 128 tokens, coingecko [cryptocurrency] [base currency]- access the coingecko cryptocurrency price api for the desired cryptocurrency (such as ethereum), priced in the desired base currency (such as USD)}"
+    elif command == "help twitter":
+        return "Not implemented."
     elif command == "help plugins":
         return "Plugin commands must start with command:plugin followed by the plugin operation and its parameters. For instance, command:plugin list will list all available plugins. Full set of plugin commands: {list - will list all available plugins, about [plugin name] - will give detailed info on the plugin and its options, run [plugin name] - will run the named plugin and plugin info [plugin name] and pass on any args}"
     elif command.startswith("plugin "):
