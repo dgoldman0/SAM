@@ -55,7 +55,7 @@ async def think():
             command = ai_response[8:]
             response = await system.process_command(command)
             response = response.replace('\n', '\n\t')
-
+            # needs to be edited to work under newer system
             prompt = generate_prompt("internal/integrate_command", (data.memory_internal, working_memory, command, response, ))
             # Indent new lines to ensure that the system can tell the difference between a multiline message and two lines.
             ai_response = ai_response.replace('\n', '\n\t')
@@ -110,6 +110,7 @@ async def subthink():
         for i in range(5):
             working_memory = working_memories[i]
             prompt = generate_prompt("internal/step_subconscious", (data.memory_internal, working_memory, ))
+            ai_response = ai_response.replace('\n', '\n\nt')
             ai_response = call_openai(prompt, 32, temp = 0.9)
             print("Subthought(" + str(i) + "): " + ai_response + "\n")
             prompt = generate_prompt("internal/integrate", (data.memory_internal, working_memory, ai_response, ))
@@ -119,7 +120,6 @@ async def subthink():
                 if not check_valid_memory(data.memory_internal, output):
                     output = ""
             data.memory_internal = output.strip("END ONTOLOGY")
-            ai_response = '\n\t'.join(ai_response.split('\n'))
             working_memory += ": " + ai_response + "\n\n"
             working_memories[i] = working_memory
             await asyncio.sleep(0)

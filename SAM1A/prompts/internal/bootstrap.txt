@@ -1,3 +1,3 @@
 {}
 
-Generate three important things to do and important questions to ask, without new lines, based on this ontology:
+Generate three important things to do and important questions to ask, based on this ontology. Do not use numbering, and use paragraph format:
