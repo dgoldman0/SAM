@@ -2,7 +2,8 @@ import io
 import sqlite3
 import nest_asyncio
 import bcrypt
-import openai
+from generation import generate_prompt
+from generation import call_openai
 
 # Connect to local file database which will be used to store user information, etc. Maybe one day replace with full MySQL
 print("Connecting to database.")
@@ -13,7 +14,7 @@ database = sqlite3.connect("sam.db")
 nest_asyncio.apply()
 
 memory = ""
-memory_internal = "I need to use command:help. I have to start my thought with the command: prefix to issue system comands."
+memory_internal = ""
 
 dreaming = False
 
@@ -54,7 +55,9 @@ def init():
         file.close()
         first = False
     except Exception as e:
-        print(e)
+        prompt = generate_prompt("membootstrap", ())
+        internal_memory = call_openai(prompt, 512, temp = 0.85).replace('\n', '\n\t')
+        print("Memory: " + internal_memory + "\n")
     try:
         res = cur.execute("SELECT TRUE FROM USERS WHERE username = ?;", ("admin", ))
     except Exception as err:

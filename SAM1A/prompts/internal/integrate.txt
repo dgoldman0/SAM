@@ -1,8 +1,6 @@
-Expand the current ontology, based on the information in the new thought and how it relates to current thoughts, without losing information.
-
-Current Ontology:
+Current Information (essay format):
 {}
-END ONTOLOGY
+END INFORMATION
 
 Current dialogue:
 {}
@@ -10,4 +8,6 @@ END CURRENT DIALOGUE
 
 New Message: {}
 
-Remove irrelevant information and incorporate new information into the current ontology (be detailed, maintain original format of the ontology, do not start with "Current Ontology:", use the three groups of "Classes:", "Object Properties:", and "Axioms:", and terminate with "END ONTOLOGY"):
+Rewrite the current information to implicitly incorporate the ideas presented in the new message and how they relate to the existing dialogue. Maintain essay format, and end with "END MEMORY"
+
+Essay:

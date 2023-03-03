@@ -1,3 +1,5 @@
 {}
 
-Generate three important things to do and important questions to ask, based on this ontology. Do not use numbering, and use paragraph format:
+Consider three important things to do and important questions to ask, based on the above information. Write a full essay.
+
+Result:

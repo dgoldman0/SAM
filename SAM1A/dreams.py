@@ -37,7 +37,7 @@ async def dream():
                     output = ""
             # Add memory changes to the training data
             pairs.append((prompt, output, ));
-            data.memory_internal = output.strip("END ONTOLOGY")
+            data.memory_internal = output.strip("END MEMORY")
             print(response + "\n")
             working_memory += response + "\n\n"
             await asyncio.sleep(0.1)

@@ -23,6 +23,7 @@ def call_openai(prompt, max_tokens = 256, temp = 0.7):
             completion = openai.ChatCompletion.create(
               model="gpt-3.5-turbo",
               max_tokens=max_tokens,
+              temperature = temp,
               messages=[
                 {"role": "system", "content": prompt}
               ]

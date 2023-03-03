@@ -1,8 +1,6 @@
-Expand the current ontology, based on the information in the new thought and how it relates to current thoughts, without losing information.
-
-Current Ontology:
+Current MEMORY:
 {}
-END ONTOLOGY
+END MEMORY
 
 Current dialogue:
 {}
@@ -12,4 +10,4 @@ Issued System Command: {}
 
 System Response: {}
 
-Determine how the issued command and system response relate to the current dialog and incorporate this information into the current ontology, without removing old information (be detailed and terminate with END ONTOLOGY):
+Determine how the issued command and system response relate to the current dialog and incorporate this information into the current memory (be detailed and terminate with END MEMORY):

@@ -16,9 +16,9 @@ async def push_msg(user, message):
     working_memory = data.get_workingmen(username)
     prompt = generate_prompt("internal/integrate", (data.memory, working_memory, "<ME>: " + message, ))
     output = ""
-    while not output.endswith("END ONTOLOGY"):
+    while not output.endswith("END MEMORY"):
         output = call_openai(prompt, parameters.conversation_capacity)
-    data.memory = output.strip("END ONTOLOGY")
+    data.memory = output.strip("END MEMORY")
     working_memory += "<ME>: " + message + "\n\n"
     data.set_workingmem(to, working_memory)
     await socket.send(("MSG:" + message).encode())
@@ -50,17 +50,17 @@ async def converse(name, socket):
                 prompt = generate_prompt("integrate", (data.memory, working_memory, name, message, ai_response, ))
                 output = ""
                 # Loop while malformed or there's a significant reduction in content length.
-                while not output.endswith("END ONTOLOGY") or len(output) < 0.95 * len(data.memory):
+                while not output.endswith("END MEMORY") or len(output) < 0.95 * len(data.memory):
                     output = call_openai(prompt, parameters.conversation_capacity)
-                data.memory = output.strip("END ONTOLOGY")
+                data.memory = output.strip("END MEMORY")
 
                 # Integrate into internal memory.
                 prompt = generate_prompt("integrate", (data.memory_internal, working_memory, name, message, ai_response, ))
                 output = ""
                 # Loop while malformed or there's a significant reduction in content length.
-                while not output.endswith("END ONTOLOGY") or len(output) < 0.95 * len(data.memory_internal):
+                while not output.endswith("END MEMORY") or len(output) < 0.95 * len(data.memory_internal):
                     output = call_openai(prompt, parameters.internal_capacity)
-                data.memory_internal = output.strip("END ONTOLOGY")
+                data.memory_internal = output.strip("END MEMORY")
 
                 working_memory += name + ": " + '\n\t'.join(message.split('\n')) + "\n\n"
                 working_memory += ": " + '\n\t'.join(ai_response.split('\n')) + "\n\n"

@@ -21,7 +21,7 @@ def notify_connection(name):
         output = call_openai(prompt, parameters.internal_capacity)
         if not check_valid_memory(data.memory_internal, output):
             output = ""
-    data.memory_internal = output.strip("END ONTOLOGY")
+    data.memory_internal = output.strip("END MEMORY")
 
 def notify_disconnect(name):
     global working_memory
@@ -34,14 +34,14 @@ def notify_disconnect(name):
         output = call_openai(prompt, parameters.internal_capacity)
         if not check_valid_memory(data.memory_internal, output):
             output = ""
-    data.memory_internal = output.strip("END ONTOLOGY")
+    data.memory_internal = output.strip("END MEMORY")
 
 async def think():
     global working_memory
     if working_memory == "":
         print("Bootstrapping...")
         prompt = generate_prompt("internal/bootstrap", (data.memory_internal, ))
-        bootstrap = call_openai(prompt, 128, temp = 0.85)
+        bootstrap = call_openai(prompt, 128, temp = 0.85).replace('\n', '\n\t')
         print("Bootstrap: " + bootstrap + "\n")
         working_memory = bootstrap
     print("Thinking")
@@ -49,6 +49,7 @@ async def think():
     while True:
         prompt = generate_prompt("internal/step_conscious", (data.memory_internal, working_memory, ))
         ai_response = call_openai(prompt, 32, temp = 0.85)
+        ai_response = ai_response.replace('\n', '\n\t')
         print("Thought: " + ai_response + "\n")
         # Check if there's a command to process.
         if ai_response.lower().startswith("command:"):
@@ -58,7 +59,6 @@ async def think():
             # needs to be edited to work under newer system
             prompt = generate_prompt("internal/integrate_command", (data.memory_internal, working_memory, command, response, ))
             # Indent new lines to ensure that the system can tell the difference between a multiline message and two lines.
-            ai_response = ai_response.replace('\n', '\n\t')
             response = 'system: ' + response
             working_memory += ": " + ai_response + "\n\n"
             working_memory += response + "\n\n"
@@ -67,7 +67,7 @@ async def think():
                 output = call_openai(prompt, parameters.internal_capacity)
                 if not check_valid_memory(data.memory_internal, output):
                     output = ""
-            data.memory_internal = output.strip("END ONTOLOGY")
+            data.memory_internal = output.strip("END MEMORY")
         else:
             # Going to need to heavily rewrite the integration method to also force the output into the correct format. Or just not have a correct format to maintain.
             prompt = generate_prompt("internal/integrate", (data.memory_internal, working_memory, ai_response, ))
@@ -78,8 +78,7 @@ async def think():
                     output = ""
 #                print('ratio: ' + str(len(output)/len(data.memory_internal)) + '\n')
 #                print(output + "\n\n")
-            data.memory_internal = output.strip("END ONTOLOGY")
-            ai_response = '\n\t'.join(ai_response.split('\n'))
+            data.memory_internal = output.strip("END MEMORY")
             working_memory += ": " + ai_response + "\n\n"
 
         data.save()
@@ -103,7 +102,7 @@ async def subthink():
     for i in range(5):
         print("Bootstrapping subconscious(" + str(i) + ")...")
         prompt = generate_prompt("internal/bootstrap", (data.memory_internal, ))
-        bootstrap = call_openai(prompt, 128, temp = 0.85)
+        bootstrap = call_openai(prompt, 128, temp = 0.85).replace('\n', '\n\t')
         print("Bootstrap: " + bootstrap + "\n")
         working_memories.append(bootstrap)
     while True:
@@ -119,7 +118,7 @@ async def subthink():
                 output = call_openai(prompt, parameters.internal_capacity)
                 if not check_valid_memory(data.memory_internal, output):
                     output = ""
-            data.memory_internal = output.strip("END ONTOLOGY")
+            data.memory_internal = output.strip("END MEMORY")
             working_memory += ": " + ai_response + "\n\n"
             working_memories[i] = working_memory
             await asyncio.sleep(0)

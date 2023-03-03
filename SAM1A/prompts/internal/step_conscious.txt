@@ -1,6 +1,6 @@
 Current Memory:
 {}
-END ONTOLOGY
+END MEMORY
 
 If you need to access external information, use the system command interface. For example, use command:help to access information on general system functions.
 
