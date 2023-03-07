@@ -45,14 +45,14 @@ async def think():
                 command = ai_response[8:]
                 response = await system.process_command(command)
                 response = response.replace('\n', '\n\t')
-                prompt = generate_prompt("internal/integrate_command", (data.memory_internal, working_memory, command, response, ))
+                prompt = generate_prompt("internal/integrate_command", (data.memory_internal, working_memory, command, response, utils.internalLength, ))
                 # Indent new lines to ensure that the system can tell the difference between a multiline message and two lines.
                 response = 'system: ' + response
                 working_memory += ": " + ai_response + "\n\n"
                 working_memory += response + "\n\n"
                 await asyncio.get_event_loop().run_in_executor(None, utils.updateInternal, prompt)
             else:
-                prompt = generate_prompt("internal/integrate", (data.memory_internal, working_memory, ai_response, ))
+                prompt = generate_prompt("internal/integrate", (data.memory_internal, working_memory, ai_response, utils.internalLength, ))
                 output = await asyncio.get_event_loop().run_in_executor(None, utils.updateInternal, prompt)
                 working_memory += ": " + ai_response + "\n\n"
 
@@ -90,7 +90,7 @@ async def subthink():
             ai_response = call_openai(prompt, 32, temp = 0.9)
             ai_response = ai_response.replace('\n', '\n\t')
             print("Subthought(" + str(lastsub) + ")\n")
-            prompt = generate_prompt("internal/integrate", (data.memory_internal, working_memory, ai_response, ))
+            prompt = generate_prompt("internal/integrate", (data.memory_internal, working_memory, ai_response, utils.internalLength, ))
             await asyncio.get_event_loop().run_in_executor(None, utils.updateInternal, prompt)
             working_memory += ": " + ai_response + "\n\n"
             working_memories[lastsub] = working_memory

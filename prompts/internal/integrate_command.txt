@@ -12,4 +12,6 @@ System Response: {}
 
 Expand paper to implicitly include information about the issued command and system response and how it is related to the current dialog. Retain important information, and terminate with "END MEMORY" by itself on a new line
 
+Approximate paper length: {}
+
 Revised Information:

@@ -36,3 +36,10 @@ def updateConversational(prompt):
     data.memory = output.strip("END MEMORY")
     print("Finished...\n")
     return output
+
+# Get the approximate length of memory capacity in words
+def internalLength():
+    return round(parameters.internal_capacity * 4 / 3.5)
+
+def conversationalLength():
+    return round(parameters.conversation_capacity * 4 / 3.5)
