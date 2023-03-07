@@ -9,8 +9,6 @@ import parameters
 import utils
 import time
 
-working_memory = ""
-
 # Notifications don't update internal memory model. It just adds to the working memory, for now anyway.
 def notify_connection(name):
     global working_memory
@@ -25,17 +23,17 @@ def notify_disconnect(name):
     working_memory += notice + "\n\n"
 
 async def think():
-    global working_memory
-    if working_memory == "":
+    if data.working_memories[0] == "":
         print("Bootstrapping...")
         prompt = generate_prompt("internal/bootstrap", (data.memory_internal, ))
         bootstrap = call_openai(prompt, 128, temp = 0.85).replace('\n', '\n\t')
-        working_memory = bootstrap
+        working_memories[0] = bootstrap
     print("Thinking...")
     thoughts_since_dream = 0
     while True:
         if not data.locked:
             data.locked = True
+            working_memory = data.working_memories[0]
             prompt = generate_prompt("internal/step_conscious", (data.memory_internal, working_memory, ))
             ai_response = call_openai(prompt, 32, temp = 0.85)
             ai_response = ai_response.replace('\n', '\n\t')
@@ -55,7 +53,7 @@ async def think():
                 prompt = generate_prompt("internal/integrate", (data.memory_internal, working_memory, ai_response, utils.internalLength, ))
                 output = await asyncio.get_event_loop().run_in_executor(None, utils.updateInternal, prompt)
                 working_memory += ": " + ai_response + "\n\n"
-
+            data.working_memories[0] = working_memory
             data.save()
             # Cut last line of old memory.
             lines = working_memory.split('\n\n')
@@ -80,7 +78,6 @@ async def subthink():
     if parameters.subs == 0:
         return
 
-    working_memories = []
     for i in range(parameters.subs):
         print("Bootstrapping subconscious(" + str(i) + ")...")
         prompt = generate_prompt("internal/bootstrap", (data.memory_internal, ))
@@ -89,7 +86,7 @@ async def subthink():
     while True:
         if not data.locked:
             data.locked = True
-            working_memory = working_memories[lastsub]
+            working_memory = data.working_memories[lastsub + 1]
             prompt = generate_prompt("internal/step_subconscious", (data.memory_internal, working_memory, ))
             ai_response = call_openai(prompt, 32, temp = 0.9)
             ai_response = ai_response.replace('\n', '\n\t')
@@ -97,7 +94,7 @@ async def subthink():
             prompt = generate_prompt("internal/integrate", (data.memory_internal, working_memory, ai_response, utils.internalLength, ))
             await asyncio.get_event_loop().run_in_executor(None, utils.updateInternal, prompt)
             working_memory += ": " + ai_response + "\n\n"
-            working_memories[lastsub] = working_memory
+            data.working_memories[lastsub + 1] = working_memory
             # Cycle through subconsciousness
             lastsub += 1
             if lastsub == parameters.subs:

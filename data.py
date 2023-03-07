@@ -25,6 +25,8 @@ locked = False
 
 # Working memories for each user conversation, stored in case of disconnects.
 working_memory = {}
+# Working memories conscious and subconscious layers
+working_memories = []
 
 # Need to add persistent working memory for think and subthink
 
