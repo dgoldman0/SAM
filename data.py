@@ -79,6 +79,16 @@ def init():
                 confirm = input("Confirm password: ")
             password = bcrypt.hashpw(admin_password.encode(), salt)
             cur.execute("INSERT INTO USERS (username, display_name, passwd, salt, admin) VALUES (?, ?, ?, ?, ?);", (username, "System Administrator", password, salt, True))
+            # Create internal memory table. mem_id = 0 is conscious, and all others are subconscious layers
+            cur.execute("CREATE TABLE INTERNALMEM(mem_id INT PRIMARY KEY, TEXT DEFAULT '');");
+            # User memory
+            cur.execute("CREATE TABLE USERMEM(mem_id INT PRIMARY KEY, username TEXT UNIQUE NOT NULL, TEXT DEFAULT '');")
+
+            # Create internal working memory table. mem_id = 0 is conscious as before.
+            cur.execute("CREATE TABLE INTERNALWMEM(mem_id INT PRIMARY KEY, TEXT DEFAULT '');");
+            # User working memory
+            cur.execute("CREATE TABLE USERWMEM(mem_id INT PRIMARY KEY, username TEXT UNIQUE NOT NULL, TEXT DEFAULT '');")
+
             database.commit()
         else:
             raise Exception("Unknown Error")
