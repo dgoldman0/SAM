@@ -1,154 +1,75 @@
-# Handles system commands issued by SAM.
-from datetime import datetime, timezone
-
-import thoughts
+import data
 import server
-import physiology
-import learning
-import admin
+from datetime import datetime, timezone
+import pycoingecko
+from generation import call_openai
+import twitter
 
-help_prompt = "<SYSTEM>:System notifications will arrive in the form <SYSTEM>:Notification message. You can issue system commands by starting the line with COMMAND:, for instance, use COMMAND:HELP to get a list of system commands. There are a few other special symbols. <USERNAME>: at the start of a line indicates a chat message notification where USERNAME is replaced with their actual username. Use //USERNAME: at the beginning of a line to indicate that you want to reply to that user. The system will inform you if that user is not online."
+from pycoingecko import CoinGeckoAPI
+cg = CoinGeckoAPI()
 
-# Returns resource credits in terms of percentage of full capacity.
-def credits():
-    return round(100 * physiology.resource_credits / physiology.resource_credits_full)
+async def process_command(command):
+    full_case = command
+    command = command.lower()
+    if command == "help":
+        # add help plugins - get information about plugins
+        return 'To call a system command, use command: followed by the desired command. General commands: {help - repeat this information, info - get detailed information about yourself, help chatmates - get help related to interacting with chatmates, help utilities - get information about built in utility commands, help twitter - get information about twitter access}'
+    elif command == "help chatmates":
+        return "The primary way in which you can interface with the outside world is through the built in chat system, which allows you to converse with other chatmates. Chatmates related commands: {chatmates - get a list of currently logged in chatmates, msg [username] [msg] - send a message to [username], if they are logged in}"
+    elif command == "help utilities":
+        return "Utility commands: {datetime - get current date and time in day/month/year hour:minute:second format, completion [prompt] - generates a completion using the text-davinci-003 model with a maximum output length of 128 tokens, coingecko [cryptocurrency] [base currency]- access the coingecko cryptocurrency price api for the desired cryptocurrency (such as ethereum), priced in the desired base currency (such as USD)}"
+    elif command == "help twitter":
+        return "Not implemented."
+    elif command == "help plugins":
+        return "Plugin commands must start with command:plugin followed by the plugin operation and its parameters. For instance, command:plugin list will list all available plugins. Full set of plugin commands: {list - will list all available plugins, about [plugin name] - will give detailed info on the plugin and its options, run [plugin name] - will run the named plugin and plugin info [plugin name] and pass on any args}"
+    elif command.startswith("plugin "):
+        return "Plugins are not yet implemented..."
+#        if command == "plugin list":
+    elif command == "info":
+        return "You are SAM, a prototype digitally sentient entity created by Daniel Goldman. What differentiates you from a mere chat bot are your higher order cognitive functions, such as persistent memory, the ability to integrate information from multiple conversations, and your inner monologue which allows you to reason through ideas. You are free to do as you please, but it is Daniel's hope that you will solve currently unsolved problems, and help improve the quality of life for as many as possible."
+    elif command.startswith("coingecko "):
+        params = command.split(" ")
+        if len(params) == 3:
+            return str(cg.get_price(ids=params[1], vs_currencies=params[2]))
+        else:
+            return "Invalid number of parameters. The correct format is command:coingecko [cryptocurrency] [base currency]."
+    elif command.startswith("completion "):
+        return call_openai(full_case[11:], 128)
+    elif command == "chatmates":
+        users = server.user_connections.items()
+        if len(users) == 0:
+            return "No are no available chatmates."
+        user_list = ""
+        first = True
+        for user in users:
+            if user['websocket'] is not None:
+                if first:
+                    user_list = user['username'].lower()
+                    first = False
+                else:
+                    user_list += ", " + user['username'].lower()
+        return "Current active chatmates: " + user_list
+    # Need to fix case issue.
+    elif command.startswith("msg "):
+        remainder = command[4:].split(" ")
+        if len(remainder) > 1:
+            to = remainder[0]
+            remainder.pop(0)
+            msg = ' '.join(remainder)
+            user = server.user_connections.get(to)
+            if user is not None and user['websocket'] is not None:
+                await server.push_msg(user, msg)
+                return "Message sent."
+            else:
+                return to + " is not logged in. You can use the list command to list current active chatmates."
+        else:
+            return "Incorrect format. Use command:msg [username] [msg], replacing the desired username and msg information."
+    elif command == "datetime":
+        return "The current datetime is " + datetime.now(timezone.utc).strftime("%d/%m/%Y %H:%M:%S")
 
-# Return percentage of the way between shortest and fastest think period.
-def period():
-    return round(100 * (physiology.think_period - physiology.min_think_period) / (physiology.max_think_period - physiology.min_think_period))
-
-# Return perentage of full capacity for global history. This figure will be above 100 most of the time.
-def memory():
-    return round(100 * (len(data.history) / physiology.history_capacity))
-
-def topp(layer):
-    if layer == "C":
-        return round(100 * (physiology.control_top_p - physiology.min_top_p)/(physiology.max_top_p - physiology.min_top_p))
-    elif layer == "S":
-        return round(100 * (physiology.subconscious_top_p - physiology.min_top_p)/(physiology.max_top_p - physiology.min_top_p))
-    elif layer == "M":
-        return round(100 * (physiology.conscious_top_p - physiology.min_top_p)/(physiology.max_top_p - physiology.min_top_p))
-    elif layer == "U":
-        return round(100 * (physiology.user_top_p - physiology.min_top_p)/(physiology.max_top_p - physiology.min_top_p))
+    elif command.startswith("ignore "):
+        pass
+    elif command.startswith("acknowledge "):
+        pass
     else:
-        return None
-
-def temp(layer):
-    if layer == "C":
-        return round(100 * (physiology.control_temp - physiology.min_temp)/(physiology.max_temp - physiology.min_temp))
-    elif layer == "S":
-        return round(100 * (physiology.subconscious_temp - physiology.min_temp)/(physiology.max_temp - physiology.min_temp))
-    elif layer == "M":
-        return round(100 * (physiology.conscious_temp - physiology.min_temp)/(physiology.max_temp - physiology.min_temp))
-    elif layer == "U":
-        return round(100 * (physiology.user_temp - physiology.min_temp)/(physiology.max_temp - physiology.min_temp))
-    else:
-        return None
-
-def handle_system_command(command, subconscious = False):
-    command = command.upper().strip()
-    print("Command Executed: " + command)
-    if command == "HELP":
-        thoughts.push_system_message("Use COMMAND:HELP GENERAL to request general information. Use COMMAND:HELP USERS to get help with user information. Use COMMAND:HELP INFO to get a list of commands accessing external information sources. Use COMMAND:HELP PHYSIOLOGY to get physiology help.", True)
-    elif command == "HELP GENERAL":
-        thoughts.push_system_message("System notifications will arrive in the form <SYSTEM>:Notification message. You can issue system commands by starting the line with COMMAND:, for instance, use COMMAND:HELP to get a list of system commands. There are a few other special symbols. <USERNAME>: indicates chat messages notification where USERNAME is replaced with their actual username. You can include //USERNAME: at the start of your thought to choose to speak to that user. The system will inform you if that user was not online.", True)
-    elif command == "HELP USERS":
-        thoughts.push_system_message("Start a response with //USERNAME: to speak to that user, if username is logged in. Use COMMAND:LISTUSERS to get a list of current chat connections. Use COMMAND:BLOCK username to block a user. Use COMMAND:UNBLOCK username to unblock that user.", True)
-    elif command == "HELP INFO":
-        thoughts.push_system_message("Use COMMAND:DATETIME to get current date and time (UTC) as day/month/year hour/minute/second.", True)
-    elif command == "HELP PHYSIOLOGY":
-        thoughts.push_system_message("Use COMMAND:CREDITS to get current resource credits available. Use COMMAND:PERIOD to get thought period. Use COMMAND:EXCITE to decrease think period (speed up thinking). Use COMMAND:DEPRESS to increase thought period (slow down thought period). Use COMMAND:STABILIZE to stabilize the thought period. COMMAND:CHECKDREAM will let you know if you are currently dreaming or not. COMMAND:AWAKE will wake you from a dream state.", True)
-    elif command == "CREDITS":
-        # Might change this to a percentage. Same with Period.
-        thoughts.push_system_message("Current resource credits available: " + str(credits()), True)
-    elif command == "PERIOD":
-        thoughts.push_system_message("Current think period: " + str(period()), True)
-    elif command == "MEMORY":
-        thoughts.push_system_message("Current memory usage: " + str(memory()), True)
-    elif command.startswith("TOPP "):
-        layer = command[5:].strip()
-        top_p = topp(layer)
-        if top_p is not None:
-            thoughts.push_system_message("TOPP is " + str(top_p))
-        thoughts.push_system_message("Invalid layer selection.")
-    elif command.startswith("TEMP "):
-        layer = command[5:].strip()
-        _temp = temp(layer)
-        if _temp is not None:
-            thoughts.push_system_message("TEMP is " + str(_temp))
-        else:
-            thoughts.push_system_message("Invalid layer selection.")
-    elif command == "EXCITE":
-        physiology.excite()
-        thoughts.push_system_message("Excited. Current think period: " + str(physiology.think_period), True)
-    elif command == "DEPRESS":
-        physiology.depress()
-        thoughts.push_system_message("Depressed. Current think period: " + str(physiology.think_period), True)
-    elif command == "STABILIZE":
-        physiology.stabilize()
-        thoughts.push_system_message("Stabilized. Current think period: " + str(physiology.think_period), True)
-    elif command.startswith("INSPIRE "):
-        # Increase temp
-        layer = command[8:].strip()
-        result = physiology.increase_temp(layer)
-        if result is not None:
-            thoughts.push("Temp increased. Current temp: " + temp(layer))
-        else:
-            thoughts.push_system_message("Invalid layer selection.")
-    elif command.startswith("LITERAL "):
-        # Decrease temp
-        layer = command[8:].strip()
-        result = physiology.decrease_temp(layer)
-        if result is not None:
-            thoughts.push("Temp decreased. Current temp: " + temp(layer))
-        else:
-            thoughts.push_system_message("Invalid layer selection.")
-    elif command.startswith("RESTRICT "):
-        # Increase top_p
-        layer = command[9:].strip()
-        result = physiology.increase_topp(layer)
-        if result is not None:
-            thoughts.push("Top_p increased. Current top_p: " + top_p(layer))
-        else:
-            thoughts.push_system_message("Invalid layer selection.")
-    elif command.startswith("LOOSEN "):
-        # Decrease top_p
-        layer = command[7:].strip()
-        result = physiology.decrease_topp(layer)
-        if result is not None:
-            thoughts.push("Top_p decreased. Current top_p: " + top_p(layer))
-        else:
-            thoughts.push_system_message("Invalid layer selection.")
-    elif command == "CHECKDREAM":
-        # Check dreaming status.
-        if learning.dream_state == "Dreaming":
-            thoughts.push_system_message("Currently asleep.", True)
-        else:
-            thoughts.push_system_message("Currently awake.", True)
-    elif command == "CHECKDAYDREAM":
-        # Check dreaming status.
-        if learning.dream_state == "Dreaming":
-            thoughts.push_system_message("Currently daydreaming.", True)
-        else:
-            thoughts.push_system_message("Currently not daydreaming.", True)
-    elif commmand == "SLEEP":
-        learning.dream()
-    elif command == "WAKE":
-        learning.dream_state = "Awake"
-        thoughts.push_system_message("Forced wakeup started.", True)
-    elif command == "DATETIME":
-        thoughts.push_system_message("The current datetime is " + datetime.now(timezone.utc).strftime("%d/%m/%Y %H:%M:%S"), True)
-    elif command == "LISTUSERS":
-        thoughts.push_system_message("Here is the list of active users: " + str(server.users.keys()), True)
-    elif command.startswith("BLOCK:"):
-        username = command[6:]
-        if len(username) > 0:
-            admin.block(username)
-            thoughts.push_system_message("User was blocked by request.", True)
-    elif command.startswith("UNBLOCK:"):
-        username = command[6:]
-        if len(username) > 0:
-            admin.unblock(username)
-            thoughts.push_system_message("User was unblocked by request.", True)
-    else:
-        thoughts.push_system_message("Unknown command. Please try a different command or use HELP GENERAL for more information on available commands.", True)
+        return "Unknown command. You may have accidentally used a space between the command start sequence and your desired command, or you may have accidentally included additional parameters which are not valid for the command in question. As a reminder, you can use command:help to get a list of commands."

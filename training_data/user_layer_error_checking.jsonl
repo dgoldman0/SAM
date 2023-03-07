@@ -1,7 +1,0 @@
-{"prompt":"<SYSTEM>:Current discussion with <USERNAME>\n", "completion":" Hi USERNAME.\n"}
-{"prompt":"<SYSTEM>:Current discussion with <admin>\n", "completion":" Hi admin.\n"}
-{"prompt":"<SYSTEM>:Current discussion with <admin>\n<admin>Hello.", "completion":" Hi admin.\n"}
-{"prompt":"<SYSTEM>:Current discussion with <admin>\n<admin>Hello.\n><Hi admin.\n", "completion":" How're you doing today?\n"}
-{"prompt":"<SYSTEM>:Current discussion with <admin>\n<admin>Don't add %3CSYSTEM%3E to the start of your sentences.\n", "completion":" Okay. I won't.\n"}
-{"prompt":"<SYSTEM>:Current discussion with <admin>\n<admin>Don't add %3CADMIN%3E to the start of your sentences.\n", "completion":" Okay. I won't.\n"}
-{"prompt":"<SYSTEM>:Current discussion with <admin><admin>Don't add to the start of your sentences.\n", "completion":" Okay. I won't.\n"}
