@@ -69,7 +69,8 @@ async def think():
                 thoughts_since_dream = 0
                 await dreams.dream()
             data.locked = False
-        await asyncio.sleep(1.5)
+            await asyncio.sleep(0.1)
+        await asyncio.sleep(0)
 
 # Run simultaneous internal monologues, without access to system resourcs, and which does not receive notifications from external info.
 lastsub = 0
@@ -99,4 +100,5 @@ async def subthink():
                 lastsub = 0
             data.save()
             data.locked = False
-        await asyncio.sleep(3)
+            await asyncio.sleep(0.3)
+        await asyncio.sleep(0)

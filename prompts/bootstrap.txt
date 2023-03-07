@@ -1,0 +1,11 @@
+Original Information (paper format):
+{}
+END INFORMATION
+
+Write an entire new paper, which uses ideas from the original information paper, but centered on the new message and your response. Only reference the message and your response implicitly.
+
+New message from {}: {}
+
+Your response: {}
+
+New Paper:

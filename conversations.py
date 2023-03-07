@@ -38,24 +38,31 @@ async def converse(name, socket):
                 elif msg.startswith("MSG:"):
                     message = msg[4:]
                     print("Received message: " + message + '\n')
-                    # Merge internal memory into conversation memory.
-                    prompt = generate_prompt("merge", (data.memory_internal, data.memory, ))
-                    merged_memory = call_openai(prompt, parameters.internal_capacity + parameters.conversation_capacity)
+                    # Merge internal memory into conversation memory, if conversation memory isn't blank
+                    merged_memory = data.memory_internal
+                    if data.memory != "":
+                        prompt = generate_prompt("merge", (data.memory_internal, data.memory, ))
+                        merged_memory = call_openai(prompt, parameters.internal_capacity + parameters.conversation_capacity)
 
                     # Use merged memory to generate conversation response.
                     prompt = generate_prompt("respond", (merged_memory, working_memory, name, message, ))
                     ai_response = call_openai(prompt, 128)
                     print("Response: " + ai_response + '\n')
+                    await socket.send(("MSG:" + ai_response).encode())
 
-                    # Integrate into conversation memory.
-                    prompt = generate_prompt("integrate", (data.memory, working_memory, name, message, ai_response, ))
-                    await asyncio.get_event_loop().run_in_executor(None, utils.updateConversational, prompt)
+                    if data.memory != "":
+                        # Integrate into conversation memory, if it is not blank, otherwise create new base conversation
+                        prompt = generate_prompt("integrate", (data.memory, working_memory, name, message, ai_response, ))
+                        await asyncio.get_event_loop().run_in_executor(None, utils.updateConversational, prompt)
+                    else:
+                        prompt = generate_prompt("bootstrap", (data.memory_internal, name, message, ai_response, ))
+                        data.memory = call_openai(prompt, parameters.conversation_capacity)
                     # Integrate into internal memory.
                     prompt = generate_prompt("integrate", (data.memory_internal, working_memory, name, message, ai_response, ))
                     await asyncio.get_event_loop().run_in_executor(None, utils.updateInternal, prompt)
 
-                    working_memory += name + ": " + '\n\t'.join(message.split('\n')) + "\n\n"
-                    working_memory += ": " + '\n\t'.join(ai_response.split('\n')) + "\n\n"
+                    working_memory += name + ": " + message.replace('\n', '\n\t') + "\n\n"
+                    working_memory += ": " + ai_response.replace('\n', '\n\t') + "\n\n"
 
                     # Cut last line of old memory.
                     lines = working_memory.split('\n\n')
@@ -64,7 +71,7 @@ async def converse(name, socket):
                         lines = lines[1:]
                         working_memory = '\n\n'.join(lines)
                     data.set_workingmem(name, working_memory)
-                    await socket.send(("MSG:" + ai_response).encode())
+                    data.save()
                 elif msg.startswith('COMMAND:'):
                     command = msg[8:]
                     if message == "memory":
@@ -73,8 +80,6 @@ async def converse(name, socket):
                         await socket.send(("STATUS:" + working_memory).encode())
                     elif message == "dream":
                         dreams.dream()
-                    elif message == "save":
-                        data.save()
                 else:
                     pass
             except Exception as e:
@@ -82,4 +87,5 @@ async def converse(name, socket):
                 connected = False
                 server.notify_disconnect(name)
             data.locked = False
+            await asyncio.sleep(0.1)
         await asyncio.sleep(0)

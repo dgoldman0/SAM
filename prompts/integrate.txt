@@ -1,15 +1,15 @@
-Expand memory to incorporate information from the new message and your response, as well as how it relates to your current thoughts.
-
-Current Memory:
+Current Information (paper format):
 {}
-END MEMORY
+END INFORMATION
 
 Current chat history:
 {}
 END CURRENT THOUGHTS
 
+Expand the paper in "current information" to implicitly incorporate the ideas presented in the new message, your response, and how they relate to the existing chat history. Retain important information, and terminate with "END MEMORY" by itself on a new line
+
 New message from {}: {}
 
 Your response: {}
 
-Updated Expanded Memory (expand and reorganize to show relationships with new information, terminate with "END MEMORY"):
+Revised Information:
