@@ -1,4 +1,4 @@
-Current Information (essay format):
+Current Information (paper format):
 {}
 END INFORMATION
 
@@ -8,6 +8,6 @@ END CURRENT DIALOGUE
 
 New Message: {}
 
-Rewrite the current information to implicitly incorporate the ideas presented in the new message and how they relate to the existing dialogue. Maintain essay format, and end with "END MEMORY"
+Expand the paper in "current information" to implicitly incorporate the ideas presented in the new message and how they relate to the existing dialogue. Retain important information, and terminate with "END MEMORY" by itself on a new line
 
-Essay:
+Revised Information:

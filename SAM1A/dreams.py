@@ -3,7 +3,7 @@ import asyncio
 from generation import generate_prompt
 from generation import call_openai
 import parameters
-from utils import check_valid_memory
+import utils
 
 async def dream():
     print("Entering dream mode...\n")
@@ -30,14 +30,10 @@ async def dream():
             # Add each dream step to the list of training pairs
             pairs.append((prompt, response, ));
             prompt = generate_prompt("dream/integrate", (data.memory_internal, working_memory, response, ))
-            output = ""
-            while output == "":
-                output = call_openai(prompt, parameters.internal_capacity)
-                if not check_valid_memory(data.memory_internal, output):
-                    output = ""
+            # Not sure if this works right, because I thought it gets a future instead
+            output = await asyncio.get_event_loop().run_in_executor(None, utils.updateInternal, prompt)
             # Add memory changes to the training data
             pairs.append((prompt, output, ));
-            data.memory_internal = output.strip("END MEMORY")
             print(response + "\n")
             working_memory += response + "\n\n"
             await asyncio.sleep(0.1)

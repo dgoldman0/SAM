@@ -1,31 +1,38 @@
-def check_valid_memory(memory, new_memory):
+from generation import generate_prompt
+from generation import call_openai
+import data
+import parameters
+
+def checkValidMemory(memory, new_memory):
     try:
-        if len(new_memory) < 0.90 * len(memory):
+        if len(new_memory) < parameters.contraction_tolerance * len(memory):
             print("Fails Basic: " + str(len(new_memory)/len(memory) * 100) + "\n\n")
             return False
-            if not new_memory.endswith("END MEMORY"):
-                print("Fails Basic: " + new_memory + "\n\n")
-                return False
-        return True
-        # Force a formal ontology structure. Doing so may not be the best option. Testing should be done to see.
-        op_loc = new_memory.find("Object Properties:\n")
-        a_loc = new_memory.find("Axioms:\n")
-        if op_loc == -1 or a_loc == -1:
-            print(new_memory + "\n")
-            print("Parts Missing\n")
+        if not new_memory.endswith("END MEMORY"):
+            print("Fails Basic: " + new_memory + "\n\n")
             return False
-        classes = new_memory[9:op_loc].strip()
-        ops = new_memory[op_loc + 19:a_loc].strip()
-        axioms = new_memory[a_loc + 8:].strip("END MEMORY").strip()
-        lines = classes.split("\n") + ops.split('\n') + axioms.split('\n')
-        i = 0
-        while i < len(lines):
-            line = lines[i].strip()
-            if not line == "" and not line.startswith('-'):
-                print(line)
-                print("Malformed\n")
-                return False
-            i += 1
         return True
     except Exception as e:
         print(e)
+
+def updateInternal(prompt):
+    print("Updating...\n")
+    output = ""
+    while output == "":
+        output = call_openai(prompt, parameters.internal_capacity).strip().strip('.')
+        if not checkValidMemory(data.memory_internal, output):
+            output = ""
+    data.memory_internal = output.strip("END MEMORY")
+    print("Finished...\n")
+    return output
+
+def updateConversational(prompt):
+    print("Updating...\n")
+    output = ""
+    while output == "":
+        output = call_openai(prompt, parameters.conversation_capacity)
+        if not check_valid_memory(data.memory, output):
+            output = ""
+    data.memory = output.strip("END MEMORY")
+    print("Finished...\n")
+    return output

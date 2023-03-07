@@ -1,6 +1,6 @@
-Current Memory:
+Current Information (paper format):
 {}
-END MEMORY
+END INFORMATION
 
 Current dialogue:
 {}
@@ -8,4 +8,6 @@ END CURRENT DIALOGUE
 
 New Message: {}
 
-Determine how the new message relates to the current dialog and incorporate this information into the current memory, without removing old information (be detailed and terminate with END ONTOLOGY):
+Expand the paper in "current information" to implicitly incorporate the ideas presented in the new message and how they relate to the existing dialogue. Retain important information, and terminate with "END MEMORY" by itself on a new line
+
+Revised Information:

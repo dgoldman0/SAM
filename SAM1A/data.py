@@ -20,8 +20,13 @@ dreaming = False
 
 first = True
 
+# Needed because some threading is necessary otherwise the websocket client won't work right
+locked = False
+
 # Working memories for each user conversation, stored in case of disconnects.
 working_memory = {}
+
+# Need to add persistent working memory for think and subthink
 
 def get_workingmen(name):
     global working_memory
@@ -56,8 +61,9 @@ def init():
         first = False
     except Exception as e:
         prompt = generate_prompt("membootstrap", ())
-        internal_memory = call_openai(prompt, 512, temp = 0.85).replace('\n', '\n\t')
-        print("Memory: " + internal_memory + "\n")
+        memory_internal = call_openai(prompt, 1550, temp = 0.85).replace('\n', '\n\t')
+        print("Memory: " + memory_internal + "\n")
+        save()
     try:
         res = cur.execute("SELECT TRUE FROM USERS WHERE username = ?;", ("admin", ))
     except Exception as err:

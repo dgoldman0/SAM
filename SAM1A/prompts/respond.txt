@@ -1,6 +1,6 @@
-Current Memory:
+Current Information (paper format):
 {}
-END MEMORY
+END INFORMATION
 
 Current chat history:
 {}
@@ -8,6 +8,6 @@ END CHAT HISTORY
 
 New message from {}: {}
 
-Respond to the new message using information in the memory and current chat history.
+Respond to the new message using current information and current chat history.
 
 Response:

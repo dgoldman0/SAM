@@ -1,6 +1,6 @@
-Current Memory:
+Current Information:
 {}
-END MEMORY
+END INFORMATION
 
 {}
 :

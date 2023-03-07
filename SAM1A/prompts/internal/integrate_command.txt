@@ -1,6 +1,6 @@
-Current MEMORY:
+Current Information (paper format):
 {}
-END MEMORY
+END INFORMATION
 
 Current dialogue:
 {}
@@ -10,4 +10,6 @@ Issued System Command: {}
 
 System Response: {}
 
-Determine how the issued command and system response relate to the current dialog and incorporate this information into the current memory (be detailed and terminate with END MEMORY):
+Expand paper to implicitly include information about the issued command and system response and how it is related to the current dialog. Retain important information, and terminate with "END MEMORY" by itself on a new line
+
+Revised Information:

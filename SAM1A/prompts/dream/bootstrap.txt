@@ -1,3 +1,5 @@
 {}
 
-Generate five questions, without new lines, based on these ideas:
+Consider 20 questions to ask, based on the above information.
+
+Questions (paragraph form): 

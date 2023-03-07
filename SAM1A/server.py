@@ -79,7 +79,7 @@ async def handle_login(websocket):
 async def serve(stop):
     async with websockets.serve(handle_login, "localhost", 9381):
         await asyncio.sleep(0) # For some reason, this is needed to yield control to the thought process.
-        await stop  # run until dreaming
+        await stop
 
 async def listen():
     global stop

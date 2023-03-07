@@ -1,11 +1,11 @@
-Merge the two memories.
+Merge the following two papers.
 
-Secondary Memory:
+Secondary Paper:
 {}
-END MEMORY
+END PAPER
 
-Primary Memory:
+Primary Paper:
 {}
-END MEMORY
+END PAPER
 
-Merged Memory (terminate with "END MEMORY"):
+Merged Paper (terminate with "END MEMORY"):
