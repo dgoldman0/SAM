@@ -69,13 +69,17 @@ async def think():
                 thoughts_since_dream = 0
                 await dreams.dream()
             data.locked = False
-            await asyncio.sleep(0.1)
+            await asyncio.sleep(parameters.thinkpause)
         await asyncio.sleep(0)
 
 # Run simultaneous internal monologues, without access to system resourcs, and which does not receive notifications from external info.
 lastsub = 0
 async def subthink():
     global lastsub
+    # Subcount of zero means no running subconscious.
+    if parameters.subs == 0:
+        return
+
     working_memories = []
     for i in range(parameters.subs):
         print("Bootstrapping subconscious(" + str(i) + ")...")
@@ -100,5 +104,5 @@ async def subthink():
                 lastsub = 0
             data.save()
             data.locked = False
-            await asyncio.sleep(0.3)
+            await asyncio.sleep(parameters.subpause)
         await asyncio.sleep(0)
