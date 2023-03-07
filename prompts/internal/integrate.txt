@@ -8,8 +8,8 @@ END CURRENT DIALOGUE
 
 New Message: {}
 
-Expand the paper in "current information" to implicitly incorporate the ideas presented in the new message and how they relate to the existing dialogue. Retain important information, and terminate with "END MEMORY" by itself on a new line
+Expand the paper in "current information" by implicitly incorporating the ideas presented in the new message and how they relate to the existing dialogue. Retain important information, and terminate with "END MEMORY" by itself on a new line
 
-Approximate paper length: {}
+Approximate paper length: {} words
 
 Revised Information:

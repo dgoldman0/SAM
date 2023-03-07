@@ -8,6 +8,6 @@ New message from {}: {}
 
 Your response: {}
 
-Approximate paper length: {}
+Approximate paper length: {} words
 
 New Paper:
