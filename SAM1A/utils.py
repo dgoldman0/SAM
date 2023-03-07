@@ -31,7 +31,7 @@ def updateConversational(prompt):
     output = ""
     while output == "":
         output = call_openai(prompt, parameters.conversation_capacity)
-        if not check_valid_memory(data.memory, output):
+        if not checkValidMemory(data.memory, output):
             output = ""
     data.memory = output.strip("END MEMORY")
     print("Finished...\n")
