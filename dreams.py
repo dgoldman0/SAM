@@ -5,6 +5,8 @@ from generation import call_openai
 import parameters
 import utils
 
+# Will need major updating. Also considering using subconscious too.
+
 async def dream():
     print("Entering dream mode...\n")
     # Keep track of the last thought to give very limited working memory.

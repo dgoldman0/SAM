@@ -28,8 +28,7 @@ working_memory = {}
 # Working memories conscious and subconscious layers
 working_memories = []
 
-# Need to add persistent working memory for think and subthink
-
+# Need to update these to store and access from database
 def get_workingmen(name):
     global working_memory
     return working_memory.get(name, '')
@@ -37,6 +36,28 @@ def get_workingmen(name):
 def set_workingmem(name, memory):
     global working_memory
     working_memory[name] = memory
+
+def appendWorkingMemory(memory):
+    global database
+    cur = database.cursor()
+    cur.execute("INSERT INTO INTERNALWMEM (memory) VALUES ('?');", (memory, ))
+
+def getWorkingMemory(mem_id):
+    global database
+    cur = database.cursor()
+    res = cur.execute("SELECT memory FROM INTERNALWMEM WHERE id = ?;", (mem_id, ))
+    return res.fetchone()[0]
+
+def setWorkingMemory(mem_id, memory):
+    global database
+    cur = database.cursor()
+    res = cur.execute("UPDATE INTERNALWMEM SET memory = '?' WHERE mem_id = ?;", (memory, mem_id, ))
+
+def workingMemoryCount():
+    global database
+    cur = database.cursor()
+    res = cur.execute("SELECT Count(mem_id) FROM INTERNALWMEM;")
+    return res.fetchone()[0]
 
 def set_dreaming(value):
     global dreaming
