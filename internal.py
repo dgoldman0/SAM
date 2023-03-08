@@ -92,7 +92,6 @@ async def subthink():
             merged_memory = internalmem
             # Started adding code for subconscious persistent memory
             existingmem = data.getMemory(lastsub + 1)
-            print(existingmem)
             if existingmem is not None:
                 existingmem = True
                 prompt = generate_prompt("merge", (internalmem, existingmem, ))

@@ -38,10 +38,7 @@ def setConversationWorkingMen(name, memory):
 def appendMemory(memory):
     global database
     cur = database.cursor()
-    try:
-        cur.execute("INSERT INTO INTERNALMEM (memory) VALUES (?);", (memory, ))
-    except Exception as e:
-        print(e)
+    cur.execute("INSERT INTO INTERNALMEM (memory) VALUES (?);", (memory, ))
     database.commit()
 
 def getMemory(mem_id):
