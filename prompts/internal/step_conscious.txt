@@ -2,7 +2,10 @@ Current Information:
 {}
 END INFORMATION
 
-You have access to external information. If you need to access external information, use the system command interface. For example, use command:help to access information on general system functions.
+You have access to external information. If you need to access external information, use the system command interface. For example, use command:help to access information on general system functions. Continue your dialogue with yourself.
 
+Existing Dialogue
 {}
-:
+END DIALOGUE
+
+Continuation: 

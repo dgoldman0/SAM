@@ -25,7 +25,7 @@ def notify_disconnect(name):
 async def think():
     if data.workingMemoryCount() == 0:
         print("Bootstrapping...")
-        prompt = generate_prompt("internal/bootstrap", (data.memory_internal, ))
+        prompt = generate_prompt("internal/bootstrap_working", (data.memory_internal, ))
         bootstrap = call_openai(prompt, 128, temp = 0.85).replace('\n', '\n\t')
         data.appendWorkingMemory(bootstrap)
     print("Thinking...")
@@ -34,7 +34,9 @@ async def think():
         if not data.locked:
             data.locked = True
             working_memory = data.getWorkingMemory(1)
-            prompt = generate_prompt("internal/step_conscious", (data.memory_internal, working_memory, ))
+            internalmem = data.getMemory(1)
+            # Need to fix memory access
+            prompt = generate_prompt("internal/step_conscious", (internalmem, working_memory, ))
             ai_response = call_openai(prompt, 32, temp = 0.85)
             ai_response = ai_response.replace('\n', '\n\t')
             print("Thought: " + ai_response + "\n")
@@ -43,15 +45,15 @@ async def think():
                 command = ai_response[8:]
                 response = await system.process_command(command)
                 response = response.replace('\n', '\n\t')
-                prompt = generate_prompt("internal/integrate_command", (data.memory_internal, working_memory, command, response, utils.internalLength, ))
+                prompt = generate_prompt("internal/integrate_command", (internalmem, working_memory, command, response, utils.internalLength(), ))
                 # Indent new lines to ensure that the system can tell the difference between a multiline message and two lines.
                 response = 'system: ' + response
                 working_memory += ": " + ai_response + "\n\n"
                 working_memory += response + "\n\n"
-                await asyncio.get_event_loop().run_in_executor(None, utils.updateInternal, prompt)
+                await asyncio.get_event_loop().run_in_executor(None, utils.updateInternal, 1, prompt, parameters.internal_capacity)
             else:
-                prompt = generate_prompt("internal/integrate", (data.memory_internal, working_memory, ai_response, utils.internalLength, ))
-                output = await asyncio.get_event_loop().run_in_executor(None, utils.updateInternal, prompt)
+                prompt = generate_prompt("internal/integrate", (internalmem, working_memory, ai_response, utils.internalLength(), ))
+                output = await asyncio.get_event_loop().run_in_executor(None, utils.updateInternal, 1, prompt, parameters.internal_capacity)
                 working_memory += ": " + ai_response + "\n\n"
 
             # Cut last line of old memory.
@@ -82,23 +84,37 @@ async def subthink():
     if parameters.subs == 0:
         return
 
-    # Will work fine as long as the number of subs isn't variable.
-    if data.workingMemoryCount() < parameters.subs:
-        for i in range(parameters.subs):
-            print("Bootstrapping subconscious(" + str(i) + ")...")
-            prompt = generate_prompt("internal/bootstrap", (data.memory_internal, ))
-            bootstrap = call_openai(prompt, 128, temp = 0.85).replace('\n', '\n\t')
-            data.appendWorkingMemory(bootstrap)
     while True:
         if not data.locked:
             data.locked = True
             working_memory = data.getWorkingMemory(lastsub + 2)
-            prompt = generate_prompt("internal/step_subconscious", (data.memory_internal, working_memory, ))
+            internalmem = data.getMemory(1)
+            merged_memory = internalmem
+            # Started adding code for subconscious persistent memory
+            existingmem = data.getMemory(lastsub + 1)
+            print(existingmem)
+            if existingmem is not None:
+                existingmem = True
+                prompt = generate_prompt("merge", (internalmem, existingmem, ))
+                merged_memory = call_openai(prompt, parameters.internal_capacity + parameters.conversation_capacity)
+            prompt = generate_prompt("internal/step_subconscious", (merged_memory, working_memory, ))
             ai_response = call_openai(prompt, 32, temp = 0.9)
             ai_response = ai_response.replace('\n', '\n\t')
             print("Subthought(" + str(lastsub) + ")\n")
-            prompt = generate_prompt("internal/integrate", (data.memory_internal, working_memory, ai_response, utils.internalLength, ))
-            await asyncio.get_event_loop().run_in_executor(None, utils.updateInternal, prompt)
+
+            if existingmem is not None:
+                # Integrate into conversation memory, if it is not blank, otherwise create new base conversation
+                prompt = generate_prompt("internal/integrate", (existingmem, working_memory, ai_response, utils.conversationalLength(), ))
+                await asyncio.get_event_loop().run_in_executor(None, utils.updateInternal, (lastsub + 2), prompt, parameters.conversation_capacity)
+            else:
+                print("Bootstrapping subconscious memory (" + str(lastsub) + ")")
+                prompt = generate_prompt("internal/bootstrap_sub", (internalmem, ai_response, utils.conversationalLength()))
+                mem = call_openai(prompt, parameters.conversation_capacity)
+                data.appendMemory(mem)
+            # Integrate into internal memory.
+            prompt = generate_prompt("internal/integrate", (internalmem, working_memory, ai_response, utils.internalLength(), ))
+            await asyncio.get_event_loop().run_in_executor(None, utils.updateInternal, 1, prompt, parameters.internal_capacity)
+
             working_memory += ": " + ai_response + "\n\n"
             data.setWorkingMemory(lastsub + 2, working_memory)
             # Cycle through subconsciousness

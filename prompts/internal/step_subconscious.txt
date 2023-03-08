@@ -2,5 +2,8 @@ Current Information:
 {}
 END INFORMATION
 
+Existing Dialogue
 {}
-:
+END DIALOGUE
+
+Continuation: 

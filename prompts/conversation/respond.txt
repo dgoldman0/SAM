@@ -13,4 +13,3 @@ New message from {}: {}
 Respond to the new message using current information and current chat history.
 
 Response:
-:

@@ -15,17 +15,19 @@ def checkValidMemory(memory, new_memory):
     except Exception as e:
         print(e)
 
-def updateInternal(prompt):
+def updateInternal(mem_id, prompt, capacity):
     print("Updating...\n")
     output = ""
+    internalmem = data.getMemory(mem_id)
     while output == "":
-        output = call_openai(prompt, parameters.internal_capacity).strip().strip('.')
-        if not checkValidMemory(data.memory_internal, output):
+        output = call_openai(prompt, capacity).strip().strip('.')
+        if not checkValidMemory(internalmem, output):
             output = ""
-    data.memory_internal = output.strip("END MEMORY")
+    data.setMemory(mem_id, output.strip("END MEMORY"))
     print("Finished...\n")
     return output
 
+# Not updated to database format yet
 def updateConversational(prompt):
     print("Updating...\n")
     output = ""

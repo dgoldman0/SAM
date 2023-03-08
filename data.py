@@ -4,17 +4,15 @@ import nest_asyncio
 import bcrypt
 from generation import generate_prompt
 from generation import call_openai
+import parameters
 
 # Connect to local file database which will be used to store user information, etc. Maybe one day replace with full MySQL
 print("Connecting to database.")
 
 # Load database and check for previous system history. That way we don't have to go through the whole bootup process each time, and if the system goes out at one pont it can be rebooted where it was left off.
-database = sqlite3.connect("sam.db")
+database = sqlite3.connect("sam.db", check_same_thread=False)
 
 nest_asyncio.apply()
-
-memory = ""
-memory_internal = ""
 
 dreaming = False
 
@@ -36,6 +34,33 @@ def getConversationWorkingMen(name):
 def setConversationWorkingMen(name, memory):
     global working_memory
     working_memory[name] = memory
+
+def appendMemory(memory):
+    global database
+    cur = database.cursor()
+    try:
+        cur.execute("INSERT INTO INTERNALMEM (memory) VALUES (?);", (memory, ))
+    except Exception as e:
+        print(e)
+    database.commit()
+
+def getMemory(mem_id):
+    global database
+    cur = database.cursor()
+    res = cur.execute("SELECT memory FROM INTERNALMEM WHERE mem_id = ?;", (mem_id, ))
+    return res.fetchone()[0]
+
+def setMemory(mem_id, memory):
+    global database
+    cur = database.cursor()
+    res = cur.execute("UPDATE INTERNALMEM SET memory = ? WHERE mem_id = ?;", (memory, mem_id, ))
+    database.commit()
+
+def memoryCount():
+    global database
+    cur = database.cursor()
+    res = cur.execute("SELECT Count(mem_id) FROM INTERNALMEM;")
+    return res.fetchone()[0]
 
 def appendWorkingMemory(memory):
     global database
@@ -75,24 +100,8 @@ def check_dreaming():
 # Load persistenet memory and initialize database of it does not exist yet.
 def init():
     global database, memory, memory_internal
-    # Check if already initialized
-    cur = database.cursor()
     try:
-        file = open('memory.txt',mode='r')
-        mem = file.read()
-        memory = mem
-        file.close()
-        file = open('memory_internal.txt',mode='r')
-        mem = file.read()
-        memory_internal = mem
-        file.close()
-        first = False
-    except Exception as e:
-        prompt = generate_prompt("membootstrap", ())
-        memory_internal = call_openai(prompt, 1550, temp = 0.85).replace('\n', '\n\t')
-        print("Memory: " + memory_internal + "\n")
-        save()
-    try:
+        cur = database.cursor()
         res = cur.execute("SELECT TRUE FROM USERS WHERE username = ?;", ("admin", ))
     except Exception as err:
         if str(err) == "no such table: USERS":
@@ -118,21 +127,25 @@ def init():
             cur.execute("CREATE TABLE USERWMEM(mem_id INTEGER PRIMARY KEY NOT NULL, username TEXT UNIQUE NOT NULL, memory TEXT DEFAULT '');")
 
             database.commit()
+
+            # Initialize memory
+            print("Bootstrapping memory...")
+            prompt = generate_prompt("membootstrap", ())
+            memory_internal = call_openai(prompt, 1550, temp = 0.9)
+            appendMemory(memory_internal)
+
+            for i in range(parameters.subs):
+                print("Bootstrapping subconscious(" + str(i) + ")...")
+                prompt = generate_prompt("internal/bootstrap_working", (memory_internal, ))
+                bootstrap = call_openai(prompt, 128, temp = 0.95)
+                appendWorkingMemory(bootstrap)
+            print("Finished initializing database...\n\n")
         else:
             raise Exception("Unknown Error")
 
-# Save persistent memory.
+# Just keeping until I remove all instances of calls
 def save():
-    try:
-        file = open('memory.txt',mode='w')
-        file.write(memory)
-        file.close()
-        file = open('memory_internal.txt',mode='w')
-        file.write(memory_internal)
-        file.close()
-    except Exception as e:
-        print(e)
-
+    pass
 # Stub for training feature. Will train and then update the model info
 def train(pairs):
     pass
