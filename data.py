@@ -29,29 +29,34 @@ working_memory = {}
 working_memories = []
 
 # Need to update these to store and access from database
-def get_workingmen(name):
+def getConversationWorkingMen(name):
     global working_memory
     return working_memory.get(name, '')
 
-def set_workingmem(name, memory):
+def setConversationWorkingMen(name, memory):
     global working_memory
     working_memory[name] = memory
 
 def appendWorkingMemory(memory):
     global database
     cur = database.cursor()
-    cur.execute("INSERT INTO INTERNALWMEM (memory) VALUES ('?');", (memory, ))
+    try:
+        cur.execute("INSERT INTO INTERNALWMEM (memory) VALUES (?);", (memory, ))
+    except Exception as e:
+        print(e)
+    database.commit()
 
 def getWorkingMemory(mem_id):
     global database
     cur = database.cursor()
-    res = cur.execute("SELECT memory FROM INTERNALWMEM WHERE id = ?;", (mem_id, ))
+    res = cur.execute("SELECT memory FROM INTERNALWMEM WHERE mem_id = ?;", (mem_id, ))
     return res.fetchone()[0]
 
 def setWorkingMemory(mem_id, memory):
     global database
     cur = database.cursor()
-    res = cur.execute("UPDATE INTERNALWMEM SET memory = '?' WHERE mem_id = ?;", (memory, mem_id, ))
+    res = cur.execute("UPDATE INTERNALWMEM SET memory = ? WHERE mem_id = ?;", (memory, mem_id, ))
+    database.commit()
 
 def workingMemoryCount():
     global database
@@ -103,14 +108,14 @@ def init():
             password = bcrypt.hashpw(admin_password.encode(), salt)
             cur.execute("INSERT INTO USERS (username, display_name, passwd, salt, admin) VALUES (?, ?, ?, ?, ?);", (username, "System Administrator", password, salt, True))
             # Create internal memory table. mem_id = 0 is conscious, and all others are subconscious layers
-            cur.execute("CREATE TABLE INTERNALMEM(mem_id INT PRIMARY KEY, TEXT DEFAULT '');");
+            cur.execute("CREATE TABLE INTERNALMEM(mem_id INTEGER PRIMARY KEY NOT NULL, memory TEXT DEFAULT '');");
             # User memory
-            cur.execute("CREATE TABLE USERMEM(mem_id INT PRIMARY KEY, username TEXT UNIQUE NOT NULL, TEXT DEFAULT '');")
+            cur.execute("CREATE TABLE USERMEM(mem_id INTEGER PRIMARY KEY NOT NULL, username TEXT UNIQUE NOT NULL, memory TEXT DEFAULT '');")
 
             # Create internal working memory table. mem_id = 0 is conscious as before.
-            cur.execute("CREATE TABLE INTERNALWMEM(mem_id INT PRIMARY KEY, TEXT DEFAULT '');");
+            cur.execute("CREATE TABLE INTERNALWMEM(mem_id INTEGER PRIMARY KEY NOT NULL, memory TEXT DEFAULT '');");
             # User working memory
-            cur.execute("CREATE TABLE USERWMEM(mem_id INT PRIMARY KEY, username TEXT UNIQUE NOT NULL, TEXT DEFAULT '');")
+            cur.execute("CREATE TABLE USERWMEM(mem_id INTEGER PRIMARY KEY NOT NULL, username TEXT UNIQUE NOT NULL, memory TEXT DEFAULT '');")
 
             database.commit()
         else:

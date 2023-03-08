@@ -15,11 +15,11 @@ def init(server_module):
 async def push_msg(user, message):
     username = user['username']
     socket = user['websocket']
-    working_memory = data.get_workingmen(username)
+    working_memory = data.getConversationWorkingMen(username)
     prompt = generate_prompt("internal/integrate", (data.memory, working_memory, ": " + message, ))
     await asyncio.get_event_loop().run_in_executor(None, utils.updateConversational, prompt)
     working_memory += ": " + message + "\n\n"
-    data.set_workingmem(to, working_memory)
+    data.setConversationWorkingMem(to, working_memory)
     await socket.send(("MSG:" + message).encode())
 
 # External dialogue
@@ -30,7 +30,7 @@ async def converse(name, socket):
     while connected:
         if not data.locked:
             data.locked = True
-            working_memory = data.get_workingmen(name)
+            working_memory = data.getConversationWorkingMen(name)
             try:
                 msg = (await socket.recv()).decode()
                 if data.check_dreaming():
@@ -70,7 +70,7 @@ async def converse(name, socket):
                     if len(lines) > 20:
                         lines = lines[1:]
                         working_memory = '\n\n'.join(lines)
-                    data.set_workingmem(name, working_memory)
+                    data.setConversationWorkingMem(name, working_memory)
                     data.save()
                 elif msg.startswith('COMMAND:'):
                     command = msg[8:]

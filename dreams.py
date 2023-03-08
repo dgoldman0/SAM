@@ -8,6 +8,7 @@ import utils
 # Will need major updating. Also considering using subconscious too.
 
 async def dream():
+    return # Doesn't work right now.
     print("Entering dream mode...\n")
     # Keep track of the last thought to give very limited working memory.
     data.set_dreaming(True)

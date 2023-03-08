@@ -33,7 +33,7 @@ async def think():
     while True:
         if not data.locked:
             data.locked = True
-            working_memory = data.getWorkingMemory(0)
+            working_memory = data.getWorkingMemory(1)
             prompt = generate_prompt("internal/step_conscious", (data.memory_internal, working_memory, ))
             ai_response = call_openai(prompt, 32, temp = 0.85)
             ai_response = ai_response.replace('\n', '\n\t')
@@ -63,7 +63,7 @@ async def think():
             thoughts_since_dream += 1
             thoughts_to_dream = 50
 
-            data.setWorkingMemory(0, working_memory)
+            data.setWorkingMemory(1, working_memory)
             data.save()
 
             if thoughts_since_dream == thoughts_to_dream:
@@ -83,7 +83,6 @@ async def subthink():
         return
 
     # Will work fine as long as the number of subs isn't variable.
-    print(data.workingMemoryCount())
     if data.workingMemoryCount() < parameters.subs:
         for i in range(parameters.subs):
             print("Bootstrapping subconscious(" + str(i) + ")...")
@@ -93,7 +92,7 @@ async def subthink():
     while True:
         if not data.locked:
             data.locked = True
-            working_memory = data.getWorkingMemory(lastsub + 1)
+            working_memory = data.getWorkingMemory(lastsub + 2)
             prompt = generate_prompt("internal/step_subconscious", (data.memory_internal, working_memory, ))
             ai_response = call_openai(prompt, 32, temp = 0.9)
             ai_response = ai_response.replace('\n', '\n\t')
@@ -101,7 +100,7 @@ async def subthink():
             prompt = generate_prompt("internal/integrate", (data.memory_internal, working_memory, ai_response, utils.internalLength, ))
             await asyncio.get_event_loop().run_in_executor(None, utils.updateInternal, prompt)
             working_memory += ": " + ai_response + "\n\n"
-            data.setWorkingMemory(lastsub + 1, working_memory)
+            data.setWorkingMemory(lastsub + 2, working_memory)
             # Cycle through subconsciousness
             lastsub += 1
             if lastsub == parameters.subs:
