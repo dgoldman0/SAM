@@ -2,10 +2,10 @@ Original Information (paper format):
 {}
 END INFORMATION
 
-Write an entire new paper, which uses ideas from the original information paper, but centered on your new thought. Only reference your thought implicitly.
+Write an entirely new paper, which uses ideas from the original information paper, but centered on your new thought. Only reference your thought implicitly. The new paper should be very different from the original paper.
 
 New Thought: {}
 
 Approximate paper length: {} words
 
-New Paper:
+Completely New Paper:
