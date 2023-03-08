@@ -100,7 +100,7 @@ async def subthink():
             ai_response = call_openai(prompt, 32, temp = 0.9)
             ai_response = ai_response.replace('\n', '\n\t')
             print("Subthought(" + str(lastsub) + ")\n")
-
+            print(existingmem)
             if existingmem is not None:
                 # Integrate into conversation memory, if it is not blank, otherwise create new base conversation
                 prompt = generate_prompt("internal/integrate", (existingmem, working_memory, ai_response, utils.conversationalLength(), ))
