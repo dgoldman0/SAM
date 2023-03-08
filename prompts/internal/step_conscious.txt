@@ -8,4 +8,4 @@ Existing Dialogue
 {}
 END DIALOGUE
 
-Continuation: 
+Continuation (no need to start with a :): 
