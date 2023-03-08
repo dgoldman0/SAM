@@ -45,7 +45,10 @@ def getMemory(mem_id):
     global database
     cur = database.cursor()
     res = cur.execute("SELECT memory FROM INTERNALMEM WHERE mem_id = ?;", (mem_id, ))
-    return res.fetchone()[0]
+    resp = res.fetchone()
+    if resp is not None:
+        return resp[0]
+    return None;
 
 def setMemory(mem_id, memory):
     global database
@@ -72,7 +75,10 @@ def getWorkingMemory(mem_id):
     global database
     cur = database.cursor()
     res = cur.execute("SELECT memory FROM INTERNALWMEM WHERE mem_id = ?;", (mem_id, ))
-    return res.fetchone()[0]
+    resp = res.fetchone()
+    if resp is not None:
+        return resp[0]
+    return None;
 
 def setWorkingMemory(mem_id, memory):
     global database

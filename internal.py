@@ -91,16 +91,14 @@ async def subthink():
             internalmem = data.getMemory(1)
             merged_memory = internalmem
             # Started adding code for subconscious persistent memory
-            existingmem = data.getMemory(lastsub + 1)
+            existingmem = data.getMemory(lastsub + 2)
             if existingmem is not None:
-                existingmem = True
                 prompt = generate_prompt("merge", (internalmem, existingmem, ))
                 merged_memory = call_openai(prompt, parameters.internal_capacity + parameters.conversation_capacity)
             prompt = generate_prompt("internal/step_subconscious", (merged_memory, working_memory, ))
             ai_response = call_openai(prompt, 32, temp = 0.9)
             ai_response = ai_response.replace('\n', '\n\t')
             print("Subthought(" + str(lastsub) + ")\n")
-            print(existingmem)
             if existingmem is not None:
                 # Integrate into conversation memory, if it is not blank, otherwise create new base conversation
                 prompt = generate_prompt("internal/integrate", (existingmem, working_memory, ai_response, utils.conversationalLength(), ))
@@ -115,6 +113,12 @@ async def subthink():
             await asyncio.get_event_loop().run_in_executor(None, utils.updateInternal, 1, prompt, parameters.internal_capacity)
 
             working_memory += ": " + ai_response + "\n\n"
+            # Cut last line of old memory.
+            lines = working_memory.split('\n\n')
+            if len(lines) > 30:
+                n = len(lines) - 30
+                lines = lines[n:]
+                working_memory = '\n\n'.join(lines)
             data.setWorkingMemory(lastsub + 2, working_memory)
             # Cycle through subconsciousness
             lastsub += 1
