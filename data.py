@@ -145,9 +145,9 @@ def init():
             appendMemory(memory_internal)
             appendHistory(1, memory_internal)
 
-            prompt = generate_prompt("internal/bootstrap_working", (data.memory_internal, ))
+            prompt = generate_prompt("internal/bootstrap_working", (memory_internal, ))
             bootstrap = call_openai(prompt, 128, temp = 0.85).replace('\n', '\n\t')
-            data.appendWorkingMemory(bootstrap)
+            appendWorkingMemory(bootstrap)
 
             for i in range(parameters.subs):
                 print("Bootstrapping subconscious(" + str(i) + ")...")
