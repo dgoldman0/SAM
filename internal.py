@@ -66,11 +66,10 @@ async def think():
             thoughts_to_dream = 50
 
             data.setWorkingMemory(1, working_memory)
-            data.save()
 
             if thoughts_since_dream == thoughts_to_dream:
                 thoughts_since_dream = 0
-                await dreams.dream()
+#                await dreams.dream()
 
             data.locked = False
             await asyncio.sleep(parameters.thinkpause)
@@ -108,6 +107,7 @@ async def subthink():
                 prompt = generate_prompt("internal/bootstrap_sub", (internalmem, ai_response, utils.conversationalLength()))
                 mem = call_openai(prompt, parameters.conversation_capacity)
                 data.appendMemory(mem)
+                data.appendHistory(lastsub + 2, mem)
             # Integrate into internal memory.
             prompt = generate_prompt("internal/integrate", (internalmem, working_memory, ai_response, utils.internalLength(), ))
             await asyncio.get_event_loop().run_in_executor(None, utils.updateInternal, 1, prompt, parameters.internal_capacity)
@@ -124,7 +124,7 @@ async def subthink():
             lastsub += 1
             if lastsub == parameters.subs:
                 lastsub = 0
-            data.save()
+
             data.locked = False
             await asyncio.sleep(parameters.subpause)
         await asyncio.sleep(0)

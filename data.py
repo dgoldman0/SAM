@@ -38,7 +38,7 @@ def setConversationWorkingMen(name, memory):
 def appendHistory(mem_id, history):
     global database
     cur = database.cursor()
-    cur.execute("INSERT INTO HISTORY (mem_id, memory) VALUES (?, ?);", (mem_id, memory, ))
+    cur.execute("INSERT INTO HISTORY (mem_id, memory) VALUES (?, ?);", (mem_id, history, ))
     database.commit()
 
 def appendMemory(memory):
@@ -143,6 +143,7 @@ def init():
             prompt = generate_prompt("membootstrap", ())
             memory_internal = call_openai(prompt, 1550, temp = 0.9)
             appendMemory(memory_internal)
+            appendHistory(1, memory_internal)
 
             for i in range(parameters.subs):
                 print("Bootstrapping subconscious(" + str(i) + ")...")
@@ -153,9 +154,6 @@ def init():
         else:
             raise Exception("Unknown Error")
 
-# Just keeping until I remove all instances of calls
-def save():
-    pass
 # Stub for training feature. Will train and then update the model info
 def train(pairs):
     pass

@@ -71,7 +71,6 @@ async def converse(name, socket):
                         lines = lines[1:]
                         working_memory = '\n\n'.join(lines)
                     data.setConversationWorkingMem(name, working_memory)
-                    data.save()
                 elif msg.startswith('COMMAND:'):
                     command = msg[8:]
                     if message == "memory":

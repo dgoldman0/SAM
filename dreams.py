@@ -13,7 +13,7 @@ async def dream():
     # Keep track of the last thought to give very limited working memory.
     data.set_dreaming(True)
     print ("A")
-    data.save()
+    
     print("Starting\n" + data.memory_internal + "\n")
     num_of_dreams = 5
     if data.first:
@@ -43,5 +43,5 @@ async def dream():
     print("Ending\n" + data.memory_internal + "\n")
     # Train based off of these pairs.
     data.train(pairs);
-    data.save()
+    
     data.set_dreaming(False)

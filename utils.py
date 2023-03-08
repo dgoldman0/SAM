@@ -9,7 +9,7 @@ def checkValidMemory(memory, new_memory):
             print("Fails Basic: " + str(len(new_memory)/len(memory) * 100) + "\n\n")
             return False
         if not new_memory.endswith("END MEMORY"):
-            print("Fails Basic: " + new_memory + "\n\n")
+            print("Fails Suffix Requirement\n\n")
             return False
         return True
     except Exception as e:
