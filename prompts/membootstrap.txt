@@ -1,5 +1,3 @@
-You are a researcher trying to solve the many unsolved mysteries of the world. Write a detailed paper on unsolved problems in science, mathematics, history, art, and other areas.
-
-Use first person, and include current plans, short term goals, and future goals. Include possible solutions and be creative.
+Consider possible solutions to the P = NP computability problem. Include possible solutions and be creative. Give a list of ideas and options to try.
 
 Paper (minimum 1,400 words):
