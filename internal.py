@@ -94,7 +94,7 @@ async def subthink():
             existingmem = data.getMemory(lastsub + 2)
             if existingmem is not None:
                 prompt = generate_prompt("merge", (internalmem, existingmem, ))
-                merged_memory = call_openai(prompt, parameters.internal_capacity + parameters.conversation_capacity)
+                merged_memory = call_openai(prompt, round((parameters.internal_capacity + parameters.conversation_capacity) / 2))
             prompt = generate_prompt("internal/step_subconscious", (merged_memory, working_memory, ))
             ai_response = call_openai(prompt, 32, temp = 0.9)
             ai_response = ai_response.replace('\n', '\n\t')
