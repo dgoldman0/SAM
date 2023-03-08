@@ -35,6 +35,12 @@ def setConversationWorkingMen(name, memory):
     global working_memory
     working_memory[name] = memory
 
+def appendHistory(mem_id, history):
+    global database
+    cur = database.cursor()
+    cur.execute("INSERT INTO HISTORY (mem_id, memory) VALUES (?, ?);", (mem_id, memory, ))
+    database.commit()
+
 def appendMemory(memory):
     global database
     cur = database.cursor()
@@ -121,6 +127,8 @@ def init():
             cur.execute("INSERT INTO USERS (username, display_name, passwd, salt, admin) VALUES (?, ?, ?, ?, ?);", (username, "System Administrator", password, salt, True))
             # Create internal memory table. mem_id = 0 is conscious, and all others are subconscious layers
             cur.execute("CREATE TABLE INTERNALMEM(mem_id INTEGER PRIMARY KEY NOT NULL, memory TEXT DEFAULT '');");
+            # Create persistent memory history
+            cur.execute("CREATE TABLE HISTORY(hist_id INTEGER PRIMARY KEY NOT NULL, mem_id INT NOT NULL, memory TEXT NOT NULL DEFAULT '')")
             # User memory
             cur.execute("CREATE TABLE USERMEM(mem_id INTEGER PRIMARY KEY NOT NULL, username TEXT UNIQUE NOT NULL, memory TEXT DEFAULT '');")
 
@@ -128,7 +136,6 @@ def init():
             cur.execute("CREATE TABLE INTERNALWMEM(mem_id INTEGER PRIMARY KEY NOT NULL, memory TEXT DEFAULT '');");
             # User working memory
             cur.execute("CREATE TABLE USERWMEM(mem_id INTEGER PRIMARY KEY NOT NULL, username TEXT UNIQUE NOT NULL, memory TEXT DEFAULT '');")
-
             database.commit()
 
             # Initialize memory

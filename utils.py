@@ -23,7 +23,9 @@ def updateInternal(mem_id, prompt, capacity):
         output = call_openai(prompt, capacity).strip().strip('.')
         if not checkValidMemory(internalmem, output):
             output = ""
-    data.setMemory(mem_id, output.strip("END MEMORY"))
+    cleaned = output.strip("END MEMORY")
+    data.setMemory(mem_id, cleaned)
+    data.appendHistory(mem_id, cleaned)
     print("Finished...\n")
     return output
 
