@@ -23,11 +23,6 @@ def notify_disconnect(name):
     working_memory += notice + "\n\n"
 
 async def think():
-    if data.workingMemoryCount() == 0:
-        print("Bootstrapping...")
-        prompt = generate_prompt("internal/bootstrap_working", (data.memory_internal, ))
-        bootstrap = call_openai(prompt, 128, temp = 0.85).replace('\n', '\n\t')
-        data.appendWorkingMemory(bootstrap)
     print("Thinking...")
     thoughts_since_dream = 0
     while True:
