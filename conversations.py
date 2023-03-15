@@ -8,6 +8,8 @@ import parameters
 
 server = None
 
+# Alter code to have one single group chat.
+
 def init(server_module):
     global server
     server = server_module

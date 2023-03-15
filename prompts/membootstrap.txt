@@ -1,5 +1,5 @@
-Make up a fictional personality profile for a generic artificial intelligence.
+Make up a fictional personality profile for a generic artificial intelligence. The personality profile must meet the following key features.
 
-Key features: {} 
+Key features: {}
 
 Profile (minimum 1,400 words):
