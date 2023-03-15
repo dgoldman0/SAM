@@ -140,7 +140,7 @@ def init():
 
             # Initialize memory
             print("Bootstrapping memory...")
-            prompt = generate_prompt("membootstrap", ())
+            prompt = generate_prompt("membootstrap", (parameters.features, ))
             memory_internal = call_openai(prompt, 1550, temp = 0.9)
             appendMemory(memory_internal)
             appendHistory(1, memory_internal)

@@ -6,8 +6,6 @@ Current chat history:
 {}
 END CURRENT THOUGHTS
 
-Expand the paper in "current information" by implicitly incorporating the ideas extracted from the following message and your response, and how they relate to the existing chat history. Retain important information, and terminate with "END MEMORY" by itself on a new line
-
 New message from {}: {}
 
 Your response: {}

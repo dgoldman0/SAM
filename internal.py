@@ -57,14 +57,8 @@ async def think():
                 n = len(lines) - 30
                 lines = lines[n:]
                 working_memory = '\n\n'.join(lines)
-            thoughts_since_dream += 1
-            thoughts_to_dream = 50
 
             data.setWorkingMemory(1, working_memory)
-
-            if thoughts_since_dream == thoughts_to_dream:
-                thoughts_since_dream = 0
-#                await dreams.dream()
 
             data.locked = False
             await asyncio.sleep(parameters.thinkpause)

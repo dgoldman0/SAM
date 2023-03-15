@@ -4,6 +4,10 @@ SAM is an attempt at digital sentience. The current version of SAM attempts to c
 
 It has a built in chat interface, much like the base version, and has a number of built in system commands accessible by SAM. However, in current testing, SAM has yet to figure out how to consistently utilize them. Additionally, the code is still buggy when it comes to the chat interface, as it keeps timing out. Correcting that issue is likely an easy asyncio fix.
 
+## Collab Branch
+
+This branch is different from the core branch in that the primary function is not to maintain higher order consciousness but to maintain effective collaboration between users.
+
 ## Thought Process
 
 The current system uses OpenAI's recent gpt-3.5-turbo model, which is much less expensive and much faster. The system maintains an internal conscious monologue and multiple subconscious monologues, all of which share the same working memory.
