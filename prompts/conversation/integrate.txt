@@ -1,6 +1,6 @@
-Current Information (paper format):
+Current Personality:
 {}
-END INFORMATION
+END PERSONALITY
 
 Current chat history:
 {}
@@ -12,6 +12,8 @@ New message from {}: {}
 
 Your response: {}
 
-Approximate paper length: {} words
+Alter the personality profile in "current personality" by implicitly incorporating the ideas presented in the new message and your response, and how they relate to the existing dialogue. Retain important information, and terminate with "END MEMORY" by itself on a new line
 
-Revised Information:
+Approximate personality profile length: {} words
+
+Revised Profile:

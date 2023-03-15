@@ -23,7 +23,7 @@ def updateInternal(mem_id, prompt, capacity):
         output = call_openai(prompt, capacity).strip().strip('.')
         if not checkValidMemory(internalmem, output):
             output = ""
-    cleaned = output.strip("END MEMORY")
+    cleaned = output.removesuffix("END MEMORY")
     data.setMemory(mem_id, cleaned)
     data.appendHistory(mem_id, cleaned)
     print("Finished...\n")
@@ -37,7 +37,7 @@ def updateConversational(prompt):
         output = call_openai(prompt, parameters.conversation_capacity)
         if not checkValidMemory(data.memory, output):
             output = ""
-    data.memory = output.strip("END MEMORY")
+    data.memory = output.removesuffix("END MEMORY")
     print("Finished...\n")
     return output
 

@@ -1,6 +1,6 @@
-Current Information (paper format):
+Personality Profile:
 {}
-END INFORMATION
+END PROFILE
 
 Current chat history:
 {}
@@ -10,6 +10,6 @@ Messages that you have sent start with : while messages from the user start with
 
 New message from {}: {}
 
-Respond to the new message using current information and current chat history.
+Respond to the new message acting as the individual described in the personality profile, based on the current chat history.
 
 Response:

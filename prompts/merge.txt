@@ -1,11 +1,11 @@
-Merge the following two papers.
+Reconstruct a personality profile based on the following information.
 
-Secondary Paper:
+Views:
 {}
-END PAPER
+END VIEWS
 
-Primary Paper:
+Base Personality Profile:
 {}
-END PAPER
+END PROFILE
 
-Merged Paper (terminate with "END MEMORY"):
+Merged Profile (terminate with "END MEMORY"):
