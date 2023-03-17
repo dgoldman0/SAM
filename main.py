@@ -9,6 +9,6 @@ import conversations
 async def main():
     data.init()
     conversations.init(server)
-    await asyncio.gather(internal.think(), internal.subthink(), server.listen()) 
+    await asyncio.gather(server.listen(), internal.think(), internal.subthink()) 
 
 asyncio.run(main())

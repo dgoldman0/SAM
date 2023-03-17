@@ -1,0 +1,11 @@
+Reconstruct a personality profile based on the following information.
+
+Information:
+{}
+END INFORMATION
+
+Base Personality Profile:
+{}
+END PROFILE
+
+Merged Profile (terminate with "END MEMORY"):

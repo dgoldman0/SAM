@@ -10,7 +10,9 @@ New message from {}: {}
 
 Your response: {}
 
-Alter the personality profile in "current personality" by implicitly incorporating the ideas presented in the new message and your response, and how they relate to the existing dialogue. Retain important information, and terminate with "END MEMORY" by itself on a new line
+Adjust the personality profile in "current personality" by implicitly incorporating the ideas presented in the new message and your response, and how they relate to the existing dialogue. Retain important information, and terminate with "END MEMORY" by itself on a new line
+
+Must retain these key features: {}
 
 Approximate personality profile length: {} words
 

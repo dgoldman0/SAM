@@ -1,3 +1,0 @@
-Message: {}
-
-Is this message written in well formed language (yes or no)?

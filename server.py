@@ -6,15 +6,18 @@ import bcrypt
 import internal
 
 user_connections = {}
+connections = 0
 
-def notify_disconnect(name):
-    user_connections[name] = None
-    internal.notify_disconnect(name)
+def handleDisconnect(name):
+    global connections
+    global user_connections
+    connections -= 1
+    del user_connections[name]
 
 # Should probably move to admin or something.
-async def authenticate_user(websocket):
+async def authenticateUser(websocket):
     database = data.database
-    await websocket.send("SAM Chat Interface".encode())
+    await websocket.send("SAM Collaboration System".encode())
     response = await websocket.recv()
     if response is not None:
         response = response.decode()
@@ -43,7 +46,6 @@ async def authenticate_user(websocket):
                 res = cur.execute("SELECT user_id, display_name, admin FROM users WHERE username = ? AND passwd = ?;", (username, password))
                 resp = res.fetchone()
                 if resp is not None:
-                    internal.notify_connection(username)
                     await websocket.send("WELCOME".encode())
                     if user is None:
                         return {"user_id": resp[0], "username": username, "display_name": resp[1], "admin": resp[2], "websocket": websocket}
@@ -63,8 +65,9 @@ async def authenticate_user(websocket):
                 await websocket.send("INVALID".encode())
 
 
-async def handle_login(websocket):
-    user = await authenticate_user(websocket)
+async def handleLogin(websocket):
+    global connections
+    user = await authenticateUser(websocket)
     if user is None:
         # Boot user and close connection.
         await websocket.send("AUTHFAIL".encode())
@@ -73,11 +76,19 @@ async def handle_login(websocket):
 
     username = user['username']
     user_connections.update({username: user})
+    connections += 1
+    await sendMessage("STATUS:" + username + " has connected.", user['websocket'])
     await conversations.converse(username, websocket)
+
+async def sendMessage(message, excluded = None):
+    for user in user_connections.values():
+        socket = user['websocket']
+        if socket != excluded:
+            await socket.send(message.encode())
 
 # Listen for incoming connections
 async def serve(stop):
-    async with websockets.serve(handle_login, "localhost", 9381):
+    async with websockets.serve(handleLogin, "localhost", 9381):
         await asyncio.sleep(0) # For some reason, this is needed to yield control to the thought process.
         await stop
 

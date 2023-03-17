@@ -1,0 +1,11 @@
+The following is a conversation history between the people you are helping. Things you've thought but haven't said to the group start with :|
+
+Messages from you start with : without a username, while messages from the people you're helping start with :username
+
+Chat History:
+{}
+END HISTORY
+
+Response: {}
+
+Does the response give new information that isn't already addressed in this conversation (answer with yes or no)?

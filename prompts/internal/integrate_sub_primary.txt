@@ -1,0 +1,19 @@
+The following personality is thinking to itself, and daydreaming.
+
+Current Personality:
+{}
+END PERSONALITY
+
+Current dialogue:
+{}
+END CURRENT DIALOGUE
+
+New Thought: {}
+
+Adjust the personality profile in "current personality" by implicitly incorporating the ideas presented in the new thought and how they relate to the existing dialogue. Retain important information, and terminate with "END MEMORY" by itself on a new line
+
+Must retain these key features: {}
+
+Approximate personality profile length: {} words
+
+Revised Profile:

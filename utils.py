@@ -29,18 +29,6 @@ def updateInternal(mem_id, prompt, capacity):
     print("Finished...\n")
     return output
 
-# Not updated to database format yet
-def updateConversational(prompt):
-    print("Updating...\n")
-    output = ""
-    while output == "":
-        output = call_openai(prompt, parameters.conversation_capacity)
-        if not checkValidMemory(data.memory, output):
-            output = ""
-    data.memory = output.removesuffix("END MEMORY")
-    print("Finished...\n")
-    return output
-
 # Get the approximate length of memory capacity in words
 def internalLength():
     return round(parameters.internal_capacity * 4 / 3.5)

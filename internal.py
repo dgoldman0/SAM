@@ -8,26 +8,14 @@ import system
 import parameters
 import utils
 import time
-
-# Notifications don't update internal memory model. It just adds to the working memory, for now anyway.
-def notify_connection(name):
-    global working_memory
-    notice = "system: " + name + " has connected."
-    print(notice + "\n")
-    working_memory += notice + "\n\n"
-
-def notify_disconnect(name):
-    global working_memory
-    notice = "system: " + name + " has disconnected."
-    print(notice + "\n")
-    working_memory += notice + "\n\n"
+import server
 
 async def think():
     print("Thinking...")
     thoughts_since_dream = 0
     while True:
-        if not data.locked:
-            data.locked = True
+        if server.connections > 0:
+            await data.lock.acquire()
             working_memory = data.getWorkingMemory(1)
             internalmem = data.getMemory(1)
             # Need to fix memory access
@@ -47,7 +35,7 @@ async def think():
                 working_memory += response + "\n\n"
                 await asyncio.get_event_loop().run_in_executor(None, utils.updateInternal, 1, prompt, parameters.internal_capacity)
             else:
-                prompt = generate_prompt("internal/integrate", (internalmem, working_memory, ai_response, utils.internalLength(), ))
+                prompt = generate_prompt("internal/integrate", (internalmem, working_memory, ai_response, parameters.features, utils.internalLength(), ))
                 output = await asyncio.get_event_loop().run_in_executor(None, utils.updateInternal, 1, prompt, parameters.internal_capacity)
                 working_memory += ": " + ai_response + "\n\n"
 
@@ -60,7 +48,7 @@ async def think():
 
             data.setWorkingMemory(1, working_memory)
 
-            data.locked = False
+            data.lock.release()
             await asyncio.sleep(parameters.thinkpause)
         await asyncio.sleep(0)
 
@@ -73,8 +61,8 @@ async def subthink():
         return
 
     while True:
-        if not data.locked:
-            data.locked = True
+        if server.connections > 0:
+            await data.lock.acquire()
             working_memory = data.getWorkingMemory(lastsub + 2)
             internalmem = data.getMemory(1)
             merged_memory = internalmem
@@ -89,7 +77,7 @@ async def subthink():
             print("Subthought(" + str(lastsub) + ")\n")
             if existingmem is not None:
                 # Integrate into conversation memory, if it is not blank, otherwise create new base conversation
-                prompt = generate_prompt("internal/integrate", (existingmem, working_memory, ai_response, utils.conversationalLength(), ))
+                prompt = generate_prompt("internal/integrate_sub", (existingmem, working_memory, ai_response, utils.conversationalLength(), ))
                 await asyncio.get_event_loop().run_in_executor(None, utils.updateInternal, (lastsub + 2), prompt, parameters.conversation_capacity)
             else:
                 print("Bootstrapping subconscious memory (" + str(lastsub) + ")")
@@ -98,7 +86,7 @@ async def subthink():
                 data.appendMemory(mem)
                 data.appendHistory(lastsub + 2, mem)
             # Integrate into internal memory.
-            prompt = generate_prompt("internal/integrate", (internalmem, working_memory, ai_response, utils.internalLength(), ))
+            prompt = generate_prompt("internal/integrate_sub_primary", (internalmem, working_memory, ai_response, parameters.features, utils.internalLength(), ))
             await asyncio.get_event_loop().run_in_executor(None, utils.updateInternal, 1, prompt, parameters.internal_capacity)
             # Crashes around here on lastsub == 9
             working_memory += ": " + ai_response + "\n\n"
@@ -114,6 +102,6 @@ async def subthink():
             if lastsub == parameters.subs:
                 lastsub = 0
 
-            data.locked = False
+            data.lock.release()
             await asyncio.sleep(parameters.subpause)
         await asyncio.sleep(0)

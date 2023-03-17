@@ -23,7 +23,7 @@ $(document).ready(function() {
       msg = await event.data.text();
       switch (status) {
         case 'connecting':
-        if (msg == "SAM Chat Interface") {
+        if (msg == "SAM Collaboration System") {
           status = "salt"
           await ws.send(new Blob(["AUTH:" + username]));
         } else {
