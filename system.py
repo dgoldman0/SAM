@@ -18,6 +18,6 @@ async def processCommand(command):
         else:
             return "Invalid number of parameters. The correct format is coingecko [cryptocurrency] [base currency]."
     elif command == "datetime":
-        return "The current datetime (in day/month/year hour:minute format) is " + datetime.now(timezone.utc).strftime("%d/%m/%Y %H:%M")
+        return "The current datetime (in day/month/year hour:minute UTC format) is " + datetime.now(timezone.utc).strftime("%d/%m/%Y %H:%M")
     else:
         return "Unknown command."

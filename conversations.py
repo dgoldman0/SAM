@@ -6,6 +6,7 @@ import dreams
 import utils
 import parameters
 import system
+import random
 
 server = None
 
@@ -29,38 +30,48 @@ async def converse(name, socket):
             if msg.startswith("MSG:"):
                 message = msg[4:]
                 print("Received message: " + message + '\n')
+
                 # Check to see if an external command should be called
                 prompt = generate_prompt("conversation/check_external", (memory, working_memory, name, message, ))
                 command = call_openai(prompt, 128)
-                print("Command: " + command)
-                result = await system.processCommand(command)
-                working_memory += "||" + result + "\n\n"
-                print("Result: " + result)
+                if not command.lower().startswith("none"):
+                    print("Command: " + command)
+                    result = await system.processCommand(command)
+                    working_memory += "||" + result + "\n\n"
+                    print("Result: " + result)
+
                 # Use merged memory to generate conversation response.
                 prompt = generate_prompt("conversation/respond", (memory, working_memory, name, message, ))
                 ai_response = call_openai(prompt, 128, 0.6, "gpt-4")
                 print("Response: " + ai_response + '\n')
 
-                # Integrate into internal memory.
-                prompt = generate_prompt("conversation/integrate", (memory, working_memory, name, message, ai_response,  parameters.features, utils.internalLength(), ))
-
-                await asyncio.get_event_loop().run_in_executor(None, utils.updateInternal, 1, prompt, parameters.internal_capacity)
+                # Prepare integration statement
+                integration_prompt = generate_prompt("conversation/integrate", (memory, working_memory, name, message, ai_response, parameters.features, utils.internalLength(), ))
 
                 working_memory += name + ": " + message.replace('\n', '\n\t') + "\n\n"
 
                 # Decide whether to add to conversation
                 pertinent = False
                 prompt = generate_prompt("conversation/check_pertinent", (working_memory, ai_response, ))
-                resp = call_openai(prompt, 10)
+                resp = call_openai(prompt, 12)
                 print(resp)
-                if (resp.lower().startswith("yes")):
+                if (resp.lower().startswith("very")):
                     pertinent = True
+                elif (resp.lower().startswith("well")):
+                    roll = random.randint(0, 19)
+                    pertinent = roll > 4
+                elif (resp.lower().startswith("somewhat")):
+                    roll = random.randint(0, 19)
+                    pertinent = roll > 14
 
                 if pertinent:
                     working_memory += ": " + ai_response.replace('\n', '\n\t') + "\n\n"
                     await server.sendMessage("MSG:" + ai_response)
                 else:
                     working_memory += "|: " + ai_response.replace('\n', '\n\t') + "\n\n"
+
+                # Execute integration
+                await asyncio.get_event_loop().run_in_executor(None, utils.updateInternal, 1, integration_prompt, parameters.internal_capacity)
 
                 # Cut last line of old memory.
                 lines = working_memory.split('\n\n')

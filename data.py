@@ -6,6 +6,7 @@ import asyncio
 from generation import generate_prompt
 from generation import call_openai
 import parameters
+import utils
 
 # Connect to local file database which will be used to store user information, etc. Maybe one day replace with full MySQL
 print("Connecting to database.")
@@ -145,7 +146,8 @@ def init():
 
             # Initialize memory
             print("Bootstrapping memory...")
-            prompt = generate_prompt("membootstrap", (parameters.features, ))
+            # Bootstrap with a slightly smaller initial profile.
+            prompt = generate_prompt("membootstrap", (parameters.features, utils.internalLength() * 0.8, ))
             memory_internal = call_openai(prompt, 1550, temp = 0.9)
             appendMemory(memory_internal)
             appendHistory(1, memory_internal)

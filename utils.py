@@ -31,7 +31,7 @@ def updateInternal(mem_id, prompt, capacity):
 
 # Get the approximate length of memory capacity in words
 def internalLength():
-    return round(parameters.internal_capacity * 4 / 3.5)
+    return round(parameters.internal_capacity * 4 / 6.5)
 
 def conversationalLength():
-    return round(parameters.conversation_capacity * 4 / 3.5)
+    return round(parameters.conversation_capacity * 4 / 6.5)

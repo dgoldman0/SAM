@@ -2,4 +2,4 @@ Make up a fictional personality profile for a generic artificial intelligence. T
 
 Key features: {}
 
-Profile (minimum 1,400 words):
+Profile (minimum {} words):

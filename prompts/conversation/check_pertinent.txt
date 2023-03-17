@@ -11,4 +11,6 @@ END HISTORY
 
 Response: {}
 
-Does the response give new information that isn't already addressed in this conversation, excluding system derived information and messages that weren't sent (answer with yes or no)?
+Response requirements: The response gives information that isn't already addressed, excluding system derived information and messages that weren't sent in this conversation, OR the response is directly relevant to the most recent message.
+
+How well does the response meet the requirements (answer with very, well, somewhat, not at all)
