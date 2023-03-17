@@ -16,7 +16,7 @@ def init(server_module):
     global server
     server = server_module
 
-# External dialogue
+# Handle external dialogue. Currently set up so that internal thought processes will only go through one conscious and one subconscious cycle before blocking for the next incoming message. 
 async def converse(name, socket):
     global server
     # Need to persist working memory for each user across disconnects.
