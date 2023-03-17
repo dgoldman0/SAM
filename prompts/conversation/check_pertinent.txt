@@ -1,6 +1,9 @@
-The following is a conversation history between the people you are helping. Things you've thought but haven't said to the group start with :|
+The following is a conversation history between the people you are helping.
 
-Messages from you start with : without a username, while messages from the people you're helping start with :username
+Messages that you have thought about sending but didn't send start with |:
+Messages that you have sent start with :
+Messages from a user start with : followed directly by their username
+System derived information starts with ||
 
 Chat History:
 {}
@@ -8,4 +11,4 @@ END HISTORY
 
 Response: {}
 
-Does the response give new information that isn't already addressed in this conversation (answer with yes or no)?
+Does the response give new information that isn't already addressed in this conversation, excluding system derived information and messages that weren't sent (answer with yes or no)?

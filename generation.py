@@ -15,13 +15,13 @@ def generate_prompt(job, parameters = None):
         return template
     return wrapper(template.format, parameters)
 
-def call_openai(prompt, max_tokens = 256, temp = 0.7):
+def call_openai(prompt, max_tokens = 256, temp = 0.7, model = "gpt-3.5-turbo"):
     global token_use
     response = None
     while response is None:
         try:
             completion = openai.ChatCompletion.create(
-              model="gpt-3.5-turbo",
+              model=model,
               max_tokens=max_tokens,
               temperature = temp,
               messages=[

@@ -23,21 +23,9 @@ async def think():
             ai_response = call_openai(prompt, 32, temp = 0.85)
             ai_response = ai_response.replace('\n', '\n\t')
             print("Thought: " + ai_response + "\n")
-            # Check if there's a command to process.
-            if ai_response.lower().startswith("command:"):
-                command = ai_response[8:]
-                response = await system.process_command(command)
-                response = response.replace('\n', '\n\t')
-                prompt = generate_prompt("internal/integrate_command", (internalmem, working_memory, command, response, utils.internalLength(), ))
-                # Indent new lines to ensure that the system can tell the difference between a multiline message and two lines.
-                response = 'system: ' + response
-                working_memory += ": " + ai_response + "\n\n"
-                working_memory += response + "\n\n"
-                await asyncio.get_event_loop().run_in_executor(None, utils.updateInternal, 1, prompt, parameters.internal_capacity)
-            else:
-                prompt = generate_prompt("internal/integrate", (internalmem, working_memory, ai_response, parameters.features, utils.internalLength(), ))
-                output = await asyncio.get_event_loop().run_in_executor(None, utils.updateInternal, 1, prompt, parameters.internal_capacity)
-                working_memory += ": " + ai_response + "\n\n"
+            prompt = generate_prompt("internal/integrate", (internalmem, working_memory, ai_response, parameters.features, utils.internalLength(), ))
+            output = await asyncio.get_event_loop().run_in_executor(None, utils.updateInternal, 1, prompt, parameters.internal_capacity)
+            working_memory += ": " + ai_response + "\n\n"
 
             # Cut last line of old memory.
             lines = working_memory.split('\n\n')

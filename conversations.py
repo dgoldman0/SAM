@@ -5,6 +5,7 @@ import data
 import dreams
 import utils
 import parameters
+import system
 
 server = None
 
@@ -28,9 +29,16 @@ async def converse(name, socket):
             if msg.startswith("MSG:"):
                 message = msg[4:]
                 print("Received message: " + message + '\n')
+                # Check to see if an external command should be called
+                prompt = generate_prompt("conversation/check_external", (memory, working_memory, name, message, ))
+                command = call_openai(prompt, 128)
+                print("Command: " + command)
+                result = await system.processCommand(command)
+                working_memory += "||" + result + "\n\n"
+                print("Result: " + result)
                 # Use merged memory to generate conversation response.
                 prompt = generate_prompt("conversation/respond", (memory, working_memory, name, message, ))
-                ai_response = call_openai(prompt, 128)
+                ai_response = call_openai(prompt, 128, 0.6, "gpt-4")
                 print("Response: " + ai_response + '\n')
 
                 # Integrate into internal memory.

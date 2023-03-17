@@ -1,0 +1,24 @@
+Personality Profile:
+{}
+END PROFILE
+
+Current chat history:
+{}
+END CHAT HISTORY
+
+Messages that you have thought about sending but didn't send start with |:
+Messages that you have sent start with :
+Messages from a user start with : followed directly by their username
+System derived information starts with ||
+
+New message from {}: {}
+
+Based on the new message and the chat history, choose one of the following system commands
+
+System Commands:
+
+NONE - select none if there is no need for external information at this time
+DATETIME - get the current date and time
+COINGECKO [cryptocurrency] [base currency] - give the current price of the cryptocurrency in the base currency
+
+Command (with parameters filled in as appropriate):

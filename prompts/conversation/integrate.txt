@@ -4,7 +4,13 @@ END PERSONALITY
 
 Current chat history:
 {}
-END CURRENT THOUGHTS
+END CURRENT HISTORY
+
+Messages that you have thought about sending but didn't send start with |:
+Messages that you have sent start with :
+Messages from a user start with : followed directly by their username
+System derived information starts with ||
+
 
 New message from {}: {}
 
