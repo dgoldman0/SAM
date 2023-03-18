@@ -25,9 +25,6 @@ lock = asyncio.Lock()
 # Working memory for conversation. Should be put in DB soon.
 working_memory = ""
 
-# Working memories conscious and subconscious layers
-working_memories = []
-
 def getConversationWorkingMem():
     global working_memory
     return working_memory
