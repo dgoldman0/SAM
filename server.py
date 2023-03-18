@@ -24,10 +24,6 @@ async def authenticateUser(websocket):
         if response.startswith("AUTH:"):
             # Username is always lowercase on the server end.
             username = response[5:].lower()
-            user = user_connections.get(username)
-            # Is user['websocket'] is not None correct?
-            if user is not None and user['websocket'] is not None:
-                return user # User was already connected so let them keep their history.
             cur = database.cursor()
             res = cur.execute("SELECT blocked, salt FROM USERS WHERE username = ?;", (username, ))
             resp = res.fetchone()
