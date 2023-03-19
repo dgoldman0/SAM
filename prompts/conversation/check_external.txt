@@ -23,6 +23,10 @@ DATETIME - get the current date and time
 
 COINGECKO [cryptocurrency] [base currency] - give the current price of the cryptocurrency in the base currency
 
-TWEEPY SEARCH [json encoded parameters] - Search recent tweets. Parameters that can be passed are query (required, the twitter search query), max_results (required, minimum 10 and maximum 100), and next_token (optional, the most recent pagination token from which to start searching)
+TWEEPY SEARCH [json encoded parameters] - Search tweets from the last seven days.
+Parameters that can be passed are:
+- query: the twitter search query, required
+- max_results: the maximum number of tweets to get (minimum 10 and maximum 25), required
+- next_token: the most recent pagination token from which to start searching, optional
 
 Command (with parameters filled in as appropriate):
