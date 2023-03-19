@@ -145,7 +145,7 @@ def init():
             print("Bootstrapping memory...")
             # Bootstrap with a slightly smaller initial profile.
             prompt = generate_prompt("membootstrap", (parameters.features, utils.internalLength() * 0.8, ))
-            memory_internal = call_openai(prompt, 1550, temp = 0.9)
+            memory_internal = call_openai(prompt, 1550, temp = 0.9, model = "gpt-4")
             appendMemory(memory_internal)
             appendHistory(1, memory_internal)
 
