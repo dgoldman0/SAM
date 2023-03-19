@@ -18,6 +18,9 @@ async def processCommand(command):
         else:
             return "Invalid number of parameters. The correct format is coingecko [cryptocurrency] [base currency]."
     elif command == "datetime":
-        return "The current datetime (in day/month/year hour:minute UTC format) is " + datetime.now(timezone.utc).strftime("%d/%m/%Y %H:%M")
+        return "The current datetime (in day/month/year hour:minute UTC format) is " + datetime.now(timezone.utc).strftime("%A %d/%m/%Y %H:%M")
+    elif command.startswith("tweepy search "):
+        json_args = full_case[14:]
+        return "Twitter search with parameters: " + json_args + "\nResults:\n" + twitter.search(json_args)
     else:
         return "Unknown command."

@@ -75,7 +75,11 @@ $(document).ready(function() {
         break;
         default:
           if (msg.startsWith("MSG:")) {
-            f.innerHTML += `<br/>&lt;SAM&gt;: ${htmlEncode(msg.slice(4))}`;
+            msg = msg.slice(4);
+            converter = new showdown.Converter();
+            html = converter.makeHtml(msg);
+            console.log(html)
+            f.innerHTML += `<hr/>${html}`;
           } else if (msg.startsWith("STATUS:")){
             f.innerHTML += `<br/>System Notice: ${htmlEncode(msg.slice(7))}`;
           }

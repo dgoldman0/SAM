@@ -35,7 +35,7 @@ async def converse(name, socket):
                 command = call_openai(prompt, 128)
                 if not command.lower().startswith("none"):
                     print("Command: " + command)
-                    result = await system.processCommand(command)
+                    result = (await system.processCommand(command)).replace('\n', '\n\t')
                     working_memory += "||" + result + "\n\n"
                     print("Result: " + result)
 
@@ -52,13 +52,13 @@ async def converse(name, socket):
                 # Decide whether to add to conversation
                 pertinent = False
                 prompt = generate_prompt("conversation/check_pertinent", (working_memory, ai_response, ))
-                resp = call_openai(prompt, 12)
+                resp = call_openai(prompt, 12, 0.7, 'gpt-4')
                 print(resp)
                 if (resp.lower().startswith("very")):
                     pertinent = True
                 elif (resp.lower().startswith("well")):
                     roll = random.randint(0, 19)
-                    pertinent = roll > 4
+                    pertinent = roll > 1
                 elif (resp.lower().startswith("somewhat")):
                     roll = random.randint(0, 19)
                     pertinent = roll > 14
@@ -74,8 +74,8 @@ async def converse(name, socket):
 
                 # Cut last line of old memory.
                 lines = working_memory.split('\n\n')
-
-                if len(lines) > 50:
+                # The size of the working memory can be a lot larger since it's using GPT-4 for responses and integration
+                if len(lines) > 500:
                     lines = lines[1:]
                     working_memory = '\n\n'.join(lines)
                 data.setConversationWorkingMem(working_memory)
