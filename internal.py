@@ -9,6 +9,7 @@ import parameters
 import utils
 import time
 import server
+import random
 
 async def think():
     print("Thinking...")
@@ -41,9 +42,7 @@ async def think():
         await asyncio.sleep(0)
 
 # Run simultaneous internal monologues, without access to system resourcs, and which does not receive notifications from external info.
-lastsub = 0
 async def subthink():
-    global lastsub
     # Subcount of zero means no running subconscious.
     if parameters.subs == 0:
         return
@@ -51,6 +50,8 @@ async def subthink():
     while True:
         if server.connections > 0:
             await data.lock.acquire()
+            # Need to refactor, but now will randomly select the partition
+            lastsub = random.randint(0, parameters.subs - 1)
             working_memory = data.getWorkingMemory(lastsub + 2)
             internalmem = data.getMemory(1)
             merged_memory = internalmem
@@ -85,10 +86,6 @@ async def subthink():
                 lines = lines[n:]
                 working_memory = '\n\n'.join(lines)
             data.setWorkingMemory(lastsub + 2, working_memory)
-            # Cycle through subconsciousness
-            lastsub += 1
-            if lastsub == parameters.subs:
-                lastsub = 0
 
             data.lock.release()
             await asyncio.sleep(parameters.subpause)
