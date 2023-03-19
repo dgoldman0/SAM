@@ -43,11 +43,7 @@ async def authenticateUser(websocket):
                 resp = res.fetchone()
                 if resp is not None:
                     await websocket.send("WELCOME".encode())
-                    if user is None:
-                        return {"user_id": resp[0], "username": username, "display_name": resp[1], "admin": resp[2], "websocket": websocket}
-                    else:
-                        user['websocket'] = websocket
-                        return user
+                    return {"user_id": resp[0], "username": username, "display_name": resp[1], "admin": resp[2], "websocket": websocket}
                 else:
                     await websocket.send("INVALID".encode())
         elif response.startsiwth("REGISTER:"):

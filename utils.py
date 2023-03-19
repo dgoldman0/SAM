@@ -20,7 +20,12 @@ def updateInternal(mem_id, prompt, capacity):
     output = ""
     internalmem = data.getMemory(mem_id)
     while output == "":
-        output = call_openai(prompt, capacity).strip().strip('.')
+        temp = 0.9
+        model = "gpt-3.5-turbo"
+        if mem_id == 1:
+            temp = 0.7
+            model = "gpt-4"
+        output = call_openai(prompt, capacity, temp, model).strip().strip('.')
         if not checkValidMemory(internalmem, output):
             output = ""
     cleaned = output.removesuffix("END MEMORY")
@@ -31,7 +36,7 @@ def updateInternal(mem_id, prompt, capacity):
 
 # Get the approximate length of memory capacity in words
 def internalLength():
-    return round(parameters.internal_capacity * 4 / 6.75)
+    return round(parameters.internal_capacity * 4 / 7.5)
 
 def conversationalLength():
-    return round(parameters.conversation_capacity * 4 / 6.75)
+    return round(parameters.conversation_capacity * 4 / 7.5)

@@ -2,7 +2,6 @@ from generation import generate_prompt
 from generation import call_openai
 import asyncio
 import data
-import dreams
 import utils
 import parameters
 import system
@@ -16,7 +15,7 @@ def init(server_module):
     global server
     server = server_module
 
-# Handle external dialogue. Currently set up so that internal thought processes will only go through one conscious and one subconscious cycle before blocking for the next incoming message. 
+# Handle external dialogue. Currently set up so that internal thought processes will only go through one conscious and one subconscious cycle before blocking for the next incoming message.
 async def converse(name, socket):
     global server
     # Need to persist working memory for each user across disconnects.
@@ -42,7 +41,7 @@ async def converse(name, socket):
 
                 # Use merged memory to generate conversation response.
                 prompt = generate_prompt("conversation/respond", (memory, working_memory, name, message, ))
-                ai_response = call_openai(prompt, 128, 0.6, "gpt-4")
+                ai_response = call_openai(prompt, 512, 0.7, "gpt-4")
                 print("Response: " + ai_response + '\n')
 
                 # Prepare integration statement
