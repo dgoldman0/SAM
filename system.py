@@ -14,7 +14,10 @@ cg = CoinGeckoAPI()
 async def processCommand(command):
     full_case = command
     command = command.lower()
-    if command.startswith("coingecko "):
+    if command.startswith("respond "):
+        server.sendMessage(full_case[8:])
+        return "Responded with:" + full_case[8:]
+    elif command.startswith("coingecko "):
         params = command.split(" ")
         if len(params) == 3:
             if params[1].startswith('"') or params[2].startswith('"'):

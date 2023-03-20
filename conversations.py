@@ -30,56 +30,63 @@ async def converse(name, socket):
                 now = system.now()
                 message = msg[4:]
                 print("Received message: " + message + '\n')
+                working_memory += name + ": " + message.replace('\n', '\n\t') + "\n\n"
 
                 # Grab external information
                 done = False
-                capacity = 6000
+                capacity = 10000
                 iterations = 0
-                while not done and capacity > 0 and iterations < 5:
+                temp = ""
+                while not done and capacity > 0 and iterations < 15:
                     iterations += 1
-                    prompt = generate_prompt("conversation/check_external", (memory, working_memory, now, name, message, capacity, ))
+                    prompt = generate_prompt("conversation/check_external", (memory, working_memory + "\n\n" + temp, now, name, message, capacity, ))
                     command = call_openai(prompt, 128, 0.7, 'gpt-4')
                     if not command.lower().startswith("none"):
                         print("Command: " + command)
                         result = (await system.processCommand(command)).replace('\n', '\n\t')
                         capacity = capacity - len(result)
-                        working_memory += "||" + result + "\n\n"
+                        temp += "||" + result + "\n\n"
                         print("Result: " + result)
                     else:
                         done = True
                 print("---Done Adding Information---")
+
                 # Use merged memory to generate conversation response.
-                prompt = generate_prompt("conversation/respond", (memory, working_memory, now, name, message, ))
-                ai_response = call_openai(prompt, 512, 0.7, "gpt-4")
-                print("Response: " + ai_response + '\n')
+#                prompt = generate_prompt("conversation/respond", (memory, working_memory + "\n\n" + temp, now, name, message, ))
+#                ai_response = call_openai(prompt, 512, 0.7, "gpt-4")
+#                print("Response: " + ai_response + '\n')
 
                 # Prepare integration statement
-                integration_prompt = generate_prompt("conversation/integrate", (memory, working_memory, now, name, message, ai_response, parameters.features, utils.internalLength(), ))
+#                integration_prompt = generate_prompt("conversation/integrate", (memory, working_memory + "\n\n" + temp, now, name, message, ai_response, parameters.features, utils.internalLength(), ))
 
-                working_memory += name + ": " + message.replace('\n', '\n\t') + "\n\n"
+                if len(temp) > 0:
+                    prompt = generate_prompt("conversation/summarize", (temp, ))
+                    summary = call_openai(prompt, 2048, 0.7, "gpt-4")
+                    print("Summary: " + summary + "\n")
+                    working_memory += "\n\n||" + summary + "\n\n"
 
                 # Decide whether to add to conversation
-                pertinent = False
-                prompt = generate_prompt("conversation/check_pertinent", (working_memory, ai_response, ))
-                resp = call_openai(prompt, 12, 0.7, 'gpt-4')
-                print(resp)
-                if (resp.lower().startswith("very")):
-                    pertinent = True
-                elif (resp.lower().startswith("well")):
-                    roll = random.randint(0, 19)
-                    pertinent = roll > 1
-                elif (resp.lower().startswith("somewhat")):
-                    roll = random.randint(0, 19)
-                    pertinent = roll > 14
+#                pertinent = False
+#                prompt = generate_prompt("conversation/check_pertinent", (working_memory, ai_response, ))
+#                resp = call_openai(prompt, 12, 0.7, 'gpt-4')
+#                print(resp)
+#                if (resp.lower().startswith("very")):
+#                    pertinent = True
+#                elif (resp.lower().startswith("well")):
+#                    roll = random.randint(0, 19)
+#                    pertinent = roll > 1
+#                elif (resp.lower().startswith("somewhat")):
+#                    roll = random.randint(0, 19)
+#                    pertinent = roll > 14
 
-                if pertinent:
-                    working_memory += ": " + ai_response.replace('\n', '\n\t') + "\n\n"
-                    await server.sendMessage("MSG:" + ai_response)
-                else:
-                    working_memory += "|: " + ai_response.replace('\n', '\n\t') + "\n\n"
+#                if pertinent:
+#                    working_memory += ": " + ai_response.replace('\n', '\n\t') + "\n\n"
+#                    await server.sendMessage("MSG:" + ai_response)
+#                else:
+#                    working_memory += "|: " + ai_response.replace('\n', '\n\t') + "\n\n"
 
                 # Execute integration
-                await asyncio.get_event_loop().run_in_executor(None, utils.updateInternal, 1, integration_prompt, parameters.internal_capacity)
+#                await asyncio.get_event_loop().run_in_executor(None, utils.updateInternal, 1, integration_prompt, parameters.internal_capacity)
 
                 # Cut last line of old memory.
                 lines = working_memory.split('\n\n')

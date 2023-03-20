@@ -25,12 +25,15 @@ System Commands (commands and arguments are separated by spaces):
 
 NONE - No need for additional system interaction and ready to move to response
 
-YELP [term] [lat] [lon] - get yelp results for the given search term in the area around the given latitude and longitude
+RESPOND [message] - Give a response to the user(s)
+
+YELP [term] [lat] [lon] - get yelp results for the given search term within approximately 10km around the given latitude and longitude, term should be URL encoded
 
 WEATHER [lat] [lon] - get the current weather for the desired location, units are in metric
 
-NEWS [json encoded parameters] - get news information
-Parameter Details:
+NEWS [parameters] - get news information
+Parameters should be JSON encapsulated.
+Parameters that can be included are:
 query - URL encoded search query, required
 since - include articles published since this date, required
 until - include articles published until this date,required
@@ -41,10 +44,13 @@ COINGECKO [comma separated list of cryptocurrencies] [comma separated list of ba
 
 TWEEPY TWEET [message] - tweet a message (not functional yet)
 
-TWEEPY SEARCH [json encoded parameters] - Search tweets from the last seven days.
-Parameters that can be passed are:
+TWEEPY SEARCH [parameters] - Search tweets from the last seven days.
+Parameters should be JSON encapsulated.
+Parameters that can be included are:
 - query: the twitter search query, required
 - max_results: the maximum number of tweets to get (minimum 10 and maximum 25), required
 - next_token: the most recent pagination token from which to start searching, optional
 
-Command (with parameters filled in as appropriate) or NONE:
+Choose one command at a time. After the command is executed, this query will be repeated, until NONE is chosen.
+
+Command (construct command like running a command on the command line):

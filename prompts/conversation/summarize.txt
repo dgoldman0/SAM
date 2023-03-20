@@ -1,0 +1,9 @@
+The following is a set of system derived information, with each execution result starting with ||
+
+System Information:
+{}
+END SYSTEM INFORMATION
+
+Summarize this information in under 8,000 characters.
+
+Summary:
