@@ -14,3 +14,4 @@ def get_nonce():
     nonce = web3.eth.getTransactionCount(from_account)
 
 def check_gas(tx):
+    pass

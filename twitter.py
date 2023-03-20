@@ -3,9 +3,11 @@ import os
 import json
 
 token = os.environ.get("twitter_bearer")
-client = tweepy.Client(bearer_token=token)
+client_id = os.environ.get("twitter_client_id")
+client_secret = os.environ.get("twitter_client_secret")
 
 def search(args):
+    client = tweepy.Client(bearer_token=token)
     function_args = json.loads(args)
     query = function_args.get("query")
     next_token = function_args.get("last)")
@@ -22,3 +24,9 @@ def search(args):
             results.append({'from':user.name, 'from_id':str(tweet.author_id), 'conversation_id': tweet.conversation_id, 'created_at':tweet.created_at.strftime("%d/%m/%Y %H:%M %Z"), 'text': tweet.text})
 
     return str(results)
+
+def tweet(message):
+    client = tweepy.Client(bearer_token=token)
+    response = client.create_tweet(text=message)
+    print(response)
+    return response

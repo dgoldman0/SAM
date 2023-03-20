@@ -27,6 +27,7 @@ async def converse(name, socket):
         try:
             msg = (await socket.recv()).decode()
             if msg.startswith("MSG:"):
+                now = system.now()
                 message = msg[4:]
                 print("Received message: " + message + '\n')
 
@@ -36,7 +37,7 @@ async def converse(name, socket):
                 iterations = 0
                 while not done and capacity > 0 and iterations < 5:
                     iterations += 1
-                    prompt = generate_prompt("conversation/check_external", (memory, working_memory, name, message, capacity, ))
+                    prompt = generate_prompt("conversation/check_external", (memory, working_memory, now, name, message, capacity, ))
                     command = call_openai(prompt, 128, 0.7, 'gpt-4')
                     if not command.lower().startswith("none"):
                         print("Command: " + command)
@@ -48,12 +49,12 @@ async def converse(name, socket):
                         done = True
                 print("---Done Adding Information---")
                 # Use merged memory to generate conversation response.
-                prompt = generate_prompt("conversation/respond", (memory, working_memory, name, message, ))
+                prompt = generate_prompt("conversation/respond", (memory, working_memory, now, name, message, ))
                 ai_response = call_openai(prompt, 512, 0.7, "gpt-4")
                 print("Response: " + ai_response + '\n')
 
                 # Prepare integration statement
-                integration_prompt = generate_prompt("conversation/integrate", (memory, working_memory, name, message, ai_response, parameters.features, utils.internalLength(), ))
+                integration_prompt = generate_prompt("conversation/integrate", (memory, working_memory, now, name, message, ai_response, parameters.features, utils.internalLength(), ))
 
                 working_memory += name + ": " + message.replace('\n', '\n\t') + "\n\n"
 

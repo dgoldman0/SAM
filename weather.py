@@ -5,7 +5,6 @@ import os
 
 # ---------- FREE API KEY examples ---------------------
 token = os.environ.get("weather_key")
-print(token)
 owm = OWM(token)
 mgr = owm.weather_manager()
 

@@ -1,4 +1,4 @@
-Make up a fictional personality profile for a generic artificial intelligence. The personality profile must meet the following key features.
+Make up a fictional personality profile for an assistant. The personality profile must meet the following key features.
 
 Key features: {}
 
