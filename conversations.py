@@ -30,15 +30,23 @@ async def converse(name, socket):
                 message = msg[4:]
                 print("Received message: " + message + '\n')
 
-                # Check to see if an external command should be called
-                prompt = generate_prompt("conversation/check_external", (memory, working_memory, name, message, ))
-                command = call_openai(prompt, 128)
-                if not command.lower().startswith("none"):
-                    print("Command: " + command)
-                    result = (await system.processCommand(command)).replace('\n', '\n\t')
-                    working_memory += "||" + result + "\n\n"
-                    print("Result: " + result)
-
+                # Grab external information
+                done = False
+                capacity = 6000
+                iterations = 0
+                while not done and capacity > 0 and iterations < 5:
+                    iterations += 1
+                    prompt = generate_prompt("conversation/check_external", (memory, working_memory, name, message, capacity, ))
+                    command = call_openai(prompt, 128, 0.7, 'gpt-4')
+                    if not command.lower().startswith("none"):
+                        print("Command: " + command)
+                        result = (await system.processCommand(command)).replace('\n', '\n\t')
+                        capacity = capacity - len(result)
+                        working_memory += "||" + result + "\n\n"
+                        print("Result: " + result)
+                    else:
+                        done = True
+                print("---Done Adding Information---")
                 # Use merged memory to generate conversation response.
                 prompt = generate_prompt("conversation/respond", (memory, working_memory, name, message, ))
                 ai_response = call_openai(prompt, 512, 0.7, "gpt-4")

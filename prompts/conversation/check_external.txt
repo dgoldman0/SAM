@@ -13,15 +13,17 @@ System derived information starts with ||
 
 New message from {}: {}
 
-Based on the new message and the chat history, choose one of the following system commands
+If enough information has been gathered by the system to respond to the new message, choose NONE, otherwise choose one of the following system commands.
 
-System Commands:
+There is limited working memory: {} characters of working memory remaining
 
-NONE - select none if there is no need for external information at this time
+System Actions:
 
 DATETIME - get the current date and time
 
-COINGECKO [cryptocurrency] [base currency] - give the current price of the cryptocurrency in the base currency
+WEATHER [lat] [lon] - get the current weather for the desired location, units are in metric
+
+COINGECKO [comma separated list of cryptocurrencies] [comma separated list of base currencies] - give the current price of the cryptocurrency in the base currency
 
 TWEEPY SEARCH [json encoded parameters] - Search tweets from the last seven days.
 Parameters that can be passed are:
@@ -29,4 +31,4 @@ Parameters that can be passed are:
 - max_results: the maximum number of tweets to get (minimum 10 and maximum 25), required
 - next_token: the most recent pagination token from which to start searching, optional
 
-Command (with parameters filled in as appropriate):
+Action (with parameters filled in as appropriate) or NONE:
