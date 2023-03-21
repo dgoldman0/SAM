@@ -57,6 +57,8 @@ Parameters that can be included are:
 
 IMAGE [size] [prompt] - call DALL-E and have it generate an image based on the prompt
 
-Give an outline to follow which will allow for a reasonable response to the new message.
+Employing the available commands, give a detailed plan to follow which will allow for a reasonable response to the new message.
 
-Outline:
+Keep in mind that no new messages will be received until after this round of processing is done. Therefore it is not possible the plan to include asking the user for more information and then return to processing more commands. 
+
+Detailed Plan (in paragraph form):

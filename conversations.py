@@ -49,7 +49,8 @@ async def converse(name, socket):
                         outline = call_openai(prompt, 256, 0.7, 'gpt-4')
                         print("Outline: " + outline + "\n")
                     else:
-                        prompt = generate_prompt("conversation/check_external", (memory, working_memory, temp, now, outline, name, message, capacity, ))
+                        # Does a terrible job of actually using system commands properly.
+                        prompt = generate_prompt("conversation/check_external", (now, outline, name, message, capacity, ))
                     command = call_openai(prompt, 128, 0.7, 'gpt-4')
                     if not command.lower().startswith("none"):
                         print("Command: " + command)
@@ -63,7 +64,7 @@ async def converse(name, socket):
                 print("---Done Adding Information---")
 
                 prompt = generate_prompt("conversation/respond", (memory, working_memory + "\n\n" + temp, now, name, message, ))
-                ai_response = call_openai(prompt, 512, 0.7, "gpt-4")
+                ai_response = call_openai(prompt, 1024, 0.7, "gpt-4")
                 print("Response: " + ai_response + '\n')
 
                 if len(temp) > 0:
@@ -94,7 +95,7 @@ async def converse(name, socket):
 
                 steps_since_integration += 1
 
-                # Integrate into long term memory if enough time has passed since last integration. Still need to find a way to balance long term integration, thinking, subthoughts, etc. given the incredibly slow speed of the integration function.
+                # Integrate into long term memory if enough time has passed since last integration. Still need to find a way to balance long term integration, thinking, subthoughts, etc. given the incredibly slow speed of the integration function. Using GPT itself to do the evaluation may be the best option.
                 if time.time() - last_integrated > 180 and steps_since_integration == 5:
                     # Prepare integration statement
                     integration_prompt = generate_prompt("conversation/integrate", (memory, working_memory, now, parameters.features, utils.internalLength(), ))
