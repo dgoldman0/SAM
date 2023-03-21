@@ -21,7 +21,7 @@ async def converse(name, socket):
     global server
     # Need to persist working memory for each user across disconnects.
     connected = True
-    last_integrated = time.now()
+    last_integrated = time.time()
     steps_since_integration = 0
     while connected:
         await data.lock.acquire()
@@ -40,10 +40,16 @@ async def converse(name, socket):
                 capacity = 10000
                 iterations = 0
                 temp = ""
+
                 while not done and capacity > 0 and iterations < 15:
-                    iterations += 1
-                    # Doesn't seem to what to terminate even when there's no new useful info
-                    prompt = generate_prompt("conversation/check_external", (memory, working_memory, temp, now, name, message, capacity, ))
+                    prompt = ""
+                    outline = ""
+                    if iterations == 0:
+                        prompt = generate_prompt("conversation/check_external_initial", (memory, working_memory, temp, now, name, message, capacity, ))
+                        outline = call_openai(prompt, 256, 0.7, 'gpt-4')
+                        print("Outline: " + outline + "\n")
+                    else:
+                        prompt = generate_prompt("conversation/check_external", (memory, working_memory, temp, now, outline, name, message, capacity, ))
                     command = call_openai(prompt, 128, 0.7, 'gpt-4')
                     if not command.lower().startswith("none"):
                         print("Command: " + command)
@@ -53,6 +59,7 @@ async def converse(name, socket):
                         print("Result: " + result)
                     else:
                         done = True
+                    iterations += 1
                 print("---Done Adding Information---")
 
                 prompt = generate_prompt("conversation/respond", (memory, working_memory + "\n\n" + temp, now, name, message, ))
@@ -86,15 +93,15 @@ async def converse(name, socket):
                     working_memory += "|: " + ai_response.replace('\n', '\n\t') + "\n\n"
 
                 steps_since_integration += 1
-                
-                # Integrate into long term memory if enough time has passed since last integration.
-                if time.now() - last_integrated > 180 and steps_since_integration == 5:
+
+                # Integrate into long term memory if enough time has passed since last integration. Still need to find a way to balance long term integration, thinking, subthoughts, etc. given the incredibly slow speed of the integration function.
+                if time.time() - last_integrated > 180 and steps_since_integration == 5:
                     # Prepare integration statement
                     integration_prompt = generate_prompt("conversation/integrate", (memory, working_memory, now, parameters.features, utils.internalLength(), ))
                     # Execute integration
                     await asyncio.get_event_loop().run_in_executor(None, utils.updateInternal, 1, integration_prompt, parameters.internal_capacity)
 
-                    last_integrated = time.now()
+                    last_integrated = time.time()
                     steps_since_integration = 0
                 # Cut last line of old memory.
                 lines = working_memory.split('\n\n')

@@ -57,7 +57,7 @@ async def processCommand(command):
         params = full_case.split(' ')
         return "Image generated from prompt: " + prompt + "\nResult URL: "
     else:
-        return "Unknown command: " + full_case + "\n" + "Please ensure that you did not miss any spaces and are using the correct format. If you are finished performing necessary actions, select NONE to reply and hand back program control."
+        return "Unknown command: " + full_case + "\n" + "The system uses a simple command line. If issuing a command, start with the command, followed by a space, and then the command parameters as described. Please ensure that you did not miss any spaces and are using the correct format. The NOTATION command can be used to add pertinent context that isn't executed. If you are finished performing necessary actions, select NONE to reply and hand back program control."
 
 def now():
     return datetime.now(timezone.utc).strftime("%A %d/%m/%Y %H:%M")
