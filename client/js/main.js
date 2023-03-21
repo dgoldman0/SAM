@@ -76,10 +76,8 @@ $(document).ready(function() {
         default:
           if (msg.startsWith("MSG:")) {
             msg = msg.slice(4);
-            converter = new showdown.Converter();
-            html = converter.makeHtml(msg);
-            console.log(html)
-            f.innerHTML += `<hr/>${html}`;
+            console.log(msg)
+            f.innerHTML += `<hr/>${msg}`;
           } else if (msg.startsWith("STATUS:")){
             f.innerHTML += `<br/>System Notice: ${htmlEncode(msg.slice(7))}`;
           }

@@ -10,7 +10,7 @@ New Message: {}
 
 Adjust the personality profile in "current personality" by implicitly incorporating the ideas presented in the new message and how they relate to the existing dialogue. Retain important information, and terminate with "END MEMORY" by itself on a new line
 
-Must retain these key features: {}
+Profile must retain these key features: {}
 
 Approximate personality profile length: {} words
 

@@ -13,13 +13,11 @@ System derived information starts with ||
 
 The current datetime (in day/month/year hour:minute UTC format) is {}
 
-New message from {}: {}
+Dialogue has been updated. Consider ideas and connections that may be important to remember longer, and add them to the personality profile.
 
-Your response: {}
+Terminate with "END MEMORY" by itself on a new line
 
-Adjust the personality profile in "current personality" by implicitly incorporating the ideas presented in the new message and your response, and how they relate to the existing dialogue. Retain important information, and terminate with "END MEMORY" by itself on a new line
-
-Must retain these key features: {}
+Profile must retain these key features: {}
 
 Approximate personality profile length: {} words
 

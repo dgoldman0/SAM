@@ -17,6 +17,6 @@ New message from {}: {}
 
 Respond to the new message acting as the individual described in the personality profile, based on the current chat history.
 
-Response format: just give a response without special formatting. There is no need to start with :, |:, or || or to put what you say in quotes. MUST USE MARKDOWN.
+Response format: just give a response without special formatting. There is no need to start with :, |:, or || or to put what you say in quotes. MUST USE HTML.
 
-Response (the internal system will add start sequences like |:, :, or || so there is no need to add them, must use markdown formatting):
+Response (the internal system will add start sequences like |:, :, or || so there is no need to add them, must use HTML, starting with <div>):

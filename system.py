@@ -17,6 +17,8 @@ async def processCommand(command):
     if command.startswith("respond "):
         server.sendMessage(full_case[8:])
         return "Responded with:" + full_case[8:]
+    elif command.startswith("notation "):
+        return "Temporary notation:" + full_case[9:]
     elif command.startswith("coingecko "):
         params = command.split(" ")
         if len(params) == 3:
@@ -37,18 +39,25 @@ async def processCommand(command):
         return "News search with search parameters: " + json_args + "\nResults:\n" + news.search(json_args)
     elif command.startswith("yelp "):
         params = command.split(" ")
+        if command.find('"') != -1:
+            return "YELP command does not function with quotation marks. Exclude quotation marks."
+        print(len(params))
         if len(params) == 4:
             return "Yelp results for search term " + params[1] + " @ " + params[2] + "lat, " + params[3] + "lon:" + yelp.search(params[1], str(params[2]), str(params[3]))
         else:
-            return "Invalid number of parameters. The correct format is YELP [term] [lat] [lon]"
+            return "Invalid number of parameters. The correct format is YELP [term] [lat] [lon]. As a reminder, only one command can be issued at a time."
     elif command.startswith("weather "):
         params = command.split(" ")
         if len(params) == 3:
             return "Weather for location @ " + params[1] + 'lat, ' + params[2] + 'lon: ' + weather.currentWeather(float(params[1]), float(params[2]))
         else:
             return "Invalid number of parameters. The correct format is WEATHER [lat] [lon]."
+    elif command.startswith("image "):
+        # Not working yet
+        params = full_case.split(' ')
+        return "Image generated from prompt: " + prompt + "\nResult URL: "
     else:
-        return "Unknown command: " + full_case + "\n" + "Please ensure that you did not miss any spaces and are using the correct format."
+        return "Unknown command: " + full_case + "\n" + "Please ensure that you did not miss any spaces and are using the correct format. If you are finished performing necessary actions, select NONE to reply and hand back program control."
 
 def now():
     return datetime.now(timezone.utc).strftime("%A %d/%m/%Y %H:%M")

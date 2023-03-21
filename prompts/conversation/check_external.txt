@@ -2,9 +2,13 @@ Personality Profile:
 {}
 END PROFILE
 
-Current chat history:
+Current Chat History:
 {}
 END CHAT HISTORY
+
+Current Command Results:
+{}
+END COMMAND RESULTS
 
 Messages that you have thought about sending but didn't send start with |:
 Messages that you have sent start with :
@@ -23,11 +27,11 @@ There is limited working memory: {} characters of working memory remaining
 
 System Commands (commands and arguments are separated by spaces):
 
-NONE - No need for additional system interaction and ready to move to response
+NONE - Ready to respond to the user and then hand back program control and await next message
 
-RESPOND [message] - Give a response to the user(s)
+YELP [term] [lat] [lon] - get yelp results for the given search term within approximately 10km around the given latitude and longitude, term should be URL encoded, no quotes are allowed
 
-YELP [term] [lat] [lon] - get yelp results for the given search term within approximately 10km around the given latitude and longitude, term should be URL encoded
+NOTATION [note] - Leave a temporary notation if needed while thinking out how to respond to the message
 
 WEATHER [lat] [lon] - get the current weather for the desired location, units are in metric
 
@@ -51,6 +55,8 @@ Parameters that can be included are:
 - max_results: the maximum number of tweets to get (minimum 10 and maximum 25), required
 - next_token: the most recent pagination token from which to start searching, optional
 
+IMAGE [size] [prompt] - call DALL-E and have it generate an image based on the prompt
+
 Choose one command at a time. After the command is executed, this query will be repeated, until NONE is chosen.
 
-Command (construct command like running a command on the command line):
+Command or NONE to move on to replying:
