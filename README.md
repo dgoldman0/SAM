@@ -8,6 +8,10 @@ It has a built in chat interface, much like the base version, and has a number o
 
 This branch is different from the core branch in that the primary function is not to maintain higher order consciousness but to maintain effective collaboration between users.
 
+## Default Personality
+
+The current default personality is a humorous fictional Sir Reginald von Blossomvale. This personality is stored in [reginald.db](reginald.db). Initial user information would have to be changed if using that file. Otherwise, upon initial load, the system will generate its own personality profile.
+
 ## Thought Process
 
 The current system uses OpenAI's recent gpt-3.5-turbo model, which is much less expensive and much faster. The system maintains an internal conscious monologue and multiple subconscious monologues, all of which share the same working memory.
@@ -15,6 +19,10 @@ The current system uses OpenAI's recent gpt-3.5-turbo model, which is much less 
 ## Memory
 
 This version of SAM uses a small persistent memory which is maintained as an essay. It is expected that this approach will result in a less robust consciousness than repeated fine-tuning of a base model, but it solves the high cost problem associated with it. In the future, fine-tuning could be added on top of this model, and it may be a cleaner and superior option compared to the original design.
+
+## External Commands
+
+The system is able to interact with external data by issuing system commands while waiting for a response. If API keys are filled in appropriately, it can access YELP, NEWSAPI, OPENWEATHERAPI, and others. It can also fetch content through an HTTP request, and perform a number of other tasks.
 
 ## Limitations
 
