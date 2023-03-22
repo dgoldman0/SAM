@@ -2,19 +2,19 @@ The current date and time (in day/month/year hour:minute UTC format) is {}
 
 Currently processing message from {}: {}
 
-Continue following the following procedure until complete.
+Continue following the following procedure until complete. Then choose NONE
 
 Outline of Procedure:
 {}
 END OUTLINE
 
-The assistant is currently interacting with system commands to gather information and perform tasks, that satisfy the currently processing message. After you are done interacting with the system, you can move to the response step by choosing NONE.
-
-If enough information has been gathered by the system, and enough system activities have been performed to respond to the new message, choose NONE, otherwise choose one of the following system commands.
+Current Command Results:
+{}
+END COMMAND RESULTS
 
 There is limited working memory: {} characters of working memory remaining
 
-System Commands (commands and arguments are separated by spaces):
+Only Available System Commands (commands and arguments must be separated by spaces):
 
 NONE - Ready to respond to the user and then hand back program control and await next message
 
@@ -22,7 +22,11 @@ YELP [term] [lat] [lon] - get yelp results for the given search term within appr
 
 NOTATION [note] - Leave a temporary notation if needed while thinking out how to respond to the message: this command should be used if there is a need to store intermediate information. This command should be used when preparing a statement to say after processing is finished.
 
-WEATHER [lat] [lon] - get the current weather for the desired location, units are in metric
+GET [url] - perform an HTTP get command
+
+WCURRENT [lat] [lon] - get the current weather for the desired location, units are in metric
+
+WDAY [lat] [lon] - get the seven day forecast starting with the current day
 
 NEWS [parameters - json encapsulated] - get news information
 Parameters that can be included are:
@@ -45,6 +49,6 @@ Parameters that can be included are:
 
 IMAGE [size] [prompt] - call DALL-E and have it generate an image based on the prompt
 
-Choose one command at a time. After the command is executed, this query will be repeated, until NONE is chosen.
+Continue following outlined procedure. Choose one command at a time. After the command is executed, this query will be repeated, until NONE is chosen.
 
 System Command (followed by a space and then the command's parameters) or NONE to move on to replying:

@@ -11,6 +11,7 @@ import time
 import server
 import random
 
+# What about doing a merged memory system for both concsious and subconcsious, where their respective persistent memory is updated only, rather than updating both, and that way they can cycle through simultaneously? Maybe do the same for the conscious system. This approach should be good for the core SAM system too.
 async def think():
     print("Thinking...")
     thoughts_since_dream = 0
@@ -19,7 +20,7 @@ async def think():
             await data.lock.acquire()
             working_memory = data.getWorkingMemory(1)
             internalmem = data.getMemory(1)
-            # Need to fix memory access
+            # Need to do a merged memory
             prompt = generate_prompt("internal/step_conscious", (internalmem, working_memory, ))
             ai_response = call_openai(prompt, 32, temp = 0.85)
             ai_response = ai_response.replace('\n', '\n\t')

@@ -13,7 +13,7 @@ def search(args):
     page_size = function_args.get('page_size')
     sort = function_args.get('sort')
 
-    if page_size is not None:
+    if page_size is None:
         page_size = "10"
 
     url = "https://newsapi.org/v2/everything?q=" + q

@@ -9,6 +9,3 @@ def search(term, lat, lon):
     response = requests.get(url = url, headers = {"Authorization": "Bearer " + token, "accept": "application/json"})
     data = response.json()
     return str(data)
-
-if __name__ =="__main__":
-    print(search("sushi", "41.4021", "-74.3243"))

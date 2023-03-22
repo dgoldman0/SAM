@@ -7,6 +7,8 @@ import twitter
 import weather
 import news
 import yelp
+import requests
+import html2text
 
 from pycoingecko import CoinGeckoAPI
 cg = CoinGeckoAPI()
@@ -46,16 +48,30 @@ async def processCommand(command):
             return "Yelp results for search term " + params[1] + " @ " + params[2] + "lat, " + params[3] + "lon:" + yelp.search(params[1], str(params[2]), str(params[3]))
         else:
             return "Invalid number of parameters. The correct format is YELP [term] [lat] [lon]. As a reminder, only one command can be issued at a time."
-    elif command.startswith("weather "):
+    elif command.startswith("wcurrent "):
         params = command.split(" ")
         if len(params) == 3:
-            return "Weather for location @ " + params[1] + 'lat, ' + params[2] + 'lon: ' + weather.currentWeather(float(params[1]), float(params[2]))
+            return "Current weather for location @ " + params[1] + 'lat, ' + params[2] + 'lon: ' + weather.currentWeather(float(params[1]), float(params[2]))
         else:
-            return "Invalid number of parameters. The correct format is WEATHER [lat] [lon]."
+            return "Invalid number of parameters. The correct format is WCURRENT [lat] [lon]."
+    elif command.startswith("wday "):
+        params = command.split(" ")
+        if len(params) == 3:
+            return "Seven day forecast starting with today, for location @ " + params[1] + 'lat, ' + params[2] + 'lon: ' + weather.sevenDay(float(params[1]), float(params[2]))
+        else:
+            return "Invalid number of parameters. The correct format is WDAY [lat] [lon]."
     elif command.startswith("image "):
         # Not working yet
         params = full_case.split(' ')
         return "Image generated from prompt: " + prompt + "\nResult URL: "
+    elif command.startswith("get "):
+        url = full_case[4:]
+        response = requests.get(url = url)
+        text = html2text.html2text(response.text)
+        try:
+            return "Obtained data for URL " + url + "\n" + str(text)
+        except Exception as e:
+            return "Error when obtaining data from URL: " + url + "\n" + str(e)
     else:
         return "Unknown command: " + full_case + "\n" + "The system uses a simple command line. If issuing a command, start with the command, followed by a space, and then the command parameters as described. Please ensure that you did not miss any spaces and are using the correct format. The NOTATION command can be used to add pertinent context that isn't executed. If you are finished performing necessary actions, select NONE to reply and hand back program control."
 

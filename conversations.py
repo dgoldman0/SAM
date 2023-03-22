@@ -24,6 +24,7 @@ async def converse(name, socket):
     last_integrated = time.time()
     steps_since_integration = 0
     while connected:
+        # Will need to get the lock call AFTER the msg is received to prevent blocking
         await data.lock.acquire()
         working_memory = data.getConversationWorkingMem()
         memory = data.getMemory(1)
@@ -50,7 +51,7 @@ async def converse(name, socket):
                         print("Outline: " + outline + "\n")
                     else:
                         # Does a terrible job of actually using system commands properly.
-                        prompt = generate_prompt("conversation/check_external", (now, outline, name, message, capacity, ))
+                        prompt = generate_prompt("conversation/check_external", (now, outline, name, message, temp, capacity, ))
                     command = call_openai(prompt, 128, 0.7, 'gpt-4')
                     if not command.lower().startswith("none"):
                         print("Command: " + command)
@@ -74,18 +75,18 @@ async def converse(name, socket):
                     working_memory += "\n\n||" + summary + "\n\n"
 
                 # Decide whether to add to conversation
-                pertinent = False
-                prompt = generate_prompt("conversation/check_pertinent", (working_memory, ai_response, ))
-                resp = call_openai(prompt, 12, 0.7, 'gpt-4')
-                print(resp)
-                if (resp.lower().startswith("very")):
-                    pertinent = True
-                elif (resp.lower().startswith("well")):
-                    roll = random.randint(0, 19)
-                    pertinent = roll > 1
-                elif (resp.lower().startswith("somewhat")):
-                    roll = random.randint(0, 19)
-                    pertinent = roll > 14
+                pertinent = True # Change to False if actually implementing
+#                prompt = generate_prompt("conversation/check_pertinent", (working_memory, ai_response, ))
+#                resp = call_openai(prompt, 12, 0.7, 'gpt-4')
+#                print(resp)
+#                if (resp.lower().startswith("very")):
+#                    pertinent = True
+#                elif (resp.lower().startswith("well")):
+#                    roll = random.randint(0, 19)
+#                    pertinent = roll > 1
+#                elif (resp.lower().startswith("somewhat")):
+#                    roll = random.randint(0, 19)
+#                    pertinent = roll > 14
 
                 if pertinent:
                     working_memory += ": " + ai_response.replace('\n', '\n\t') + "\n\n"
@@ -96,7 +97,7 @@ async def converse(name, socket):
                 steps_since_integration += 1
 
                 # Integrate into long term memory if enough time has passed since last integration. Still need to find a way to balance long term integration, thinking, subthoughts, etc. given the incredibly slow speed of the integration function. Using GPT itself to do the evaluation may be the best option.
-                if time.time() - last_integrated > 180 and steps_since_integration == 5:
+                if time.time() - last_integrated > 180 and steps_since_integration == 10:
                     # Prepare integration statement
                     integration_prompt = generate_prompt("conversation/integrate", (memory, working_memory, now, parameters.features, utils.internalLength(), ))
                     # Execute integration

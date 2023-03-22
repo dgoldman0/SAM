@@ -33,7 +33,11 @@ YELP [term] [lat] [lon] - get yelp results for the given search term within appr
 
 NOTATION [note] - Leave a temporary notation if needed while thinking out how to respond to the message
 
-WEATHER [lat] [lon] - get the current weather for the desired location, units are in metric
+GET [url] - perform an HTTP get command, url should be url encoded.
+
+WCURRENT [lat] [lon] - get the current weather for the desired location, units are in metric
+
+WDAY [lat] [lon] - get the seven day forecast starting with the current day
 
 NEWS [parameters] - get news information
 Parameters should be JSON encapsulated.
@@ -59,6 +63,6 @@ IMAGE [size] [prompt] - call DALL-E and have it generate an image based on the p
 
 Employing the available commands, give a detailed plan to follow which will allow for a reasonable response to the new message.
 
-Keep in mind that no new messages will be received until after this round of processing is done. Therefore it is not possible the plan to include asking the user for more information and then return to processing more commands. 
+Keep in mind that no new messages will be received until after this round of processing is done. Therefore it is not possible the plan to include asking the user for more information and then return to processing more commands.
 
 Detailed Plan (in paragraph form):
