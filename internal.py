@@ -16,7 +16,7 @@ async def think():
     print("Thinking...")
     thoughts_since_dream = 0
     while True:
-        if server.connections > 0:
+        if server.connections > 0 and data.thinking:
             await data.lock.acquire()
             working_memory = data.getWorkingMemory(1)
             internalmem = data.getMemory(1)
@@ -49,7 +49,7 @@ async def subthink():
         return
 
     while True:
-        if server.connections > 0:
+        if server.connections > 0 and data.thinking:
             await data.lock.acquire()
             # Need to refactor, but now will randomly select the partition
             lastsub = random.randint(0, parameters.subs - 1)

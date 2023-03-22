@@ -21,6 +21,7 @@ dreaming = False
 first = True
 
 lock = asyncio.Lock()
+thinking = False
 
 # Working memory for conversation. Should be put in DB soon.
 working_memory = ""

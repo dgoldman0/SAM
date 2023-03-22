@@ -100,15 +100,6 @@ async def converse(name, socket):
 
                 steps_since_integration += 1
 
-                # Integrate into long term memory if enough time has passed since last integration. Still need to find a way to balance long term integration, thinking, subthoughts, etc. given the incredibly slow speed of the integration function. Using GPT itself to do the evaluation may be the best option.
-                if time.time() - last_integrated > 180 and steps_since_integration == 10:
-                    # Prepare integration statement
-                    integration_prompt = generate_prompt("conversation/integrate", (memory, working_memory, now, parameters.features, utils.internalLength(), ))
-                    # Execute integration
-                    await asyncio.get_event_loop().run_in_executor(None, utils.updateInternal, 1, integration_prompt, parameters.internal_capacity)
-
-                    last_integrated = time.time()
-                    steps_since_integration = 0
                 # Cut last line of old memory.
                 lines = working_memory.split('\n\n')
                 # The size of the working memory can be a lot larger since it's using GPT-4 for responses and integration
@@ -116,8 +107,20 @@ async def converse(name, socket):
                     lines = lines[1:]
                     working_memory = '\n\n'.join(lines)
                 data.setConversationWorkingMem(working_memory)
-            else:
-                pass
+            elif msg.startswith("COMMAND:"):
+                command = msg[8:]
+                if command.lower().startswith("think"):
+                    try:
+                        period = int(command[6:])
+                        data.thinking = True
+                        integration_prompt = generate_prompt("conversation/integrate", (memory, working_memory, now, parameters.features, utils.internalLength(), ))
+                        await asyncio.get_event_loop().run_in_executor(None, utils.updateInternal, 1, integration_prompt, parameters.internal_capacity)
+                        data.lock.release()
+                        asyncio.sleep(period)
+                        await data.lock.acquire()
+                        data.thinking = False
+                    except Exception as e:
+                        print("Error: " + str(e))
         except Exception as e:
             print(e)
             connected = False
