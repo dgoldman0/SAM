@@ -51,7 +51,7 @@ async def converse(name, socket):
                         print("Outline: " + outline + "\n")
 
                     # Does a terrible job of actually using system commands properly.
-                    prompt = generate_prompt("conversation/check_external", (now, outline, name, message, temp, capacity, ))
+                    prompt = generate_prompt("conversation/check_external", (now, name, message, outline, temp, capacity, ))
                     command = call_openai(prompt, 256, 0.7, 'gpt-4')
                     print("Command: " + command)
                     result = (await system.processCommand(command)).replace('\n', '\n\t')
