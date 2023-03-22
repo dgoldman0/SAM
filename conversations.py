@@ -62,7 +62,6 @@ async def converse(name, socket):
                     # Checking if complete
                     prompt = generate_prompt("conversation/check_complete", (outline, temp, ))
                     check_done = call_openai(prompt, 32, 0.7, 'gpt-4')
-                    print("Done: " + check_done)
                     if (check_done.lower().startswith("yes")):
                         done = True
 

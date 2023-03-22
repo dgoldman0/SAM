@@ -18,8 +18,6 @@ Only Available System Commands (commands and arguments must be separated by spac
 
 YELP [term] [lat] [lon] - get yelp results for the given search term within approximately 10km around the given latitude and longitude, term should be URL encoded, no quotes are allowed
 
-NOTATION [note] - Leave a temporary unexecuted annotation if needed as part of the procedure
-
 GET [url] - perform an HTTP get command
 
 WCURRENT [lat] [lon] - get the current weather for the desired location, units are in metric
@@ -48,5 +46,8 @@ Parameters that can be included are:
 IMAGE [size] [prompt] - call DALL-E and have it generate an image based on the prompt
 
 Continue following outlined procedure. Choose one command at a time. After the command is executed, this query will be repeated, until the system has determined that the procedure is complete.
+
+Example commands:
+COINGECKO ETH, USD
 
 System Command (followed by a space and then the command's parameters):

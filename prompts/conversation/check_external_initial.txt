@@ -27,8 +27,6 @@ System Commands (commands and arguments are separated by spaces):
 
 YELP [term] [lat] [lon] - get yelp results for the given search term within approximately 10km around the given latitude and longitude, term should be URL encoded, no quotes are allowed
 
-NOTATION [note] - Leave a temporary unexecuted annotation if needed as part of the procedure
-
 GET [url] - perform an HTTP get command, url should be url encoded.
 
 WCURRENT [lat] [lon] - get the current weather for the desired location, units are in metric
