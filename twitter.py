@@ -2,7 +2,7 @@ import tweepy
 import os
 import json
 
-token = os.environ.get("twitter_bearer")
+token = os.environ.get("twitter_bearer_key")
 client_id = os.environ.get("twitter_client_id")
 client_secret = os.environ.get("twitter_client_secret")
 
@@ -28,7 +28,7 @@ def search(args):
         return str(results)
     except Exception as e:
         return "API Error: " + str(e)
-        
+
 def tweet(message):
     try:
         client = tweepy.Client(bearer_token=token)
