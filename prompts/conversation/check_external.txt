@@ -2,7 +2,7 @@ The current date and time (in day/month/year hour:minute UTC format) is {}
 
 Currently processing message from {}: {}
 
-Continue following the following procedure until complete. Then choose NONE
+Continue following the following procedure until complete.
 
 Outline of Procedure:
 {}
@@ -16,11 +16,9 @@ There is limited working memory: {} characters of working memory remaining
 
 Only Available System Commands (commands and arguments must be separated by spaces):
 
-NONE - Ready to respond to the user and then hand back program control and await next message
-
 YELP [term] [lat] [lon] - get yelp results for the given search term within approximately 10km around the given latitude and longitude, term should be URL encoded, no quotes are allowed
 
-NOTATION [note] - Leave a temporary notation if needed while thinking out how to respond to the message: this command should be used if there is a need to store intermediate information. This command should be used when preparing a statement to say after processing is finished.
+NOTATION [note] - Leave a temporary unexecuted annotation if needed as part of the procedure
 
 GET [url] - perform an HTTP get command
 
@@ -49,6 +47,6 @@ Parameters that can be included are:
 
 IMAGE [size] [prompt] - call DALL-E and have it generate an image based on the prompt
 
-Continue following outlined procedure. Choose one command at a time. After the command is executed, this query will be repeated, until NONE is chosen.
+Continue following outlined procedure. Choose one command at a time. After the command is executed, this query will be repeated, until the system has determined that the procedure is complete.
 
-System Command (followed by a space and then the command's parameters) or NONE to move on to replying:
+System Command (followed by a space and then the command's parameters):

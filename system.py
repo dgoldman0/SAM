@@ -73,7 +73,7 @@ async def processCommand(command):
         except Exception as e:
             return "Error when obtaining data from URL: " + url + "\n" + str(e)
     else:
-        return "Unknown command: " + full_case + "\n" + "The system uses a simple command line. If issuing a command, start with the command, followed by a space, and then the command parameters as described. Please ensure that you did not miss any spaces and are using the correct format. The NOTATION command can be used to add pertinent context that isn't executed. If you are finished performing necessary actions, select NONE to reply and hand back program control."
+        return "Unknown command: " + full_case + "\n" + "The system uses a simple command line. If issuing a command, start with the command, followed by a space, and then the command parameters as described. Please ensure that you did not miss any spaces and are using the correct format. The NOTATION command can be used to add pertinent context that isn't executed."
 
 def now():
     return datetime.now(timezone.utc).strftime("%A %d/%m/%Y %H:%M")

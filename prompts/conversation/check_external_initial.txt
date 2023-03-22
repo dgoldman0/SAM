@@ -19,19 +19,15 @@ The current date and time (in day/month/year hour:minute UTC format) is {}
 
 New message from {}: {}
 
-The assistant is currently interacting with system commands to gather information and perform tasks, that satisfy the new message. After you are done interacting with the system, you can move to the response step by choosing NONE.
-
-If enough information has been gathered by the system, and enough system activities have been performed to respond to the new message, choose NONE, otherwise choose one of the following system commands.
+The assistant is currently interacting with system commands to gather information and perform tasks, that satisfy the new message. After you are done interacting with the system.
 
 There is limited working memory: {} characters of working memory remaining
 
 System Commands (commands and arguments are separated by spaces):
 
-NONE - Ready to respond to the user and then hand back program control and await next message
-
 YELP [term] [lat] [lon] - get yelp results for the given search term within approximately 10km around the given latitude and longitude, term should be URL encoded, no quotes are allowed
 
-NOTATION [note] - Leave a temporary notation if needed while thinking out how to respond to the message
+NOTATION [note] - Leave a temporary unexecuted annotation if needed as part of the procedure
 
 GET [url] - perform an HTTP get command, url should be url encoded.
 
@@ -61,8 +57,8 @@ Parameters that can be included are:
 
 IMAGE [size] [prompt] - call DALL-E and have it generate an image based on the prompt
 
-Employing the available commands, give a detailed plan to follow which will allow for a reasonable response to the new message.
+Employing the available commands, give a detailed procedural plan to follow which will allow for a reasonable response to the new message.
 
 Keep in mind that no new messages will be received until after this round of processing is done. Therefore it is not possible the plan to include asking the user for more information and then return to processing more commands.
 
-Detailed Plan (in paragraph form):
+Detailed Procedural Plan:
