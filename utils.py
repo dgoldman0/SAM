@@ -15,9 +15,9 @@ def checkValidMemory(memory, new_memory):
     except Exception as e:
         print(e)
 
+# Seems to freeze, at least for internal memory.
 def updateInternal(mem_id, prompt, capacity):
     print("Updating...\n")
-    print(prompt)
     output = ""
     internalmem = data.getMemory(mem_id)
     while output == "":
@@ -37,7 +37,7 @@ def updateInternal(mem_id, prompt, capacity):
 
 # Get the approximate length of memory capacity in words
 def internalLength():
-    return round(parameters.internal_capacity * 4 / 7.5)
+    return round(parameters.internal_capacity * 4 / 8.5)
 
 def conversationalLength():
-    return round(parameters.conversation_capacity * 4 / 7.5)
+    return round(parameters.conversation_capacity * 4 / 8.5)

@@ -1,4 +1,4 @@
-internal_capacity = 800
+internal_capacity = 1500
 conversation_capacity = 400
 subs = 10 # Number of subconscious cycles
 contraction_tolerance = 0.85 # Maximum tolerable reduction in long term memory - more loss is tolerable with higher subs because they store some data

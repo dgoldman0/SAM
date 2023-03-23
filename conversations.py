@@ -19,14 +19,11 @@ def init(server_module):
 # Handle external dialogue. Currently set up so that internal thought processes will only go through one conscious and one subconscious cycle before blocking for the next incoming message.
 async def converse(name, socket):
     global server
-    # Need to persist working memory for each user across disconnects.
     connected = True
     last_integrated = time.time()
     steps_since_integration = 0
     while connected:
-        # Will need to get the lock call AFTER the msg is received to prevent blocking
         working_memory = data.getConversationWorkingMem()
-        # Might also have a smaller chat memory and then do a merged memory.
         internal_memory = data.getMemory(1)
         conversation_memory = data.getMemory(2)
         memory = internal_memory + "\n==================" + conversation_memory + "\n=================="

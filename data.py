@@ -20,8 +20,7 @@ dreaming = False
 
 first = True
 
-lock = asyncio.Lock()
-thinking = False
+thinking = True
 
 # Working memory for conversation. Should be put in DB soon.
 working_memory = ""
@@ -146,7 +145,7 @@ def init():
             print("Bootstrapping memory...")
             # Bootstrap with a slightly smaller initial profile.
             prompt = generate_prompt("membootstrap", (parameters.features, utils.internalLength() * 0.8, ))
-            memory_internal = call_openai(prompt, 1550, temp = 0.9, model = "gpt-4")
+            memory_internal = call_openai(prompt, utils.internal_capacity, temp = 0.9, model = "gpt-4")
             appendMemory(memory_internal)
             appendHistory(1, memory_internal)
 
@@ -160,6 +159,7 @@ def init():
                 print("Bootstrapping subconscious(" + str(i) + ")...")
                 prompt = generate_prompt("internal/bootstrap_working", (memory_internal, ))
                 bootstrap = call_openai(prompt, 128, temp = 0.95)
+                appendMemory("")
                 appendWorkingMemory(bootstrap)
             print("Finished initializing database...\n\n")
         else:
