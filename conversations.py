@@ -25,9 +25,11 @@ async def converse(name, socket):
     steps_since_integration = 0
     while connected:
         # Will need to get the lock call AFTER the msg is received to prevent blocking
-        await data.lock.acquire()
         working_memory = data.getConversationWorkingMem()
-        memory = data.getMemory(1)
+        # Might also have a smaller chat memory and then do a merged memory.
+        internal_memory = data.getMemory(1)
+        conversation_memory = data.getMemory(2)
+        memory = internal_memory + "\n==================" + conversation_memory + "\n=================="
         try:
             msg = (await socket.recv()).decode()
             if msg.startswith("MSG:"):
@@ -72,6 +74,13 @@ async def converse(name, socket):
                 ai_response = call_openai(prompt, 1024, 0.7, "gpt-4")
                 print("Response: " + ai_response + '\n')
 
+                print("Updating Conversation Memory")
+                integration_prompt = generate_prompt("conversation/integrate_conversation", (conversation_memory, working_memory + "\n\n" + temp, now, utils.conversationalLength(), ))
+                # Will eventually update properly in the updateConversational function.
+                conversation_memory = await asyncio.get_event_loop().run_in_executor(None, utils.updateInternal, 2, integration_prompt, parameters.conversation_capacity)
+                print("Conversation Memory Updated")
+                print("Conversation Memory:\n=====================\n" + conversation_memory + "\n=====================")
+
                 if len(temp) > 0:
                     prompt = generate_prompt("conversation/summarize", (temp, ))
                     summary = call_openai(prompt, 2048, 0.7, "gpt-4")
@@ -108,23 +117,10 @@ async def converse(name, socket):
                     working_memory = '\n\n'.join(lines)
                 data.setConversationWorkingMem(working_memory)
             elif msg.startswith("COMMAND:"):
-                command = msg[8:]
-                if command.lower().startswith("think"):
-                    try:
-                        period = int(command[6:])
-                        data.thinking = True
-                        integration_prompt = generate_prompt("conversation/integrate", (memory, working_memory, now, parameters.features, utils.internalLength(), ))
-                        await asyncio.get_event_loop().run_in_executor(None, utils.updateInternal, 1, integration_prompt, parameters.internal_capacity)
-                        data.lock.release()
-                        asyncio.sleep(period)
-                        await data.lock.acquire()
-                        data.thinking = False
-                    except Exception as e:
-                        print("Error: " + str(e))
+                pass
         except Exception as e:
             print(e)
             connected = False
             server.handleDisconnect(name)
-        data.lock.release()
         await asyncio.sleep(0.1)
     await asyncio.sleep(0)

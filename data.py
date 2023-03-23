@@ -153,7 +153,9 @@ def init():
             prompt = generate_prompt("internal/bootstrap_working", (memory_internal, ))
             bootstrap = call_openai(prompt, 128, temp = 0.85).replace('\n', '\n\t')
             appendWorkingMemory(bootstrap)
-
+            # Blank for conversation memory
+            appendWorkingMemory("")
+            # Seed subconscious partition workig memories
             for i in range(parameters.subs):
                 print("Bootstrapping subconscious(" + str(i) + ")...")
                 prompt = generate_prompt("internal/bootstrap_working", (memory_internal, ))

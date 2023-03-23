@@ -1,0 +1,22 @@
+Current Information:
+{}
+END INFORMATION
+
+Current chat history:
+{}
+END CURRENT HISTORY
+
+Messages that you have thought about sending but didn't send start with |:
+Messages that you have sent start with :
+Messages from a user start with their username, followed by : directly after
+System derived information starts with ||
+
+The current datetime (in day/month/year hour:minute UTC format) is {}
+
+Dialogue has been updated. Consider ideas and connections that may be important to remember longer, and revise current information.
+
+At the end of the revised information, terminate with "END MEMORY" by itself on a new line
+
+Approximate length: {} words
+
+Revised Information:

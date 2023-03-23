@@ -51,13 +51,13 @@ async def processCommand(command):
     elif command.startswith("wcurrent "):
         params = command.split(" ")
         if len(params) == 3:
-            return "Current weather for location @ " + params[1] + 'lat, ' + params[2] + 'lon: ' + weather.currentWeather(float(params[1]), float(params[2]))
+            return "Current weather (WCURRENT) for location @ " + params[1] + 'lat, ' + params[2] + 'lon: ' + weather.currentWeather(float(params[1]), float(params[2]))
         else:
             return "Invalid number of parameters. The correct format is WCURRENT [lat] [lon]."
     elif command.startswith("wday "):
         params = command.split(" ")
         if len(params) == 3:
-            return "Seven day forecast starting with today, for location @ " + params[1] + 'lat, ' + params[2] + 'lon: ' + weather.sevenDay(float(params[1]), float(params[2]))
+            return "Seven day forecast (WDAY) starting with today, for location @ " + params[1] + 'lat, ' + params[2] + 'lon: ' + weather.sevenDay(float(params[1]), float(params[2]))
         else:
             return "Invalid number of parameters. The correct format is WDAY [lat] [lon]."
     elif command.startswith("image "):
@@ -73,7 +73,7 @@ async def processCommand(command):
         except Exception as e:
             return "Error when obtaining data from URL: " + url + "\n" + str(e)
     else:
-        return "Unknown command: " + full_case + "\n" + "The system uses a simple command line. If issuing a command, start with the command, followed by a space, and then the command parameters as described. Please ensure that you did not miss any spaces and are using the correct format."
+        return "Unknown command: //" + full_case + "//\n" + "The system uses a simple command line. If issuing a command, start with the command, followed by a space, and then the command parameters as described. Please ensure that you did not miss any spaces and are using the correct format."
 
 def now():
     return datetime.now(timezone.utc).strftime("%A %d/%m/%Y %H:%M")

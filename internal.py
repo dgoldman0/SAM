@@ -17,11 +17,15 @@ async def think():
     thoughts_since_dream = 0
     while True:
         if server.connections > 0 and data.thinking:
-            await data.lock.acquire()
             working_memory = data.getWorkingMemory(1)
             internalmem = data.getMemory(1)
-            # Need to do a merged memory
-            prompt = generate_prompt("internal/step_conscious", (internalmem, working_memory, ))
+            conversationmem = data.getMemory(2)
+            partition = random.randint(0, parameters.subs - 1)
+            submem = data.getMemory(partition + 3)
+            memory = internal_memory + "\n==================\n" + conversation_memory + "\n==================\n" + submem + "\n=================="
+            # Randomly select a subconscious partition and append it to the internal memory temporarily
+            # Need to do a merged memory of all three: conscious, subconscious, and chat
+            prompt = generate_prompt("internal/step_conscious", (memory, working_memory, ))
             ai_response = call_openai(prompt, 32, temp = 0.85)
             ai_response = ai_response.replace('\n', '\n\t')
             print("Thought: " + ai_response + "\n")
@@ -38,7 +42,6 @@ async def think():
 
             data.setWorkingMemory(1, working_memory)
 
-            data.lock.release()
             await asyncio.sleep(parameters.thinkpause)
         await asyncio.sleep(0)
 
@@ -50,14 +53,14 @@ async def subthink():
 
     while True:
         if server.connections > 0 and data.thinking:
-            await data.lock.acquire()
+            # Won't need this once each memory is more isolated by the rewrite.
             # Need to refactor, but now will randomly select the partition
             lastsub = random.randint(0, parameters.subs - 1)
-            working_memory = data.getWorkingMemory(lastsub + 2)
+            working_memory = data.getWorkingMemory(lastsub + 3)
             internalmem = data.getMemory(1)
             merged_memory = internalmem
             # Started adding code for subconscious persistent memory
-            existingmem = data.getMemory(lastsub + 2)
+            existingmem = data.getMemory(lastsub + 3)
             if existingmem is not None:
                 prompt = generate_prompt("merge", (internalmem, existingmem, ))
                 merged_memory = call_openai(prompt, round((parameters.internal_capacity + parameters.conversation_capacity) / 2))
@@ -68,14 +71,14 @@ async def subthink():
             if existingmem is not None:
                 # Integrate into conversation memory, if it is not blank, otherwise create new base conversation
                 prompt = generate_prompt("internal/integrate_sub", (existingmem, working_memory, ai_response, utils.conversationalLength(), ))
-                await asyncio.get_event_loop().run_in_executor(None, utils.updateInternal, (lastsub + 2), prompt, parameters.conversation_capacity)
+                await asyncio.get_event_loop().run_in_executor(None, utils.updateInternal, (lastsub + 3), prompt, parameters.conversation_capacity)
             else:
                 print("Bootstrapping subconscious memory (" + str(lastsub) + ")")
                 prompt = generate_prompt("internal/bootstrap_sub", (internalmem, ai_response, utils.conversationalLength()))
                 mem = call_openai(prompt, parameters.conversation_capacity)
                 data.appendMemory(mem)
-                data.appendHistory(lastsub + 2, mem)
-            # Integrate into internal memory.
+                data.appendHistory(lastsub + 3, mem)
+            # Integrate into internal memory: This should be removed. The connection will just be through the shared info in the merge.
             prompt = generate_prompt("internal/integrate_sub_primary", (internalmem, working_memory, ai_response, parameters.features, utils.internalLength(), ))
             await asyncio.get_event_loop().run_in_executor(None, utils.updateInternal, 1, prompt, parameters.internal_capacity)
             # Crashes around here on lastsub == 9
@@ -86,8 +89,7 @@ async def subthink():
                 n = len(lines) - 30
                 lines = lines[n:]
                 working_memory = '\n\n'.join(lines)
-            data.setWorkingMemory(lastsub + 2, working_memory)
+            data.setWorkingMemory(lastsub + 3, working_memory)
 
-            data.lock.release()
             await asyncio.sleep(parameters.subpause)
         await asyncio.sleep(0)

@@ -17,12 +17,13 @@ def checkValidMemory(memory, new_memory):
 
 def updateInternal(mem_id, prompt, capacity):
     print("Updating...\n")
+    print(prompt)
     output = ""
     internalmem = data.getMemory(mem_id)
     while output == "":
         temp = 0.9
         model = "gpt-3.5-turbo"
-        if mem_id == 1:
+        if mem_id < 3:
             temp = 0.7
             model = "gpt-4"
         output = call_openai(prompt, capacity, temp, model).strip().strip('.')

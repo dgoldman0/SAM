@@ -50,4 +50,4 @@ Continue following outlined procedure. Choose one command at a time. After the c
 Example commands:
 COINGECKO ETH, USD
 
-System Command (followed by a space and then the command's parameters):
+Next System Command (followed by a space and then the command's parameters):
