@@ -22,6 +22,7 @@ async def converse(name, socket):
     connected = True
     last_integrated = time.time()
     steps_since_integration = 0
+    # Will still need to lock this loop, just against itself, so that two users interacting at the same time won't cause a mishap with the data. Or just respond back that the system is in the middle of processing another request.
     while connected:
         working_memory = data.getConversationWorkingMem()
         internal_memory = data.getMemory(1)

@@ -15,6 +15,7 @@ from pycoingecko import CoinGeckoAPI
 cg = CoinGeckoAPI()
 
 async def processCommand(command):
+    global cg
     full_case = command
     command = command.lower()
     if command.startswith("respond "):
@@ -22,15 +23,42 @@ async def processCommand(command):
         return "Responded with:" + full_case[8:]
     elif command.startswith("notation "):
         return "Temporary notation:" + full_case[9:]
+    # Need to rewrite so I can do current, historical, etc. Partially done, but still rewriting
     elif command.startswith("coingecko "):
         params = command.split(" ")
-        if len(params) == 3:
-            if params[1].startswith('"') or params[2].startswith('"'):
-                return "There is no need for quotation marks for the COINGECKO command."
+        if params[1] == "current":
+            if len(params) == 4:
+                if params[2].startswith('"') or params[3].startswith('"'):
+                    return "There is no need for quotation marks for the COINGECKO command."
+                else:
+                    try:
+                        return "Coingecko current price data: " + str(cg.get_price(ids=params[2], vs_currencies=params[3], include_market_cap='true', include_24hr_vol='true', include_24hr_change='true', include_last_updated_at='true'))
+                    except Exception as e:
+                        return "Coingecko API Error: " + str(e)
             else:
-                return "Coingecko data: " + str(cg.get_price(ids=params[1], vs_currencies=params[2]))
+                return "Invalid number of parameters. The correct format is COINGECKO CURRENT [comma separated list of cryptocurrencies] [comma separated list of base currencies]. Avoid spaces in each list, but ensure a space between the two lists."
+        elif params[1] == "24h":
+            if len(params) == 4:
+                    if params[2].startswith('"') or params[3].startswith('"'):
+                        return "There is no need for quotation marks for the COINGECKO command."
+                    else:
+                        try:
+                            return "Coingecko five day 24h volume and price history: " + str(cg.get_coin_market_chart_by_id(id=params[2],vs_currency=params[3],days='5'))
+                        except Exception as e:
+                            return "Coingecko API Error: " + str(e)
+            else:
+                return "Invalid number of parameters. The correct format is COINGECKO DAILY [comma separated list of cryptocurrencies] [comma separated list of base currencies]. Avoid spaces in each list, but ensure a space between the two lists."
+        elif params[1] == "historical":
+            if len(params) == 6:
+                if params[2].startswith('"') or params[3].startswith('"') or params[4].startswith('"') or params[5].startswith('"'):
+                    return "There is no need for quotation marks for the COINGECKO command."
+                else:
+                    try:
+                        return "Coingecko historical price data: " + str(cg.get_coin_market_chart_range_by_id(id=params[2],vs_currency=params[3],from_timestamp=params[4],to_timestamp=params[5]))
+                    except Exception as e:
+                        return "Coingecko API Error: " + str(e)
         else:
-            return "Invalid number of parameters. The correct format is coingecko COINGECKO [comma separated list of cryptocurrencies] [comma separated list of base currencies]. Avoid spaces in a list."
+            return "Unknown option for coingecko: " + params[1]
     elif command.startswith("tweepy search "):
         json_args = full_case[14:]
         return "Tweepy recent search with parameters: " + json_args + "\nResults:\n" + twitter.search(json_args)
@@ -86,6 +114,17 @@ async def processCommand(command):
         params = full_case.split(' ')
         prompt = ' '.join(params[2:])
         return "Image (size: " + params[1] + ") generated from prompt: " + prompt + "\nResult URL: " + generate_image(prompt, params[1])
+    elif command.startswith("input "):
+        # Disabled right now but will need to add back command: INPUT [username] [query] - Ask a user a question and return their response
+        params = full_case.split(' ')
+        prompt = ' '.join(params[2:])
+        try:
+            await server.sendMessage("msg:" + prompt)
+            user = server.user_connections.get(params[1])
+            if user is not None:
+                return "Input requested from " + params[1] + ": " + prompt + "\nResponse: " + (await user['websocket'].recv()).decode()
+        except Exception as e:
+            return "Exception while getting input: " + str(e)
     elif command.startswith("get "):
         url = full_case[4:]
         response = requests.get(url = url)
@@ -101,3 +140,6 @@ async def processCommand(command):
 
 def now():
     return datetime.now(timezone.utc).strftime("%A %d/%m/%Y %H:%M")
+
+if __name__ == '__main__':
+    print(cg.get_coin_market_chart_by_id(id='ethereum',vs_currency='usd',days='3'))

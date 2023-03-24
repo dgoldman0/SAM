@@ -6,4 +6,4 @@ Current Command Results:
 {}
 END COMMAND RESULTS
 
-Has the procedure outlined been completed or are there still more steps to complete (yes or no, and explain why)?
+Has the procedure outlined been completed in its entirety and to the best of your ability, or are there still more steps to complete (yes or no, and explain why)?

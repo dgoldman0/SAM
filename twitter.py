@@ -51,7 +51,7 @@ def userFollowers(ident, next_token = None):
     global token
     try:
         client = tweepy.Client(bearer_token=token)
-        followers = client.get_users_followers(id = ident, next_token = next_token, user_fields = ['description'])
+        followers = client.get_users_followers(id = ident, next_token = next_token, user_fields = ['description'], max_results = 25)
         follower_data = []
         data = followers.data
         for follower in data:
@@ -65,7 +65,7 @@ def userFollowing(ident, next_token = None):
     global token
     try:
         client = tweepy.Client(bearer_token=token)
-        followers = client.get_users_following(id = ident, next_token = next_token, user_fields = ['description'])
+        followers = client.get_users_following(id = ident, next_token = next_token, user_fields = ['description'], max_results = 25)
         follower_data = []
         data = followers.data
         for follower in data:
