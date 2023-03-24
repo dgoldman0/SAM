@@ -21,9 +21,6 @@ async def processCommand(command):
     if command.startswith("respond "):
         server.sendMessage(full_case[8:])
         return "Responded with:" + full_case[8:]
-    elif command.startswith("notation "):
-        return "Temporary notation:" + full_case[9:]
-    # Need to rewrite so I can do current, historical, etc. Partially done, but still rewriting
     elif command.startswith("coingecko "):
         params = command.split(" ")
         if params[1] == "current":
@@ -59,32 +56,42 @@ async def processCommand(command):
                         return "Coingecko API Error: " + str(e)
         else:
             return "Unknown option for coingecko: " + params[1]
-    elif command.startswith("tweepy search "):
-        json_args = full_case[14:]
-        return "Tweepy recent search with parameters: " + json_args + "\nResults:\n" + twitter.search(json_args)
-    elif command.startswith("tweepy user "):
-        return "Tweepy user info for " + command[12:] + ":\n" + twitter.userInfo(command[12:])
-    elif command.startswith("tweepy followers #"):
-        params = command[18:]
-        list = params.split()
-        id = list[0]
-        next_token = None
-        if len(params) == 2:
-            next_token = list[1]
-
-        return "Tweepy list of people following #" + id + " and next_token=" + str(next_token) + ":\n" + twitter.userFollowers(id, next_token)
-    elif command.startswith("tweepy following #"):
-        params = command[18:]
-        list = params.split()
-        id = list[0]
-        next_token = None
-        if len(params) == 2:
-            next_token = list[1]
-
-        return "Tweepy list of people following #" + id + " and next_token=" + str(next_token) + ":\n" + twitter.userFollowing(id, next_token)
-    elif command.startswith("tweepy tweet "):
-        message = full_case[13:]
-        return "Tweepy tweeted message: " + message + "\nResults:\n" + twitter.tweet(message)
+    elif command.startswith("tweepy "):
+        params = command.split(" ")
+        if params[1] == "followers":
+            if len(params) == 3:
+                return "Tweepy list of people following " + params[2] + ":\n" + twitter.userFollowers(params[2], None)
+            elif len(params) == 4:
+                return "Tweepy list of people following " + params[2] + " and next_token=" + params[3] + ":\n" + twitter.userFollowers(params[2], params[3])
+            else:
+                return "Invalid number of parameters. The correct format is TWEETPY FOLLOWERS [user] [next_token]."
+        elif params[1] == "following":
+            if len(params) == 3:
+                return "Tweepy list of people following " + params[2] + ":\n" + twitter.userFollowing(params[2], None)
+            elif len(params) == 4:
+                return "Tweepy list of people following " + params[2] + " and next_token=" + params[3] + ":\n" + twitter.userFollowing(params[2], params[3])
+            else:
+                return "Invalid number of parameters. The correct format is TWEETPY FOLLOWING [user] [next_token]."
+        elif params[1] == "user":
+            if len(params) == 3:
+                return "Tweepy user info for " + params[2] + ":\n" + twitter.userInfo(params[2])
+            else:
+                return "Invalid number of parameters. The correct format is TWEETPY USER [user]."
+        elif params[1] == "search":
+            if len(params) == 3:
+                return "Tweepy recent search with parameters: " + params[2] + "\nResults:\n" + twitter.search(params[2])
+            else:
+                return "Invalid number of parameters. The correct format is TWEETPY SEARCH [json parameters]."
+        elif params[1] == "timeline":
+            if len(params) == 3:
+                return "Tweepy timeline for user " + params[2] + ":\n" + twitter.userTimeline(params[2], None)
+            elif len(params) == 4:
+                return "Tweepy timeline for user " + params[2] + " and next_token=" + params[3] + ":\n" + twitter.userTimeline(params[2], params[3])
+            else:
+                return "Invalid number of parameters. The correct format is TWEETPY TIMELINE [user] [next_token]."
+        elif params[1] == "tweet":
+            message = full_case[13:]
+            return "Tweepy tweet with message: " + message + "\nResults:\n" + twitter.tweet(message)
     elif command.startswith("news "):
         json_args = full_case[5:]
         return "News search with search parameters: " + json_args + "\nResults:\n" + news.search(json_args)

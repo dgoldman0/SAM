@@ -152,5 +152,71 @@ def unlike(id):
     except Exception as e:
         return "API Error: " + str(e)
 
-if __name__ == '__main__':
-    pass
+def follow(id):
+    # Need to get these still
+    global client_id
+    global client_secret
+    try:
+        auth = tweepy.OAuthHandler(client_id, client_secret)
+        auth.set_access_token(os.environ.get("twitter_access_token"), os.environ.get("twitter_access_token_secret"))
+        api = tweepy.API(auth)
+        api.create_friendship(id)
+        return "Followed: " + id
+    except Exception as e:
+        return "API Error: " + str(e)
+
+def unfollow(id):
+    # Need to get these still
+    global client_id
+    global client_secret
+    try:
+        auth = tweepy.OAuthHandler(client_id, client_secret)
+        auth.set_access_token(os.environ.get("twitter_access_token"), os.environ.get("twitter_access_token_secret"))
+        api = tweepy.API(auth)
+        api.destroy_friendship(id)
+        return "Unfollowed: " + id
+    except Exception as e:
+        return "API Error: " + str(e)
+
+def block(id):
+    # Need to get these still
+    global client_id
+    global client_secret
+    try:
+        auth = tweepy.OAuthHandler(client_id, client_secret)
+        auth.set_access_token(os.environ.get("twitter_access_token"), os.environ.get("twitter_access_token_secret"))
+        api = tweepy.API(auth)
+        api.create_block(id)
+        return "Blocked: " + id
+    except Exception as e:
+        return "API Error: " + str(e)
+
+def unblock(id):
+    # Need to get these still
+    global client_id
+    global client_secret
+    try:
+        auth = tweepy.OAuthHandler(client_id, client_secret)
+        auth.set_access_token(os.environ.get("twitter_access_token"), os.environ.get("twitter_access_token_secret"))
+        api = tweepy.API(auth)
+        api.destroy_block(id)
+        return "Unblocked: " + id
+    except Exception as e:
+        return "API Error: " + str(e)
+    
+def userTimeline(id, next_token):
+    # Need to get these still
+    global client_id
+    global client_secret
+    try:
+        auth = tweepy.OAuthHandler(client_id, client_secret)
+        auth.set_access_token(os.environ.get("twitter_access_token"), os.environ.get("twitter_access_token_secret"))
+        api = tweepy.API(auth)
+        timeline = api.user_timeline(id, next_token)
+        timeline_data = []
+        data = timeline.data
+        for tweet in data:
+            timeline_data.append({'id': tweet.id, 'text': tweet.text, 'created_at': tweet.created_at})
+        return str(timeline_data) + "\nNext Token(can be used to get the next block of results): " + str(timeline.meta.get("next_token"))
+    except Exception as e:
+        return "API Error: " + str(e)
