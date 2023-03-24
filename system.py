@@ -3,6 +3,7 @@ import server
 from datetime import datetime, timezone
 import pycoingecko
 from generation import call_openai
+from generation import generate_image
 import twitter
 import weather
 import news
@@ -33,6 +34,26 @@ async def processCommand(command):
     elif command.startswith("tweepy search "):
         json_args = full_case[14:]
         return "Tweepy recent search with parameters: " + json_args + "\nResults:\n" + twitter.search(json_args)
+    elif command.startswith("tweepy user "):
+        return "Tweepy user info for " + command[12:] + ":\n" + twitter.userInfo(command[12:])
+    elif command.startswith("tweepy followers #"):
+        params = command[18:]
+        list = params.split()
+        id = list[0]
+        next_token = None
+        if len(params) == 2:
+            next_token = list[1]
+
+        return "Tweepy list of people following #" + id + " and next_token=" + str(next_token) + ":\n" + twitter.userFollowers(id, next_token)
+    elif command.startswith("tweepy following #"):
+        params = command[18:]
+        list = params.split()
+        id = list[0]
+        next_token = None
+        if len(params) == 2:
+            next_token = list[1]
+
+        return "Tweepy list of people following #" + id + " and next_token=" + str(next_token) + ":\n" + twitter.userFollowing(id, next_token)
     elif command.startswith("tweepy tweet "):
         message = full_case[13:]
         return "Tweepy tweeted message: " + message + "\nResults:\n" + twitter.tweet(message)
@@ -63,7 +84,8 @@ async def processCommand(command):
     elif command.startswith("image "):
         # Not working yet
         params = full_case.split(' ')
-        return "Image generated from prompt: " + prompt + "\nResult URL: "
+        prompt = ' '.join(params[2:])
+        return "Image (size: " + params[1] + ") generated from prompt: " + prompt + "\nResult URL: " + generate_image(prompt, params[1])
     elif command.startswith("get "):
         url = full_case[4:]
         response = requests.get(url = url)
@@ -72,6 +94,8 @@ async def processCommand(command):
             return "Obtained data for URL " + url + "\n" + str(text)
         except Exception as e:
             return "Error when obtaining data from URL: " + url + "\n" + str(e)
+    elif command.startswith("#"):
+        return "Annotation: " + full_case[1:]
     else:
         return "Unknown command: //" + full_case + "//\n" + "The system uses a simple command line. If issuing a command, start with the command, followed by a space, and then the command parameters as described. Please ensure that you did not miss any spaces and are using the correct format."
 

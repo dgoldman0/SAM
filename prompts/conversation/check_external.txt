@@ -2,18 +2,6 @@ The current date and time (in day/month/year hour:minute UTC format) is {}
 
 Currently processing message from {}: {}
 
-Continue following the following procedure until complete.
-
-Outline of Procedure:
-{}
-END OUTLINE
-
-Current Command Results:
-{}
-END COMMAND RESULTS
-
-There is limited working memory: {} characters of working memory remaining
-
 Only Available System Commands (commands and arguments must be separated by spaces):
 
 YELP [term] [lat] [lon] - get yelp results for the given search term within approximately 10km around the given latitude and longitude, term should be URL encoded, no quotes are allowed
@@ -36,12 +24,20 @@ COINGECKO [comma separated list of cryptocurrencies] [comma separated list of ba
 
 TWEEPY TWEET [message] - tweet a message (not functional yet)
 
+TWEEPY USER #id - get info about a user with a given ID. Must include # if searching by ID.
+
+TWEEPY USER @username - get info about a user with a given username. Must include @ if searching by username Can't be used with special characters.
+
+WEEPY FOLLOWERS #id [next_token] - get a list of followers for a given user, can use "TWEEPY USER @username" to search for the user's ID. Will not work if passed a username instead of an id. Use next_token to get a certain page of tweets.
+
+TWEEPY FOLLOWING #id [next_token] - get a list of accounts a given user follows, can use "TWEEPY USER @username" to search for the user's ID. Will not work if passed a username instead of an id. Use next_token to get a certain page of tweets.
+
 TWEEPY SEARCH [parameters] - Search tweets from the last seven days.
 Parameters should be JSON encapsulated.
 Parameters that can be included are:
-- query: the twitter search query, required
+- query: the twitter search query, required | Also note that @ should not be used in the query string.
 - max_results: the maximum number of tweets to get (minimum 10 and maximum 25), required
-- next_token: the most recent pagination token from which to start searching, optional
+- next_token: the most recent pagination token from which to start searching, optional but useful for accessing more tweets
 
 IMAGE [size] [prompt] - call DALL-E and have it generate an image based on the prompt
 
@@ -50,4 +46,18 @@ Continue following outlined procedure. Choose one command at a time. After the c
 Example commands:
 COINGECKO ETH, USD
 
-Next System Command (followed by a space and then the command's parameters):
+Continue following the following procedure until complete.
+
+Outline of Procedure:
+{}
+END OUTLINE
+
+Current Command Results:
+{}
+END COMMAND RESULTS
+
+There is limited working memory: {} characters of working memory remaining
+
+Consider the current command results to identify the next required system command the execute based on the outline of procedure. Or start the line with # to leave a comment that won't be excuted.
+
+Next System Command (followed by a space and then the command's parameters) or start with # for comments:

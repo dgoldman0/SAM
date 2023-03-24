@@ -20,7 +20,7 @@ dreaming = False
 
 first = True
 
-thinking = True
+thinking = False #temp
 
 # Working memory for conversation. Should be put in DB soon.
 working_memory = ""

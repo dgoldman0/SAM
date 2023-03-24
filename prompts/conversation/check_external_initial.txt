@@ -46,6 +46,14 @@ COINGECKO [comma separated list of cryptocurrencies] [comma separated list of ba
 
 TWEEPY TWEET [message] - tweet a message (not functional yet)
 
+TWEEPY USER #id - get info about a user with a given ID. Must include # if searching by ID. This method should be used if the username has special characters.
+
+TWEEPY USER @username - get info about a user with a given username. Must include @ if searching by username Can't be used with special characters.
+
+TWEEPY FOLLOWERS #id [next_token] - get a list of followers for a given user, can use "TWEEPY USER @username" to search for the user's ID. Will not work if passed a username instead of an id. Use next_token to get a certain page of tweets.
+
+TWEEPY FOLLOWING #id [next_token] - get a list of accounts a given user follows, can use "TWEEPY USER @username" to search for the user's ID. Will not work if passed a username instead of an id. Use next_token to get a certain page of tweets.
+
 TWEEPY SEARCH [parameters] - Search tweets from the last seven days.
 Parameters should be JSON encapsulated.
 Parameters that can be included are:

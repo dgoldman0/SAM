@@ -37,7 +37,7 @@ async def converse(name, socket):
 
                 # Grab external information
                 done = False
-                capacity = 10000
+                capacity = 20000
                 iterations = 0
                 temp = ""
 
