@@ -75,14 +75,82 @@ def userFollowing(ident, next_token = None):
         return "API Error: " + str(e)
 
 def tweet(message):
+    # Need to get these still
+    global client_id
+    global client_secret
     try:
-        client = tweepy.Client(bearer_token=token)
-        response = client.create_tweet(text=message)
-        print(response)
-        return response
+        auth = tweepy.OAuthHandler(client_id, client_secret)
+        auth.set_access_token(os.environ.get("twitter_access_token"), os.environ.get("twitter_access_token_secret"))
+        api = tweepy.API(auth)
+        api.update_status(message)
+        return "Tweeted: " + message
     except Exception as e:
         return "API Error: " + str(e)
 
+def tweetWithMedia(message, media):
+    # Need to get these still
+    global client_id
+    global client_secret
+    try:
+        auth = tweepy.OAuthHandler(client_id, client_secret)
+        auth.set_access_token(os.environ.get("twitter_access_token"), os.environ.get("twitter_access_token_secret"))
+        api = tweepy.API(auth)
+        api.update_with_media(media, message)
+        return "Tweeted: " + message
+    except Exception as e:
+        return "API Error: " + str(e)
+
+def retweet(id):
+    # Need to get these still
+    global client_id
+    global client_secret
+    try:
+        auth = tweepy.OAuthHandler(client_id, client_secret)
+        auth.set_access_token(os.environ.get("twitter_access_token"), os.environ.get("twitter_access_token_secret"))
+        api = tweepy.API(auth)
+        api.retweet(id)
+        return "Retweeted: " + id
+    except Exception as e:
+        return "API Error: " + str(e)
+
+def reply(message, id):
+    # Need to get these still
+    global client_id
+    global client_secret
+    try:
+        auth = tweepy.OAuthHandler(client_id, client_secret)
+        auth.set_access_token(os.environ.get("twitter_access_token"), os.environ.get("twitter_access_token_secret"))
+        api = tweepy.API(auth)
+        api.update_status(message, in_reply_to_status_id=id)
+        return "Replied to " + id + " with: " + message
+    except Exception as e:
+        return "API Error: " + str(e)
+
+def like(id):
+    # Need to get these still
+    global client_id
+    global client_secret
+    try:
+        auth = tweepy.OAuthHandler(client_id, client_secret)
+        auth.set_access_token(os.environ.get("twitter_access_token"), os.environ.get("twitter_access_token_secret"))
+        api = tweepy.API(auth)
+        api.create_favorite(id)
+        return "Liked: " + id
+    except Exception as e:
+        return "API Error: " + str(e)
+
+def unlike(id):
+    # Need to get these still
+    global client_id
+    global client_secret
+    try:
+        auth = tweepy.OAuthHandler(client_id, client_secret)
+        auth.set_access_token(os.environ.get("twitter_access_token"), os.environ.get("twitter_access_token_secret"))
+        api = tweepy.API(auth)
+        api.destroy_favorite(id)
+        return "Unliked: " + id
+    except Exception as e:
+        return "API Error: " + str(e)
 
 if __name__ == '__main__':
     pass
