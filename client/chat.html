@@ -12,12 +12,12 @@
     crossorigin="anonymous"
   />
   <link rel="stylesheet" href="css/style.css">
-  <title>WebCage Chat App</title>
+  <title>AI Chat App</title>
 </head>
 <body>
   <div class="chat-container">
     <header class="chat-header">
-      <h1><i class="fas fa-kiwi-bird"></i> WebCage </h1>
+      <h1><i class="fas fa-kiwi-bird"></i> AI </h1>
       <a href="index.html" class="btn" id="leave-btn">Leave Room</a>
     </header>
 
@@ -28,7 +28,19 @@
         <ul id="users">
         </ul>
       </div>
-      <div class="chat-messages" id = "chat-history">
+      <div class="tabbed-chat-area">
+        <!-- Active Chat Tabs-->
+        <div class="chat-tabs">
+          <ul id="chat-tabs">
+            <!-- General Chat -->
+            <li class="active-chat-tab" id="general-chat-tab">
+              <a href="#system-messages" class="active-chat-tab-link">
+                <i class="fas fa-comment"></i> System
+              </a>
+              <i class="fas fa-times close-tab"></i>
+          </ul>
+        <div class="chat-messages" id="chat-messages">
+        </div>
       </div>
     </main>
 

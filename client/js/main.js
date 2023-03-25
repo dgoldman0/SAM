@@ -44,6 +44,7 @@ $(document).ready(function() {
           if (msg == "WELCOME") {
             f.innerHTML = "Connection Established."
             status = "connected";
+            // Need to add support for channels.
             $("#chat-form").submit(async function(e) {
               e.preventDefault();
               input = $("#msg");
