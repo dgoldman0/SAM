@@ -12,17 +12,17 @@ import server
 import random
 
 # What about doing a merged memory system for both concsious and subconcsious, where their respective persistent memory is updated only, rather than updating both, and that way they can cycle through simultaneously? Maybe do the same for the conscious system. This approach should be good for the core SAM system too.
-async def think():
+async def think(channel_id):
     print("Thinking...")
     thoughts_since_dream = 0
     while True:
         if data.thinking:
-            working_memory = data.getWorkingMemory(1)
-            internalmem = data.getMemory(1)
-            conversationmem = data.getMemory(2)
+            working_memory = data.getWorkingMemory(channel_id, 1)
+            internalmem = data.getMemory(1, 1)
+            conversationmem = data.getMemory(1, 2)
             memory = internalmem + "\n==================\n" + conversationmem
             partition = random.randint(0, parameters.subs - 1)
-            submem = data.getMemory(partition + 3)
+            submem = data.getMemory(1, partition + 3)
             if submem is not None:
                 memory += "\n==================\n" + submem + "\n=================="
             # Randomly select a subconscious partition and append it to the internal memory temporarily
@@ -32,7 +32,7 @@ async def think():
             ai_response = ai_response.replace('\n', '\n\t')
             print("Thought: " + ai_response + "\n")
             prompt = generate_prompt("internal/integrate", (internalmem, working_memory, ai_response, parameters.features, utils.internalLength(), ))
-            output = await asyncio.get_event_loop().run_in_executor(None, utils.updateInternal, 1, prompt, parameters.internal_capacity)
+            output = await asyncio.get_event_loop().run_in_executor(None, utils.updateInternal, channel_id, 1, prompt, parameters.internal_capacity)
             working_memory += ": " + ai_response + "\n\n"
 
             # Cut last line of old memory.
@@ -48,7 +48,7 @@ async def think():
         await asyncio.sleep(0)
 
 # Run simultaneous internal monologues, without access to system resourcs, and which does not receive notifications from external info.
-async def subthink():
+async def subthink(channel_id):
     # Subcount of zero means no running subconscious.
     if parameters.subs == 0:
         return
@@ -58,11 +58,11 @@ async def subthink():
             # Won't need this once each memory is more isolated by the rewrite.
             # Need to refactor, but now will randomly select the partition
             lastsub = random.randint(0, parameters.subs - 1)
-            working_memory = data.getWorkingMemory(lastsub + 3)
-            internalmem = data.getMemory(1)
+            working_memory = data.getConversationWorkingMemory(lastsub + 3)
+            internalmem = data.getConversationMemory(1)
             merged_memory = internalmem
             # Instead of "NONE" it should be "", because in the data initialization I should fill these with blanks
-            existingmem = data.getMemory(lastsub + 3)
+            existingmem = data.getConversationMemory(lastsub + 3)
             if existingmem != "":
                 prompt = generate_prompt("merge", (internalmem, existingmem, ))
                 merged_memory = call_openai(prompt, round((parameters.internal_capacity + parameters.conversation_capacity) / 2))
@@ -73,13 +73,13 @@ async def subthink():
             if existingmem != "":
                 # Integrate into conversation memory, if it is not blank, otherwise create new base conversation
                 prompt = generate_prompt("internal/integrate_sub", (existingmem, working_memory, ai_response, utils.conversationalLength(), ))
-                await asyncio.get_event_loop().run_in_executor(None, utils.updateInternal, (lastsub + 3), prompt, parameters.conversation_capacity)
+                await asyncio.get_event_loop().run_in_executor(None, utils.updateInternal, channel_id, (lastsub + 3), prompt, parameters.conversation_capacity)
             else:
                 print("Bootstrapping subconscious memory (" + str(lastsub) + ")")
                 prompt = generate_prompt("internal/bootstrap_sub", (internalmem, ai_response, utils.conversationalLength()))
                 mem = call_openai(prompt, parameters.conversation_capacity)
-                data.setMemory(lastsub + 3, mem)
-                data.appendHistory(lastsub + 3, mem)
+                data.setConversationMemory(1, lastsub + 3, mem)
+                data.appendConversationHistory(1, lastsub + 3, mem)
 
             # Crashes around here on lastsub == 9
             working_memory += ": " + ai_response + "\n\n"
@@ -89,7 +89,7 @@ async def subthink():
                 n = len(lines) - 30
                 lines = lines[n:]
                 working_memory = '\n\n'.join(lines)
-            data.setWorkingMemory(lastsub + 3, working_memory)
+            data.setConversationWorkingMemory(1, lastsub + 3, working_memory)
 
             await asyncio.sleep(parameters.subpause)
         await asyncio.sleep(0)

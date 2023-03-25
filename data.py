@@ -25,75 +25,133 @@ thinking = False #temp
 # Working memory for conversation. Should be put in DB soon.
 working_memory = ""
 
-def getConversationWorkingMem():
-    global working_memory
-    return working_memory
-
-def setConversationWorkingMem(memory):
-    global working_memory
-    working_memory = memory
-
-def appendHistory(mem_id, history):
+# Channel Functions
+def getChannelList():
     global database
     cur = database.cursor()
-    cur.execute("INSERT INTO HISTORY (mem_id, memory) VALUES (?, ?);", (mem_id, history, ))
+    res = cur.execute("SELECT channel_id FROM CHANNELS;")
+    resp = res.fetchall()
+    if resp is not None:
+        return resp
+    return None
+
+# Returns a list of users (usernames) in a channel
+def getChannelUsers(channel_id):
+    global database
+    cur = database.cursor()
+    res = cur.execute("SELECT username FROM CHANNELS WHERE channel_id = ?;", (channel_id, ))
+    resp = res.fetchall()
+    if resp is not None:
+        return resp
+    return None
+
+def getUserChannelList(user_id):
+    global database
+    cur = database.cursor()
+    res = cur.execute("SELECT channel_id FROM CHANNELS WHERE user_id = ?;", (user_id, ))
+    resp = res.fetchall()
+    if resp is not None:
+        return resp
+    return None
+
+def userInChannel(user_id, channel_id):
+    global database
+    cur = database.cursor()
+    res = cur.execute("SELECT channel_id FROM CHANNELS WHERE user_id = ? AND channel_id = ?;", (user_id, channel_id, ))
+    resp = res.fetchone()
+    if resp is not None:
+        return True
+    return False
+
+def joinChannel(user_id, channel_id):
+    global database
+    cur = database.cursor()
+    res = cur.execute("INSERT INTO CHANNELS (user_id, channel_id) VALUES (?, ?);", (user_id, channel_id, ))
     database.commit()
 
-def appendMemory(memory):
+def leaveChannel(user_id, channel_id):
     global database
     cur = database.cursor()
-    cur.execute("INSERT INTO INTERNALMEM (memory) VALUES (?);", (memory, ))
+    res = cur.execute("DELETE FROM CHANNELS WHERE user_id = ? AND channel_id = ?;", (user_id, channel_id, ))
     database.commit()
 
-def getMemory(mem_id):
+# Memory Functions
+def getChannelWorkingMem(channel_id):
     global database
     cur = database.cursor()
-    res = cur.execute("SELECT memory FROM INTERNALMEM WHERE mem_id = ?;", (mem_id, ))
+    res = cur.execute("SELECT memory FROM INTERNALWMEM WHERE channel_id = ?;", (channel_id, ))
     resp = res.fetchone()
     if resp is not None:
         return resp[0]
-    return None;
+    return None
 
-def setMemory(mem_id, memory):
+def setChannelWorkingMem(channel_id, memory):
     global database
     cur = database.cursor()
-    res = cur.execute("UPDATE INTERNALMEM SET memory = ? WHERE mem_id = ?;", (memory, mem_id, ))
+    res = cur.execute("UPDATE INTERNALWMEM SET memory = ? WHERE channel_id = ?;", (memory, channel_id, ))
+    database.commit()
+    
+def appendChannelHistory(channel_id, mem_id, history):
+    global database
+    cur = database.cursor()
+    cur.execute("INSERT INTO HISTORY (channel_id, mem_id, memory) VALUES (?, ?, ?);", (channel_id, mem_id, history, ))
     database.commit()
 
-def memoryCount():
+def appendChannelMemory(channel_id, memory):
     global database
     cur = database.cursor()
-    res = cur.execute("SELECT Count(mem_id) FROM INTERNALMEM;")
+    cur.execute("INSERT INTO INTERNALMEM (channel_id, memory) VALUES (?, ?);", (channel_id, memory, ))
+    database.commit()
+
+def getChannelMemory(channel_id, mem_id):
+    global database
+    cur = database.cursor()
+    res = cur.execute("SELECT memory FROM INTERNALMEM WHERE channel_id = ? AND mem_id = ?;", (channel_id, mem_id, ))
+    resp = res.fetchone()
+    if resp is not None:
+        return resp[0]
+    return None
+
+def setChannelMemory(channel_id, mem_id, memory):
+    global database
+    cur = database.cursor()
+    res = cur.execute("UPDATE INTERNALMEM SET memory = ? WHERE channel_id = ? AND mem_id = ?;", (memory, channel_id, mem_id, ))
+    database.commit()
+
+def channelMemoryCount(channel_id):
+    global database
+    cur = database.cursor()
+    res = cur.execute("SELECT Count(mem_id) FROM INTERNALMEM WHERE channel_id = ?;", (channel_id, ))
     return res.fetchone()[0]
 
-def appendWorkingMemory(memory):
+def appendChannelWorkingMemory(channel_id, memory):
     global database
     cur = database.cursor()
     try:
-        cur.execute("INSERT INTO INTERNALWMEM (memory) VALUES (?);", (memory, ))
+        cur.execute("INSERT INTO INTERNALWMEM (channel_id, memory) VALUES (?, ?);", (channel_id, memory, ))
     except Exception as e:
         print(e)
     database.commit()
 
-def getWorkingMemory(mem_id):
+def getChannelWorkingMemory(channel_id, mem_id):
     global database
     cur = database.cursor()
-    res = cur.execute("SELECT memory FROM INTERNALWMEM WHERE mem_id = ?;", (mem_id, ))
+    res = cur.execute("SELECT memory FROM INTERNALWMEM WHERE channel_id = ? AND mem_id = ?;", (channel_id, mem_id, ))
     resp = res.fetchone()
     if resp is not None:
         return resp[0]
-    return None;
+    return None
 
-def setWorkingMemory(mem_id, memory):
+def setChannelWorkingMemory(channel_id, mem_id, memory):
     global database
     cur = database.cursor()
-    res = cur.execute("UPDATE INTERNALWMEM SET memory = ? WHERE mem_id = ?;", (memory, mem_id, ))
+    res = cur.execute("UPDATE INTERNALWMEM SET memory = ? WHERE channel_id = ? AND mem_id = ?;", (memory, channel_id, mem_id, ))
     database.commit()
 
-def workingMemoryCount():
+def channelWorkingMemoryCount(channel_id):
     global database
     cur = database.cursor()
-    res = cur.execute("SELECT Count(mem_id) FROM INTERNALWMEM;")
+    res = cur.execute("SELECT Count(mem_id) FROM INTERNALWMEM WHERE channel_id = ?;", (channel_id, ))
     return res.fetchone()[0]
 
 def set_dreaming(value):
@@ -114,6 +172,9 @@ def init():
         if str(err) == "no such table: USERS":
             # Create user table and add the administrator.
             cur.execute("CREATE TABLE USERS(user_id INT PRIMARY KEY, username TEXT NOT NULL, display_name TEXT NOT NULL, passwd TEXT NOT NULL, salt TEXT NOT NULL, admin INT DEFAULT FALSE, blocked NOT NULL DEFAULT FALSE);")
+            # Create user citations table for moderation citations issued in a given channel.
+            cur.execute("CREATE TABLE USERCITATIONS(citation_id INTEGER PRIMARY KEY NOT NULL, user_id INT NOT NULL, channel_id INT NOT NULL, citation TEXT NOT NULL, citation_date DATETIME DEFAULT CURRENT_TIMESTAMP);")    
+            
             username = input("Enter admin username: ")
             salt = bcrypt.gensalt()
             admin_password = "not"
@@ -123,44 +184,43 @@ def init():
                 confirm = input("Confirm password: ")
             password = bcrypt.hashpw(admin_password.encode(), salt)
             cur.execute("INSERT INTO USERS (username, display_name, passwd, salt, admin) VALUES (?, ?, ?, ?, ?);", (username, "System Administrator", password, salt, True))
-            # Teams will be included in later versions. Internal memory, working memory, history, etc. will be tied to a team ID
-            cur.execute("CREATE TABLE TEAMS(team_id INTEGER PRIMARY KEY NOT NULL, name TEXT NOT NULL, description TEXT NOT NULL);")
-            cur.execute("CREATE TABLE TEAMUSERS(team_id INT NOT NULL, user_id INT NOT NULL);")
-            cur.execute("INSERT INTO TEAMS (name, description) VALUES ('admins', 'Administration Core Team');")
-            cur.execute("INSERT INTO TEAMUSERS (team_id, user_id) VALUES (1, 1);")
+            cur.execute("CREATE TABLE CHANNELS(channel_id INTEGER PRIMARY KEY NOT NULL, name TEXT NOT NULL, description TEXT NOT NULL);")
+            cur.execute("INSERT INTO CHANNELS (name, description) VALUES ('general', 'General Chat');")
+            cur.execute("CREATE TABLE CHANNELMEMBERS(channel_id INT NOT NULL, user_id INT NOT NULL, admin INT DEFAULT FALSE);")
+            cur.execute("INSERT INTO CHANNELMEMBERS (channel_id, user_id, admin) VALUES (1, 1, TRUE);")
             # Create internal memory table. mem_id = 0 is conscious, and all others are subconscious layers
-            cur.execute("CREATE TABLE INTERNALMEM(mem_id INTEGER PRIMARY KEY NOT NULL, memory TEXT DEFAULT '');")
+            cur.execute("CREATE TABLE INTERNALMEM(mem_id INTEGER PRIMARY KEY NOT NULL, channel_id INT NOT NULL, memory TEXT DEFAULT '');")
             # Create persistent memory history
-            cur.execute("CREATE TABLE HISTORY(hist_id INTEGER PRIMARY KEY NOT NULL, mem_id INT NOT NULL, memory TEXT NOT NULL DEFAULT '')")
+            cur.execute("CREATE TABLE HISTORY(hist_id INTEGER PRIMARY KEY NOT NULL, channel_id INT NOT NULL, mem_id INT NOT NULL, memory TEXT NOT NULL DEFAULT '')")
             # User memory
             cur.execute("CREATE TABLE USERMEM(mem_id INTEGER PRIMARY KEY NOT NULL, username TEXT UNIQUE NOT NULL, memory TEXT DEFAULT '');")
 
             # Create internal working memory table. mem_id = 0 is conscious as before.
-            cur.execute("CREATE TABLE INTERNALWMEM(mem_id INTEGER PRIMARY KEY NOT NULL, memory TEXT DEFAULT '');")
-            # User working memory
-            cur.execute("CREATE TABLE USERWMEM(mem_id INTEGER PRIMARY KEY NOT NULL, team TEXT UNIQUE NOT NULL, memory TEXT DEFAULT '');")
+            cur.execute("CREATE TABLE INTERNALWMEM(mem_id INTEGER PRIMARY KEY NOT NULL, channel_id INT NOT NULL, memory TEXT DEFAULT '');")
+            # Channel working memory
+            cur.execute("CREATE TABLE USERWMEM(mem_id INTEGER PRIMARY KEY NOT NULL, channel_id INT NOT NULL, memory TEXT DEFAULT '');")
             database.commit()
 
             # Initialize memory
             print("Bootstrapping memory...")
             # Bootstrap with a slightly smaller initial profile.
             prompt = generate_prompt("membootstrap", (parameters.features, utils.internalLength() * 0.8, ))
-            memory_internal = call_openai(prompt, utils.internal_capacity, temp = 0.9, model = "gpt-4")
-            appendMemory(memory_internal)
-            appendHistory(1, memory_internal)
+            memory_internal = call_openai(prompt, parameters.internal_capacity, temp = 0.9, model = "gpt-4")
+            appendChannelMemory(1, memory_internal)
+            appendChannelHistory(1, 1, memory_internal)
 
             prompt = generate_prompt("internal/bootstrap_working", (memory_internal, ))
             bootstrap = call_openai(prompt, 128, temp = 0.85).replace('\n', '\n\t')
-            appendWorkingMemory(bootstrap)
+            appendChannelWorkingMemory(1, bootstrap)
             # Blank for conversation memory
-            appendWorkingMemory("")
+            appendChannelWorkingMemory(1, "")
             # Seed subconscious partition workig memories
             for i in range(parameters.subs):
                 print("Bootstrapping subconscious(" + str(i) + ")...")
                 prompt = generate_prompt("internal/bootstrap_working", (memory_internal, ))
                 bootstrap = call_openai(prompt, 128, temp = 0.95)
-                appendMemory("")
-                appendWorkingMemory(bootstrap)
+                appendChannelMemory(1, "")
+                appendChannelWorkingMemory(1, bootstrap)
             print("Finished initializing database...\n\n")
         else:
             raise Exception("Unknown Error")

@@ -9,6 +9,14 @@ import conversations
 async def main():
     data.init()
     conversations.init(server)
-    await asyncio.gather(server.listen(), internal.think()) #, internal.subthink())
-
+    channels = data.getChannelList()
+    think_tasks = []
+    subthink_tasks = []
+    for channel in channels:
+        think = asyncio.create_task(internal.think(channel))
+        subthink = asyncio.create_task(internal.subthink(channel))
+        think_tasks.append(think)
+        subthink_tasks.append(subthink)
+    await asyncio.gather(server.listen(), *think_tasks, *subthink_tasks)
+        
 asyncio.run(main())

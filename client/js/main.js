@@ -76,6 +76,8 @@ $(document).ready(function() {
         default:
           if (msg.startsWith("MSG:")) {
             msg = msg.slice(4);
+            channel_id = int(msg.split("|"))
+            msg = msg.split("|")[1]
             console.log(msg)
             f.innerHTML += `<hr/>${msg}`;
           } else if (msg.startsWith("STATUS:")){

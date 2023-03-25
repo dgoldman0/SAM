@@ -16,10 +16,10 @@ def checkValidMemory(memory, new_memory):
         print(e)
 
 # Seems to freeze, at least for internal memory.
-def updateInternal(mem_id, prompt, capacity):
+def updateInternal(channel_id, mem_id, prompt, capacity):
     print("Updating...\n")
     output = ""
-    internalmem = data.getMemory(mem_id)
+    internalmem = data.getChannelMemory(channel_id, mem_id)
     while output == "":
         temp = 0.9
         model = "gpt-3.5-turbo"
@@ -30,8 +30,8 @@ def updateInternal(mem_id, prompt, capacity):
         if not checkValidMemory(internalmem, output):
             output = ""
     cleaned = output.removesuffix("END MEMORY")
-    data.setMemory(mem_id, cleaned)
-    data.appendHistory(mem_id, cleaned)
+    data.setChannelMemory(channel_id, mem_id, cleaned)
+    data.appendChannelHistory(channel_id, mem_id, cleaned)
     print("Finished...\n")
     return output
 

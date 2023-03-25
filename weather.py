@@ -21,3 +21,12 @@ def sevenDay(lat, lon):
         w = one_call.forecast_daily[day]
         forecast += "Day " + str(day) + ": " + str({'detailed_status': w.detailed_status, 'wind': str(w.wind()), 'humidity': w.humidity, 'temp': str(w.temperature()), 'rain': w.rain, 'snow': w.snow, 'heat_index': w.heat_index, 'clouds': w.clouds}) + "\n"
     return forecast
+
+def hourly(lat, lon):
+    global mgr
+    one_call = mgr.one_call(lat=lat, lon=lon, units = "metric")
+    forecast = ""
+    for hour in range(0, 48):
+        w = one_call.forecast_hourly[hour]
+        forecast += "Hour " + str(hour) + ": " + str({'detailed_status': w.detailed_status, 'wind': str(w.wind()), 'humidity': w.humidity, 'temp': str(w.temperature()), 'rain': w.rain, 'snow': w.snow, 'heat_index': w.heat_index, 'clouds': w.clouds}) + "\n"
+    return forecast

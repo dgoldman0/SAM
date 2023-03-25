@@ -72,11 +72,19 @@ async def handleLogin(websocket):
     await sendMessage("STATUS:" + username + " has connected.", user['websocket'])
     await conversations.converse(username, websocket)
 
-async def sendMessage(message, excluded = None):
+# Send a message to all users in a channel, excluding sockets in the excluded list.
+async def sendMessage(channel_id, message, excluded = None):
+    users = data.getChannelUsers(channel_id)
+    for user in users:
+        socket = user_connections[user]['websocket']
+        if socket != excluded:
+            await socket.send("MSG:" + str(channel_id) + "|" + message.encode())
+                        
+async def sendStatus(message, excluded = None):
     for user in user_connections.values():
         socket = user['websocket']
         if socket != excluded:
-            await socket.send(message.encode())
+            await socket.send("STATUS:" + message.encode())
 
 # Listen for incoming connections
 async def serve(stop):
