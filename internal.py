@@ -21,12 +21,11 @@ async def think():
             internalmem = data.getMemory(1)
             conversationmem = data.getMemory(2)
             memory = internalmem + "\n==================\n" + conversationmem
+            # Randomly select a subconscious partition and append it to the internal memory temporarily
             partition = random.randint(0, parameters.subs - 1)
             submem = data.getMemory(partition + 3)
             if submem is not None:
                 memory += "\n==================\n" + submem + "\n=================="
-            # Randomly select a subconscious partition and append it to the internal memory temporarily
-            # Need to do a merged memory of all three: conscious, subconscious, and chat
             prompt = generate_prompt("internal/step_conscious", (memory, working_memory, ))
             ai_response = call_openai(prompt, 32, temp = 0.85)
             ai_response = ai_response.replace('\n', '\n\t')
@@ -61,7 +60,6 @@ async def subthink():
             working_memory = data.getWorkingMemory(lastsub + 3)
             internalmem = data.getMemory(1)
             merged_memory = internalmem
-            # Instead of "NONE" it should be "", because in the data initialization I should fill these with blanks
             existingmem = data.getMemory(lastsub + 3)
             if existingmem != "":
                 prompt = generate_prompt("merge", (internalmem, existingmem, ))

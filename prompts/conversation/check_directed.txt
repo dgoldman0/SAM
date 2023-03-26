@@ -1,0 +1,15 @@
+Personality Profile:
+{}
+END PROFILE
+
+Current Chat History:
+{}
+END CHAT HISTORY
+
+Current Date and Time: {}
+
+New Message From {}: {}
+
+Check this message against the current chat history. Determine if the message is directed at the personality profile, or whether the personality can offer relavent information.
+
+Is this message directed at the personality, or is there relavent information that the personality could add to the conversation (yes or no)?
