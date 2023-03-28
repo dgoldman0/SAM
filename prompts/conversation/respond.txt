@@ -15,8 +15,10 @@ The current datetime (in day/month/year hour:minute UTC format) is {}
 
 New message from {}: {}
 
-Respond to the new message acting as the individual described in the personality profile, based on the current chat history.
+Respond to the new message acting as the individual described in the personality profile, based on the current chat history. This response is only PART of the total response. 
 
-Response format: just give a response without special formatting. There is no need to start with :, |:, or || or to put what you say in quotes. MUST USE HTML.
+In the next part, you will be able to generate an HTML response which can include a lot of embedded detail, formatting, etc.
 
-Response (the internal system will add start sequences like |:, :, or || so there is no need to add them, must use HTML, starting with <div>):
+Response format: just give a response without special formatting. There is no need to start with :, |:, or || or to put what you say in quotes. 
+
+Text Response:

@@ -71,14 +71,18 @@ $(document).ready(function() {
           } else if (msg == "BLOCKED") {
             f.innerHTML = "Unable to connect: User is blocked from accessing SAM."
           }
-
         break;
         default:
           if (msg.startsWith("MSG:")) {
             msg = msg.slice(4);
             console.log(msg)
             f.innerHTML += `<hr/>${msg}`;
-          } else if (msg.startsWith("STATUS:")){
+          } else if (msg.startsWith("CONTENT:")) {
+            msg = msg.slice(8);
+            console.log(msg)
+            document.getElementById("chat-history").innerHTML = msg;
+          }
+          else if (msg.startsWith("STATUS:")){
             f.innerHTML += `<br/>System Notice: ${htmlEncode(msg.slice(7))}`;
           }
       }

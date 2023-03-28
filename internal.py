@@ -31,6 +31,41 @@ async def think():
             ai_response = call_openai(prompt, 32, temp = 0.85)
             ai_response = ai_response.replace('\n', '\n\t')
             print("Thought: " + ai_response + "\n")
+            now = system.now()
+            # Grab external information
+            done = False
+            capacity = 20000
+            iterations = 0
+            temp = ""
+
+            # Not finished cleaning up code yet. Will not run. Also, it could be very dangerous to give it unlimited access to commands.
+            if parameters.run_commands_internally:
+                while not done and capacity > 0 and iterations < 15:
+                    prompt = ""
+                    outline = ""
+                    if iterations == 0:
+                        prompt = generate_prompt("conversation/check_external_initial", (memory, working_memory, temp, now, ai_response, capacity, ))
+                        outline = call_openai(prompt, 512, 0.75, 'gpt-4')
+                        print("Outline: " + outline + "\n")
+
+                    # Does a terrible job of actually using system commands properly.
+                    prompt = generate_prompt("conversation/check_external", (now, ai_response, outline, temp, capacity, ))
+                    command = call_openai(prompt, 256, 0.7, 'gpt-4')
+                    print("Command: " + command)
+                    result = (await system.processCommand(command, True)).replace('\n', '\n\t')
+                    capacity = capacity - len(result)
+                    temp += "||" + result + "\n\n"
+                    print("Result: " + result)
+
+                    # Checking if complete
+                    prompt = generate_prompt("conversation/check_complete", (outline, temp, ))
+                    check_done = call_openai(prompt, 32, 0.7, 'gpt-4')
+                    if (check_done.lower().startswith("yes")):
+                        done = True
+
+                    iterations += 1
+                print("---Done Adding Information---")
+
             prompt = generate_prompt("internal/integrate", (internalmem, working_memory, ai_response, parameters.features, utils.internalLength(), ))
             output = await asyncio.get_event_loop().run_in_executor(None, utils.updateInternal, 1, prompt, parameters.internal_capacity)
             working_memory += ": " + ai_response + "\n\n"

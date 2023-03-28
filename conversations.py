@@ -24,12 +24,14 @@ async def converse(name, socket):
     steps_since_integration = 0
     # Will still need to lock this loop, just against itself, so that two users interacting at the same time won't cause a mishap with the data. Or just respond back that the system is in the middle of processing another request.
     while connected:
-        working_memory = data.getConversationWorkingMem()
+        working_memory = data.getWorkingMemory(2)
+            
         internal_memory = data.getMemory(1)
         conversation_memory = data.getMemory(2)
         memory = internal_memory + "\n==================" + conversation_memory + "\n=================="
         try:
             msg = (await socket.recv()).decode()
+            # When token limits are increased and cost decreases, it might be useful to give the system access to the previous content window. This would allow it to have a better idea of what the user is talking about, and would allow it to have a better idea of what to say next.
             if msg.startswith("MSG:"):
                 now = system.now()
                 message = msg[4:]
@@ -69,7 +71,7 @@ async def converse(name, socket):
                 print("---Done Adding Information---")
 
                 prompt = generate_prompt("conversation/respond", (memory, working_memory + "\n\n" + temp, now, name, message, ))
-                ai_response = call_openai(prompt, 1024, 0.7, "gpt-4")
+                ai_response = call_openai(prompt, 512, 0.7, "gpt-4")
                 print("Response: " + ai_response + '\n')
 
                 print("Updating Conversation Memory")
@@ -79,31 +81,19 @@ async def converse(name, socket):
                 print("Conversation Memory Updated")
                 print("Conversation Memory:\n=====================\n" + conversation_memory + "\n=====================")
 
+                # Generate content view.
+                prompt = generate_prompt("conversation/generate_content", (memory, working_memory + "\n\n" + temp, now, name, message, ai_response, ))
+                content = call_openai(prompt, 2048, 0.7, "gpt-4")
+
                 if len(temp) > 0:
                     prompt = generate_prompt("conversation/summarize", (temp, ))
                     summary = call_openai(prompt, 2048, 0.7, "gpt-4")
                     print("Summary: " + summary + "\n")
                     working_memory += "\n\n||" + summary + "\n\n"
 
-                # Decide whether to add to conversation
-                pertinent = True # Change to False if actually implementing
-#                prompt = generate_prompt("conversation/check_pertinent", (working_memory, ai_response, ))
-#                resp = call_openai(prompt, 12, 0.7, 'gpt-4')
-#                print(resp)
-#                if (resp.lower().startswith("very")):
-#                    pertinent = True
-#                elif (resp.lower().startswith("well")):
-#                    roll = random.randint(0, 19)
-#                    pertinent = roll > 1
-#                elif (resp.lower().startswith("somewhat")):
-#                    roll = random.randint(0, 19)
-#                    pertinent = roll > 14
-
-                if pertinent:
-                    working_memory += ": " + ai_response.replace('\n', '\n\t') + "\n\n"
-                    await server.sendMessage("MSG:" + ai_response)
-                else:
-                    working_memory += "|: " + ai_response.replace('\n', '\n\t') + "\n\n"
+                working_memory += ": " + ai_response.replace('\n', '\n\t') + "\n\n"
+                await server.sendMessage("MSG:" + ai_response)
+                await server.sendMessage("CONTENT:" + content)
 
                 steps_since_integration += 1
 
@@ -113,7 +103,7 @@ async def converse(name, socket):
                 if len(lines) > 500:
                     lines = lines[1:]
                     working_memory = '\n\n'.join(lines)
-                data.setConversationWorkingMem(working_memory)
+                data.setWorkingMemory(2, working_memory)
             elif msg.startswith("COMMAND:"):
                 pass
         except Exception as e:

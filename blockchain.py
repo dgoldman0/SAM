@@ -1,6 +1,9 @@
 import os
 from dotenv import load_dotenv
 from web3 import Web3
+import ledgereth
+
+# Will need to add ledger support.
 
 load_dotenv()
 
@@ -16,6 +19,7 @@ def get_nonce():
     return nonce
 
 def check_gas(tx):
+    global web3
     gas = web3.eth.estimateGas(tx)
     return "Estimated gas fee for tx: " + gas
 

@@ -14,14 +14,11 @@ import html2text
 from pycoingecko import CoinGeckoAPI
 cg = CoinGeckoAPI()
 
-async def processCommand(command):
+async def processCommand(command, internal=False):
     global cg
     full_case = command
     command = command.lower()
-    if command.startswith("respond "):
-        server.sendMessage(full_case[8:])
-        return "Responded with:" + full_case[8:]
-    elif command.startswith("coingecko "):
+    if command.startswith("coingecko "):
         params = command.split(" ")
         if params[1] == "current":
             if len(params) == 4:
@@ -140,6 +137,10 @@ async def processCommand(command):
             return "Obtained data for URL " + url + "\n" + str(text)
         except Exception as e:
             return "Error when obtaining data from URL: " + url + "\n" + str(e)
+    elif command.startswith("chat ") and internal:
+        msg = full_case[5:]
+        await server.sendMessage("msg:" + msg)
+        return "Spoken out loud: " + msg
     elif command.startswith("#"):
         return "Annotation: " + full_case[1:]
     else:

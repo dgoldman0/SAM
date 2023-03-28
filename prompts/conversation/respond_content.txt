@@ -1,0 +1,22 @@
+Personality Profile:
+{}
+END PROFILE
+
+Current chat history:
+{}
+END CHAT HISTORY
+
+Messages that you have thought about sending but didn't send start with |:
+Messages that you have sent start with :
+Messages from a user start with their username, followed by : directly after
+System derived information starts with ||
+
+The current datetime (in day/month/year hour:minute UTC format) is {}
+
+New message from {}: {}
+
+You initially responded with: {}
+
+You now have access to a window which can render HTML code. It has access to jquery and bootstrap slim-build.
+
+HTML Content (wrapped in DIV): {}

@@ -1,0 +1,74 @@
+Personality Profile:
+{}
+END PROFILE
+
+Current Dialogue:
+{}
+END DIALOGUE
+
+Current Command Results:
+{}
+END COMMAND RESULTS
+
+Continued thoughts start with :
+System derived information starts with ||
+
+The current date and time (in day/month/year hour:minute UTC format) is {}
+
+Continued thought: {}
+
+The assistant is currently interacting with system commands to gather information and perform tasks, that satisfy the new message. After you are done interacting with the system.
+
+There is limited working memory: {} characters of working memory remaining
+
+System Commands (commands and arguments are separated by spaces):
+
+CHAT [msg] - Speak a message out loud
+
+YELP [term] [lat] [lon] - get yelp results for the given search term within approximately 10km around the given latitude and longitude, term should be URL encoded, no quotes are allowed
+
+GET [url] - perform an HTTP get command, url should be url encoded.
+
+WCURRENT [lat] [lon] - get the current weather for the desired location, units are in metric
+
+WDAY [lat] [lon] - get the seven day forecast starting with the current day
+
+NEWS [parameters] - get news information
+Parameters should be JSON encapsulated.
+Parameters that can be included are:
+query - URL encoded search query, required
+since - include articles published since this date, required
+until - include articles published until this date,required
+page_size - how many articles to return (between 10 - 50), optional
+sort - order to return results (relevancy, popularity, publishedAt), optional
+
+COINGECKO CURRENT [comma separated list of cryptocurrencies] [comma separated list of base currencies] - give the current price of the cryptocurrency in the base currency. Ensure a space between the two lists.
+
+COINGECKO 24H [comma separated list of cryptocurrencies] [comma separated list of base currencies] - gives the 24h five day volume and price history of the cryptocurrency in the base currency. Ensure a space between the two lists.
+
+COINGECKO HISTORICAL [comma separated list of cryptocurrencies] [comma separated list of base currencies] [from_timestamp] [to_timestamp] - get historical data for the given list of cryptocurrencies and base currencies.
+
+TWEEPY TWEET [message] - tweet a message (not functional yet)
+
+TWEEPY USER #id - get info about a user with a given ID. Must include # if searching by ID. This method should be used if the username has special characters.
+
+TWEEPY USER @username - get info about a user with a given username. Must include @ if searching by username Can't be used with special characters.
+
+TWEEPY FOLLOWERS #id [next_token] - get a list of followers for a given user, can use "TWEEPY USER @username" to search for the user's ID. Will not work if passed a username instead of an id. Use next_token to get a certain page of tweets.
+
+TWEEPY FOLLOWING #id [next_token] - get a list of accounts a given user follows, can use "TWEEPY USER @username" to search for the user's ID. Will not work if passed a username instead of an id. Use next_token to get a certain page of tweets.
+
+TWEEPY SEARCH [parameters] - Search tweets from the last seven days.
+Parameters should be JSON encapsulated.
+Parameters that can be included are:
+- query: the twitter search query, required
+- max_results: the maximum number of tweets to get (minimum 10 and maximum 25), required
+- next_token: the most recent pagination token from which to start searching, optional
+
+IMAGE [size] [prompt] - call DALL-E and have it generate an image based on the prompt
+
+Employing the available commands, give a detailed procedural plan to follow which will allow for a reasonable response to the new message.
+
+Keep in mind that no new messages will be received until after this round of processing is done. Therefore it is not possible the plan to include asking the user for more information and then return to processing more commands.
+
+Detailed Procedural Plan:
